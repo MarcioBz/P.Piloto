@@ -28,7 +28,7 @@ button {
 
 button:disabled {
   cursor: wait;
-  opacity: .65;
+  opacity: 0.65;
 }
 
 button,
@@ -99,16 +99,12 @@ input:focus-visible {
   background:
     linear-gradient(
       90deg,
-      rgba(245, 252, 248, .98) 0%,
-      rgba(245, 252, 248, .94) 30%,
-      rgba(245, 252, 248, .68) 43%,
-      rgba(245, 252, 248, .08) 62%
+      rgba(245, 252, 248, 0.98) 0%,
+      rgba(245, 252, 248, 0.94) 30%,
+      rgba(245, 252, 248, 0.68) 43%,
+      rgba(245, 252, 248, 0.08) 62%
     ),
-    linear-gradient(
-      0deg,
-      rgba(232, 249, 240, .95),
-      transparent 30%
-    );
+    linear-gradient(0deg, rgba(232, 249, 240, 0.95), transparent 30%);
 }
 
 .presentation::after {
@@ -120,7 +116,7 @@ input:focus-visible {
   left: -120px;
   border: 1px solid #8adbb6;
   border-radius: 50%;
-  background: rgba(129, 221, 179, .2);
+  background: rgba(129, 221, 179, 0.2);
   z-index: -1;
 }
 
@@ -200,7 +196,7 @@ input:focus-visible {
   height: 66px;
   margin: 0 auto 12px;
   color: var(--green);
-  background: rgba(188, 239, 215, .7);
+  background: rgba(188, 239, 215, 0.7);
   border-radius: 50%;
 }
 
@@ -238,8 +234,8 @@ input:focus-visible {
   min-width: 0;
   background: linear-gradient(
     145deg,
-    rgba(0, 68, 43, .45),
-    rgba(0, 152, 85, .7)
+    rgba(0, 68, 43, 0.45),
+    rgba(0, 152, 85, 0.7)
   );
 }
 
@@ -252,7 +248,7 @@ input:focus-visible {
   padding: clamp(32px, 3.4vw, 62px);
   border-radius: 32px 32px 75px 32px;
   background: #fff;
-  box-shadow: 0 25px 60px rgba(0, 37, 24, .2);
+  box-shadow: 0 25px 60px rgba(0, 37, 24, 0.2);
 }
 
 .login-card::before,
@@ -293,7 +289,7 @@ input:focus-visible {
   margin: 0;
   font-size: clamp(25px, 2.15vw, 39px);
   font-weight: 800;
-  letter-spacing: -.8px;
+  letter-spacing: -0.8px;
 }
 
 .login-brand {
@@ -356,12 +352,14 @@ input:focus-visible {
   border: 1.5px solid var(--border);
   border-radius: 13px;
   background: #fbfcfe;
-  transition: border-color .2s, box-shadow .2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .input-container:focus-within {
   border-color: var(--green);
-  box-shadow: 0 0 0 4px rgba(0, 156, 88, .1);
+  box-shadow: 0 0 0 4px rgba(0, 156, 88, 0.1);
 }
 
 .input-icon {
@@ -446,7 +444,9 @@ input:focus-visible {
   padding: 15px;
   border-radius: 13px;
   font-weight: 700;
-  transition: background .2s, box-shadow .2s;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
 }
 
 .primary-button {
@@ -458,7 +458,7 @@ input:focus-visible {
 
 .primary-button:hover:not(:disabled) {
   background: #007c47;
-  box-shadow: 0 8px 20px rgba(0, 124, 71, .2);
+  box-shadow: 0 8px 20px rgba(0, 124, 71, 0.2);
 }
 
 .primary-button .icon {
@@ -546,7 +546,7 @@ input:focus-visible {
   }
 
   .presentation::before {
-    background: rgba(240, 250, 245, .85);
+    background: rgba(240, 250, 245, 0.85);
   }
 
   .presentation-text h1 {
@@ -696,7 +696,6 @@ input:focus-visible {
   margin-top: 12px;
 }
 
-
 /* =========================================================
    MODAL INSTITUCIONAL — ALUNOTEC
 ========================================================= */
@@ -704,7 +703,6 @@ input:focus-visible {
 body.modal-open {
   overflow: hidden;
 }
-
 
 /* =========================================================
    ESTRUTURA DO MODAL
@@ -725,15 +723,14 @@ body.modal-open {
   opacity: 0;
 
   transition:
-    opacity .25s ease,
-    visibility .25s ease;
+    opacity 0.25s ease,
+    visibility 0.25s ease;
 }
 
 .access-modal.active {
   visibility: visible;
   opacity: 1;
 }
-
 
 /* =========================================================
    FUNDO ESCURECIDO
@@ -743,17 +740,15 @@ body.modal-open {
   position: absolute;
   inset: 0;
 
-  background:
-    linear-gradient(
-      135deg,
-      rgba(3, 30, 38, .66),
-      rgba(4, 67, 52, .58)
-    );
+  background: linear-gradient(
+    135deg,
+    rgba(3, 30, 38, 0.66),
+    rgba(4, 67, 52, 0.58)
+  );
 
   backdrop-filter: blur(9px);
   -webkit-backdrop-filter: blur(9px);
 }
-
 
 /* =========================================================
    CARD
@@ -769,31 +764,20 @@ body.modal-open {
 
   overflow: hidden;
 
-  border:
-    1px solid rgba(255, 255, 255, .88);
+  border: 1px solid rgba(255, 255, 255, 0.88);
 
   border-radius: 28px;
 
-  background:
-    linear-gradient(
-      145deg,
-      #ffffff 0%,
-      #ffffff 72%,
-      #f4fbf7 100%
-    );
+  background: linear-gradient(145deg, #ffffff 0%, #ffffff 72%, #f4fbf7 100%);
 
   box-shadow:
-    0 35px 80px rgba(0, 30, 24, .26),
-    0 10px 30px rgba(0, 70, 45, .10);
+    0 35px 80px rgba(0, 30, 24, 0.26),
+    0 10px 30px rgba(0, 70, 45, 0.1);
 
-  transform:
-    translateY(22px)
-    scale(.965);
+  transform: translateY(22px) scale(0.965);
 
-  transition:
-    transform .28s cubic-bezier(.2, .8, .2, 1);
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-
 
 /* DETALHE DECORATIVO */
 
@@ -810,11 +794,9 @@ body.modal-open {
 
   border-radius: 50%;
 
-  border:
-    1px solid rgba(0, 166, 92, .13);
+  border: 1px solid rgba(0, 166, 92, 0.13);
 
-  background:
-    rgba(216, 245, 229, .35);
+  background: rgba(216, 245, 229, 0.35);
 
   pointer-events: none;
 }
@@ -832,18 +814,14 @@ body.modal-open {
 
   border-radius: 50%;
 
-  background:
-    rgba(0, 166, 92, .045);
+  background: rgba(0, 166, 92, 0.045);
 
   pointer-events: none;
 }
 
 .access-modal.active .access-modal-card {
-  transform:
-    translateY(0)
-    scale(1);
+  transform: translateY(0) scale(1);
 }
-
 
 /* =========================================================
    BOTÃO FECHAR
@@ -874,9 +852,9 @@ body.modal-open {
   cursor: pointer;
 
   transition:
-    color .2s ease,
-    background .2s ease,
-    transform .2s ease;
+    color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .access-modal-close:hover {
@@ -888,14 +866,13 @@ body.modal-open {
 }
 
 .access-modal-close:active {
-  transform: scale(.93);
+  transform: scale(0.93);
 }
 
 .access-modal-close .icon {
   width: 18px;
   height: 18px;
 }
-
 
 /* =========================================================
    ÍCONE INSTITUCIONAL
@@ -913,22 +890,15 @@ body.modal-open {
 
   margin-bottom: 22px;
 
-  border:
-    1px solid rgba(0, 166, 92, .08);
+  border: 1px solid rgba(0, 166, 92, 0.08);
 
   border-radius: 19px;
 
   color: #009d5a;
 
-  background:
-    linear-gradient(
-      145deg,
-      #e9f9f0,
-      #d9f3e5
-    );
+  background: linear-gradient(145deg, #e9f9f0, #d9f3e5);
 
-  box-shadow:
-    0 8px 20px rgba(0, 156, 86, .08);
+  box-shadow: 0 8px 20px rgba(0, 156, 86, 0.08);
 }
 
 .access-modal-icon .icon {
@@ -937,7 +907,6 @@ body.modal-open {
 
   stroke-width: 1.8;
 }
-
 
 /* =========================================================
    CABEÇALHO
@@ -987,7 +956,7 @@ body.modal-open {
 
   font-weight: 800;
 
-  letter-spacing: -.5px;
+  letter-spacing: -0.5px;
 }
 
 .access-modal-header p {
@@ -998,7 +967,6 @@ body.modal-open {
   font-size: 13px;
   line-height: 1.55;
 }
-
 
 /* =========================================================
    FORMULÁRIO
@@ -1024,7 +992,6 @@ body.modal-open {
   font-weight: 700;
 }
 
-
 /* =========================================================
    CAMPOS INEP / SENHA
 ========================================================= */
@@ -1037,22 +1004,19 @@ body.modal-open {
   display: flex;
   align-items: center;
 
-  border:
-    1px solid #cfdae0;
+  border: 1px solid #cfdae0;
 
   border-radius: 13px;
 
-  background:
-    rgba(250, 252, 253, .96);
+  background: rgba(250, 252, 253, 0.96);
 
-  box-shadow:
-    0 2px 5px rgba(5, 43, 55, .02);
+  box-shadow: 0 2px 5px rgba(5, 43, 55, 0.02);
 
   transition:
-    border-color .2s ease,
-    box-shadow .2s ease,
-    background .2s ease,
-    transform .2s ease;
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .access-modal .input-container:hover {
@@ -1067,8 +1031,8 @@ body.modal-open {
   background: #ffffff;
 
   box-shadow:
-    0 0 0 4px rgba(0, 166, 92, .09),
-    0 7px 18px rgba(0, 107, 62, .06);
+    0 0 0 4px rgba(0, 166, 92, 0.09),
+    0 7px 18px rgba(0, 107, 62, 0.06);
 }
 
 .access-modal .input-icon {
@@ -1083,11 +1047,10 @@ body.modal-open {
 
   pointer-events: none;
 
-  transition: color .2s ease;
+  transition: color 0.2s ease;
 }
 
-.access-modal .input-container:focus-within
-.input-icon {
+.access-modal .input-container:focus-within .input-icon {
   color: #009d5a;
 }
 
@@ -1095,9 +1058,7 @@ body.modal-open {
   width: 100%;
   height: 58px;
 
-  padding:
-    0 52px
-    0 52px;
+  padding: 0 52px 0 52px;
 
   border: none;
   outline: none;
@@ -1116,7 +1077,6 @@ body.modal-open {
 
   font-weight: 400;
 }
-
 
 /* =========================================================
    OLHO DA SENHA
@@ -1145,8 +1105,8 @@ body.modal-open {
   cursor: pointer;
 
   transition:
-    color .2s ease,
-    background .2s ease;
+    color 0.2s ease,
+    background 0.2s ease;
 }
 
 .access-modal .toggle-password:hover {
@@ -1160,7 +1120,6 @@ body.modal-open {
   height: 20px;
 }
 
-
 /* =========================================================
    BOTÃO ENTRAR
 ========================================================= */
@@ -1172,20 +1131,18 @@ body.modal-open {
 
   border-radius: 13px;
 
-  box-shadow:
-    0 10px 25px rgba(0, 158, 87, .18);
+  box-shadow: 0 10px 25px rgba(0, 158, 87, 0.18);
 
   transition:
-    transform .2s ease,
-    box-shadow .2s ease,
-    filter .2s ease;
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
 }
 
 .institutional-submit:hover {
   transform: translateY(-2px);
 
-  box-shadow:
-    0 15px 30px rgba(0, 158, 87, .23);
+  box-shadow: 0 15px 30px rgba(0, 158, 87, 0.23);
 
   filter: brightness(1.02);
 }
@@ -1195,13 +1152,12 @@ body.modal-open {
 }
 
 .institutional-submit .icon {
-  transition: transform .2s ease;
+  transition: transform 0.2s ease;
 }
 
 .institutional-submit:hover .icon {
   transform: translateX(4px);
 }
-
 
 /* =========================================================
    AVISO INFERIOR
@@ -1220,19 +1176,13 @@ body.modal-open {
 
   padding: 13px 14px;
 
-  border:
-    1px solid rgba(0, 166, 92, .06);
+  border: 1px solid rgba(0, 166, 92, 0.06);
 
   border-radius: 12px;
 
   color: #667e89;
 
-  background:
-    linear-gradient(
-      90deg,
-      #f0f9f5,
-      #f5fbf8
-    );
+  background: linear-gradient(90deg, #f0f9f5, #f5fbf8);
 
   font-size: 10px;
   line-height: 1.5;
@@ -1257,18 +1207,14 @@ body.modal-open {
   font-weight: 700;
 }
 
-
 /* =========================================================
    ERRO
 ========================================================= */
 
 .access-modal .message {
-  margin:
-    -3px 0
-    13px;
+  margin: -3px 0 13px;
 
-  padding:
-    10px 12px;
+  padding: 10px 12px;
 
   border-radius: 9px;
 
@@ -1280,13 +1226,11 @@ body.modal-open {
   line-height: 1.4;
 }
 
-
 /* =========================================================
    RESPONSIVIDADE
 ========================================================= */
 
 @media (max-width: 520px) {
-
   .access-modal {
     padding: 14px;
   }
@@ -1294,9 +1238,7 @@ body.modal-open {
   .access-modal-card {
     width: 100%;
 
-    padding:
-      32px 20px
-      25px;
+    padding: 32px 20px 25px;
 
     border-radius: 23px;
   }
@@ -1341,22 +1283,17 @@ body.modal-open {
     min-height: 55px;
     height: 55px;
   }
-
 }
-
 
 /* TELAS MUITO PEQUENAS */
 
 @media (max-width: 360px) {
-
   .access-modal {
     padding: 9px;
   }
 
   .access-modal-card {
-    padding:
-      29px 17px
-      21px;
+    padding: 29px 17px 21px;
 
     border-radius: 20px;
   }
@@ -1364,5 +1301,4 @@ body.modal-open {
   .access-modal-header h2 {
     font-size: 22px;
   }
-
 }

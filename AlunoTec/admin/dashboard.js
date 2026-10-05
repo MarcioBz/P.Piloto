@@ -7,1396 +7,1007 @@
 ========================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
-
-    /* ======================================================
+  /* ======================================================
        CONFIGURAÇÕES
     ====================================================== */
 
-    const LOGIN_PAGE = "../index.html";
+  const LOGIN_PAGE = "../index.html";
 
-    const CURRENT_YEAR = 2026;
+  const CURRENT_YEAR = 2026;
 
-
-    /* ======================================================
+  /* ======================================================
        ELEMENTOS
     ====================================================== */
 
-    const sidebar = document.getElementById("sidebar");
-    const sidebarOverlay = document.getElementById("sidebarOverlay");
-    const menuButton = document.getElementById("menuButton");
-    const sidebarClose = document.getElementById("sidebarClose");
+  const sidebar = document.getElementById("sidebar");
+  const sidebarOverlay = document.getElementById("sidebarOverlay");
+  const menuButton = document.getElementById("menuButton");
+  const sidebarClose = document.getElementById("sidebarClose");
 
-    const profile = document.querySelector(".profile");
-    const profileButton = document.getElementById("profileButton");
-    const profileDropdown = document.getElementById("profileDropdown");
+  const profile = document.querySelector(".profile");
+  const profileButton = document.getElementById("profileButton");
+  const profileDropdown = document.getElementById("profileDropdown");
 
-    const logoutButton = document.getElementById("logoutButton");
-    const switchAccountButton = document.getElementById("switchAccount");
+  const logoutButton = document.getElementById("logoutButton");
+  const switchAccountButton = document.getElementById("switchAccount");
 
-    const connectionStatus =
-        document.getElementById("connectionStatus");
+  const connectionStatus = document.getElementById("connectionStatus");
 
-    const connectionTitle =
-        document.getElementById("connectionTitle");
+  const connectionTitle = document.getElementById("connectionTitle");
 
-    const connectionSubtitle =
-        document.getElementById("connectionSubtitle");
+  const connectionSubtitle = document.getElementById("connectionSubtitle");
 
-    const todayDate =
-        document.getElementById("todayDate");
-    const ACTIVITY_KEY = "alunotec_turmas_activity_v1";
-    const activityBell = document.getElementById("activityBell");
-    const todayActivitiesList = document.getElementById("todayActivitiesList");
-    let activityDialog = null;
+  const todayDate = document.getElementById("todayDate");
+  const ACTIVITY_KEY = "alunotec_turmas_activity_v1";
+  const activityBell = document.getElementById("activityBell");
+  const todayActivitiesList = document.getElementById("todayActivitiesList");
+  let activityDialog = null;
 
-    function readClassActivities() {
-        try {
-            const items = JSON.parse(localStorage.getItem(ACTIVITY_KEY) || "[]");
-            return Array.isArray(items) ? items : [];
-        } catch (error) {
-            return [];
-        }
+  function readClassActivities() {
+    try {
+      const items = JSON.parse(localStorage.getItem(ACTIVITY_KEY) || "[]");
+      return Array.isArray(items) ? items : [];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function updateActivityBell() {
+    if (!activityBell) return;
+    const badge = document.getElementById("activityBellCount");
+    const unread = readClassActivities().filter((item) => !item.read).length;
+    if (badge) {
+      badge.textContent = unread > 99 ? "99+" : String(unread);
+      badge.hidden = unread === 0;
+    }
+    activityBell.classList.toggle("has-activity", unread > 0);
+    activityBell.setAttribute(
+      "aria-label",
+      unread
+        ? `Notificações das turmas: ${unread} não lidas`
+        : "Notificações das turmas",
+    );
+  }
+
+  function closeActivityDialog() {
+    if (!activityDialog) return;
+    const dialog = activityDialog;
+    activityDialog = null;
+    dialog.close();
+    dialog.remove();
+    activityBell?.setAttribute("aria-expanded", "false");
+  }
+
+  function renderClassActivities(list) {
+    if (!list) return;
+    const activities = readClassActivities();
+    list.replaceChildren();
+    if (!activities.length) {
+      const empty = document.createElement("p");
+      empty.className = "activity-empty";
+      empty.textContent = "Nenhuma notificação por enquanto.";
+      list.append(empty);
+      return;
+    }
+    activities.forEach((item) => {
+      const row = document.createElement("article");
+      row.className = "activity-item";
+      const dot = document.createElement("span");
+      dot.className = "activity-dot";
+      const content = document.createElement("div");
+      const message = document.createElement("p");
+      message.textContent = item.message || "Alteração nas turmas.";
+      const date = document.createElement("time");
+      const parsedDate = new Date(item.date || Date.now());
+      date.textContent = Number.isNaN(parsedDate.getTime())
+        ? ""
+        : new Intl.DateTimeFormat("pt-BR", {
+            dateStyle: "short",
+            timeStyle: "short",
+          }).format(parsedDate);
+      content.append(message, date);
+      row.append(dot, content);
+      list.append(row);
+    });
+  }
+
+  function renderTodayActivities() {
+    if (!todayActivitiesList) return;
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const activities = readClassActivities().filter((item) => {
+      const date = new Date(item.date || "");
+      if (Number.isNaN(date.getTime())) return false;
+      const localDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+      return localDate === today;
+    });
+
+    todayActivitiesList.replaceChildren();
+    if (!activities.length) {
+      const empty = document.createElement("p");
+      empty.className = "activity-empty today-activity-empty";
+      empty.textContent = "Nenhuma notificação hoje.";
+      todayActivitiesList.append(empty);
+      return;
     }
 
-    function updateActivityBell() {
-        if (!activityBell) return;
-        const badge = document.getElementById("activityBellCount");
-        const unread = readClassActivities().filter(item => !item.read).length;
-        if (badge) {
-            badge.textContent = unread > 99 ? "99+" : String(unread);
-            badge.hidden = unread === 0;
-        }
-        activityBell.classList.toggle("has-activity", unread > 0);
-        activityBell.setAttribute("aria-label", unread
-            ? `Notificações das turmas: ${unread} não lidas`
-            : "Notificações das turmas");
+    activities.slice(0, 12).forEach((item) => {
+      const row = document.createElement("article");
+      row.className = "activity-item";
+      const dot = document.createElement("span");
+      dot.className = "activity-dot";
+      const content = document.createElement("div");
+      const message = document.createElement("p");
+      message.textContent = item.message || "Alteração nas turmas.";
+      const time = document.createElement("time");
+      const date = new Date(item.date);
+      time.textContent = new Intl.DateTimeFormat("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(date);
+      content.append(message, time);
+      row.append(dot, content);
+      todayActivitiesList.append(row);
+    });
+  }
+  function openActivityDialog() {
+    if (activityDialog) {
+      closeActivityDialog();
+      return;
     }
+    const activities = readClassActivities().map((item) => ({
+      ...item,
+      read: true,
+    }));
+    try {
+      localStorage.setItem(ACTIVITY_KEY, JSON.stringify(activities));
+    } catch (error) {}
+    updateActivityBell();
 
-    function closeActivityDialog() {
-        if (!activityDialog) return;
-        const dialog = activityDialog;
-        activityDialog = null;
-        dialog.close();
-        dialog.remove();
-        activityBell?.setAttribute("aria-expanded", "false");
-    }
-
-    function renderClassActivities(list) {
-        if (!list) return;
-        const activities = readClassActivities();
-        list.replaceChildren();
-        if (!activities.length) {
-            const empty = document.createElement("p");
-            empty.className = "activity-empty";
-            empty.textContent = "Nenhuma notificação por enquanto.";
-            list.append(empty);
-            return;
-        }
-        activities.forEach(item => {
-            const row = document.createElement("article");
-            row.className = "activity-item";
-            const dot = document.createElement("span");
-            dot.className = "activity-dot";
-            const content = document.createElement("div");
-            const message = document.createElement("p");
-            message.textContent = item.message || "Alteração nas turmas.";
-            const date = document.createElement("time");
-            const parsedDate = new Date(item.date || Date.now());
-            date.textContent = Number.isNaN(parsedDate.getTime()) ? "" : new Intl.DateTimeFormat("pt-BR", {dateStyle:"short", timeStyle:"short"}).format(parsedDate);
-            content.append(message, date);
-            row.append(dot, content);
-            list.append(row);
-        });
-    }
-
-    function renderTodayActivities() {
-        if (!todayActivitiesList) return;
-        const now = new Date();
-        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-        const activities = readClassActivities().filter(item => {
-            const date = new Date(item.date || "");
-            if (Number.isNaN(date.getTime())) return false;
-            const localDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-            return localDate === today;
-        });
-
-        todayActivitiesList.replaceChildren();
-        if (!activities.length) {
-            const empty = document.createElement("p");
-            empty.className = "activity-empty today-activity-empty";
-            empty.textContent = "Nenhuma notificação hoje.";
-            todayActivitiesList.append(empty);
-            return;
-        }
-
-        activities.slice(0, 12).forEach(item => {
-            const row = document.createElement("article");
-            row.className = "activity-item";
-            const dot = document.createElement("span");
-            dot.className = "activity-dot";
-            const content = document.createElement("div");
-            const message = document.createElement("p");
-            message.textContent = item.message || "Alteração nas turmas.";
-            const time = document.createElement("time");
-            const date = new Date(item.date);
-            time.textContent = new Intl.DateTimeFormat("pt-BR", {hour:"2-digit", minute:"2-digit"}).format(date);
-            content.append(message, time);
-            row.append(dot, content);
-            todayActivitiesList.append(row);
-        });
-    }
-    function openActivityDialog() {
-        if (activityDialog) {
-            closeActivityDialog();
-            return;
-        }
-        const activities = readClassActivities().map(item => ({...item, read:true}));
-        try { localStorage.setItem(ACTIVITY_KEY, JSON.stringify(activities)); } catch (error) {}
-        updateActivityBell();
-
-        const dialog = document.createElement("dialog");
-        dialog.className = "activity-dialog";
-        dialog.innerHTML = `<header class="activity-heading">
+    const dialog = document.createElement("dialog");
+    dialog.className = "activity-dialog";
+    dialog.innerHTML = `<header class="activity-heading">
             <span class="activity-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span>
             <span><strong>Atividades das turmas</strong><small>Atualizações compartilhadas com a aba Turmas</small></span>
         </header>
         <div class="activity-list"></div>
         <footer class="activity-footer"><button type="button" class="activity-clear">Limpar notificações</button></footer>`;
-        const list = dialog.querySelector(".activity-list");
-        renderClassActivities(list);
-        dialog.querySelector(".activity-clear").addEventListener("click", () => {
-            try { localStorage.setItem(ACTIVITY_KEY, "[]"); } catch (error) {}
-            renderClassActivities(list);
-            updateActivityBell();
-            renderTodayActivities();
-        });
-        dialog.addEventListener("click", event => {
-            if (event.target !== dialog) return;
-            const rect = dialog.getBoundingClientRect();
-            if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) closeActivityDialog();
-        });
-        dialog.addEventListener("close", () => {
-            if (activityDialog === dialog) { activityDialog = null; dialog.remove(); }
-            activityBell?.setAttribute("aria-expanded", "false");
-        });
-        document.body.append(dialog);
-        activityDialog = dialog;
-        dialog.showModal();
-        activityBell?.setAttribute("aria-expanded", "true");
-    }
-
-    activityBell?.addEventListener("click", openActivityDialog);
-    updateActivityBell();
-    renderTodayActivities();
-    window.addEventListener("storage", event => {
-        if (event.key === ACTIVITY_KEY) {
-            updateActivityBell();
-            renderTodayActivities();
-            if (activityDialog) renderClassActivities(activityDialog.querySelector(".activity-list"));
-        }
-        if (event.key === "alunotec_turmas_v2") {
-            renderSchoolYearOptions();
-            updateDashboard();
-        }
+    const list = dialog.querySelector(".activity-list");
+    renderClassActivities(list);
+    dialog.querySelector(".activity-clear").addEventListener("click", () => {
+      try {
+        localStorage.setItem(ACTIVITY_KEY, "[]");
+      } catch (error) {}
+      renderClassActivities(list);
+      updateActivityBell();
+      renderTodayActivities();
     });
+    dialog.addEventListener("click", (event) => {
+      if (event.target !== dialog) return;
+      const rect = dialog.getBoundingClientRect();
+      if (
+        event.clientX < rect.left ||
+        event.clientX > rect.right ||
+        event.clientY < rect.top ||
+        event.clientY > rect.bottom
+      )
+        closeActivityDialog();
+    });
+    dialog.addEventListener("close", () => {
+      if (activityDialog === dialog) {
+        activityDialog = null;
+        dialog.remove();
+      }
+      activityBell?.setAttribute("aria-expanded", "false");
+    });
+    document.body.append(dialog);
+    activityDialog = dialog;
+    dialog.showModal();
+    activityBell?.setAttribute("aria-expanded", "true");
+  }
 
+  activityBell?.addEventListener("click", openActivityDialog);
+  updateActivityBell();
+  renderTodayActivities();
+  window.addEventListener("storage", (event) => {
+    if (event.key === ACTIVITY_KEY) {
+      updateActivityBell();
+      renderTodayActivities();
+      if (activityDialog)
+        renderClassActivities(activityDialog.querySelector(".activity-list"));
+    }
+    if (event.key === "alunotec_turmas_v2") {
+      renderSchoolYearOptions();
+      updateDashboard();
+    }
+  });
 
-    /* ======================================================
+  /* ======================================================
        DADOS DEMONSTRATIVOS DAS TURMAS
 
        Posteriormente estes dados poderão vir do banco
        de dados do AlunoTec.
     ====================================================== */
 
-    const dashboardData = {
+  const dashboardData = {
+    turma01: {
+      name: "Turma 01",
+      total: 30,
+      present: 28,
+      absent: 2,
+      justified: 0,
+      status: "completed",
+      shift: "Manhã",
+    },
 
-        turma01: {
-            name: "Turma 01",
-            total: 30,
-            present: 28,
-            absent: 2,
-            justified: 0,
-            status: "completed",
-            shift: "Manhã"
-        },
+    turma02: {
+      name: "Turma 02",
+      total: 30,
+      present: 26,
+      absent: 4,
+      justified: 0,
+      status: "completed",
+      shift: "Manhã",
+    },
 
-        turma02: {
-            name: "Turma 02",
-            total: 30,
-            present: 26,
-            absent: 4,
-            justified: 0,
-            status: "completed",
-            shift: "Manhã"
-        },
+    turma03: {
+      name: "Turma 03",
+      total: 30,
+      present: 24,
+      absent: 6,
+      justified: 0,
+      status: "pending",
+      shift: "Tarde",
+    },
 
-        turma03: {
-            name: "Turma 03",
-            total: 30,
-            present: 24,
-            absent: 6,
-            justified: 0,
-            status: "pending",
-            shift: "Tarde"
-        },
+    turma04: {
+      name: "Turma 04",
+      total: 30,
+      present: 27,
+      absent: 3,
+      justified: 0,
+      status: "completed",
+      shift: "Tarde",
+    },
 
-        turma04: {
-            name: "Turma 04",
-            total: 30,
-            present: 27,
-            absent: 3,
-            justified: 0,
-            status: "completed",
-            shift: "Tarde"
-        },
+    turma05: {
+      name: "Turma 05",
+      total: 30,
+      present: 29,
+      absent: 1,
+      justified: 0,
+      status: "completed",
+      shift: "Integral",
+    },
 
-        turma05: {
-            name: "Turma 05",
-            total: 30,
-            present: 29,
-            absent: 1,
-            justified: 0,
-            status: "completed",
-            shift: "Integral"
-        },
+    turma06: {
+      name: "Turma 06",
+      total: 30,
+      present: 28,
+      absent: 2,
+      justified: 0,
+      status: "completed",
+      shift: "Integral",
+    },
 
-        turma06: {
-            name: "Turma 06",
-            total: 30,
-            present: 28,
-            absent: 2,
-            justified: 0,
-            status: "completed",
-            shift: "Integral"
-        },
+    turma07: {
+      name: "Turma 07",
+      total: 30,
+      present: 27,
+      absent: 3,
+      justified: 0,
+      status: "completed",
+      shift: "Manhã",
+    },
 
-        turma07: {
-            name: "Turma 07",
-            total: 30,
-            present: 27,
-            absent: 3,
-            justified: 0,
-            status: "completed",
-            shift: "Manhã"
-        },
+    turma08: {
+      name: "Turma 08",
+      total: 30,
+      present: 26,
+      absent: 4,
+      justified: 0,
+      status: "completed",
+      shift: "Manhã",
+    },
 
-        turma08: {
-            name: "Turma 08",
-            total: 30,
-            present: 26,
-            absent: 4,
-            justified: 0,
-            status: "completed",
-            shift: "Manhã"
-        },
+    turma09: {
+      name: "Turma 09",
+      total: 30,
+      present: 0,
+      absent: 0,
+      justified: 0,
+      status: "not-started",
+      shift: "Tarde",
+    },
 
-        turma09: {
-            name: "Turma 09",
-            total: 30,
-            present: 0,
-            absent: 0,
-            justified: 0,
-            status: "not-started",
-            shift: "Tarde"
-        },
+    turma10: {
+      name: "Turma 10",
+      total: 30,
+      present: 0,
+      absent: 0,
+      justified: 0,
+      status: "not-started",
+      shift: "Tarde",
+    },
+  };
 
-        turma10: {
-            name: "Turma 10",
-            total: 30,
-            present: 0,
-            absent: 0,
-            justified: 0,
-            status: "not-started",
-            shift: "Tarde"
-        }
-
-    };
-
-
-    /* ======================================================
+  /* ======================================================
        FUNÇÕES AUXILIARES
     ====================================================== */
 
-    function formatNumber(value) {
+  function formatNumber(value) {
+    return new Intl.NumberFormat("pt-BR").format(value);
+  }
 
-        return new Intl.NumberFormat("pt-BR").format(value);
-
+  function calculatePercent(value, total) {
+    if (!total) {
+      return 0;
     }
 
+    return Math.round((value / total) * 100);
+  }
 
-    function calculatePercent(value, total) {
+  function setText(id, value) {
+    const element = document.getElementById(id);
 
-        if (!total) {
-            return 0;
-        }
-
-        return Math.round((value / total) * 100);
-
+    if (element) {
+      element.textContent = value;
     }
+  }
 
-
-    function setText(id, value) {
-
-        const element = document.getElementById(id);
-
-        if (element) {
-            element.textContent = value;
-        }
-
-    }
-
-
-    /* ======================================================
+  /* ======================================================
        DATA ATUAL
     ====================================================== */
 
-    function updateCurrentDate() {
-
-        if (!todayDate) {
-            return;
-        }
-
-        const now = new Date();
-
-        const formatted = new Intl.DateTimeFormat(
-            "pt-BR",
-            {
-                weekday: "long",
-                day: "2-digit",
-                month: "long",
-                year: "numeric"
-            }
-        ).format(now);
-
-        todayDate.textContent =
-            formatted.charAt(0).toUpperCase() +
-            formatted.slice(1);
-
+  function updateCurrentDate() {
+    if (!todayDate) {
+      return;
     }
 
+    const now = new Date();
 
-    updateCurrentDate();
+    const formatted = new Intl.DateTimeFormat("pt-BR", {
+      weekday: "long",
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    }).format(now);
 
+    todayDate.textContent =
+      formatted.charAt(0).toUpperCase() + formatted.slice(1);
+  }
 
-    /* ======================================================
+  updateCurrentDate();
+
+  /* ======================================================
        STATUS DA INTERNET
     ====================================================== */
 
-    let internetReachable = null;
+  let internetReachable = null;
 
-    function updateConnectionStatus() {
-        if (!connectionStatus || !connectionTitle || !connectionSubtitle) return;
-        const checking = navigator.onLine && internetReachable === null;
-        const online = navigator.onLine && internetReachable === true;
-        connectionStatus.classList.toggle("offline", !online && !checking);
-        connectionStatus.classList.toggle("checking", checking);
-        connectionTitle.textContent = online ? "Online" : checking ? "Verificando" : "Offline";
-        connectionSubtitle.textContent = checking
-            ? "Verificando acesso à internet…"
-            : online
-                ? "Salvo neste dispositivo • Supabase pendente"
-                : "Alterações salvas neste dispositivo";
+  function updateConnectionStatus() {
+    if (!connectionStatus || !connectionTitle || !connectionSubtitle) return;
+    const checking = navigator.onLine && internetReachable === null;
+    const online = navigator.onLine && internetReachable === true;
+    connectionStatus.classList.toggle("offline", !online && !checking);
+    connectionStatus.classList.toggle("checking", checking);
+    connectionTitle.textContent = online
+      ? "Online"
+      : checking
+        ? "Verificando"
+        : "Offline";
+    connectionSubtitle.textContent = checking
+      ? "Verificando acesso à internet…"
+      : online
+        ? "Salvo neste dispositivo • Supabase pendente"
+        : "Alterações salvas neste dispositivo";
+  }
+
+  async function checkInternetConnection() {
+    if (!navigator.onLine) {
+      internetReachable = false;
+      updateConnectionStatus();
+      return;
     }
-
-    async function checkInternetConnection() {
-        if (!navigator.onLine) {
-            internetReachable = false;
-            updateConnectionStatus();
-            return;
-        }
-        internetReachable = null;
-        updateConnectionStatus();
-        try {
-            await fetch("https://www.gstatic.com/generate_204", {mode:"no-cors", cache:"no-store", signal:AbortSignal.timeout(5000)});
-            internetReachable = true;
-        } catch (error) {
-            internetReachable = false;
-        }
-        updateConnectionStatus();
+    internetReachable = null;
+    updateConnectionStatus();
+    try {
+      await fetch("https://www.gstatic.com/generate_204", {
+        mode: "no-cors",
+        cache: "no-store",
+        signal: AbortSignal.timeout(5000),
+      });
+      internetReachable = true;
+    } catch (error) {
+      internetReachable = false;
     }
+    updateConnectionStatus();
+  }
 
-    window.addEventListener("online", checkInternetConnection);
-    connectionStatus?.addEventListener("click", checkInternetConnection);
-    window.addEventListener("offline", () => {
-        internetReachable = false;
-        updateConnectionStatus();
-    });
-    checkInternetConnection();
+  window.addEventListener("online", checkInternetConnection);
+  connectionStatus?.addEventListener("click", checkInternetConnection);
+  window.addEventListener("offline", () => {
+    internetReachable = false;
+    updateConnectionStatus();
+  });
+  checkInternetConnection();
 
-
-    /* ======================================================
+  /* ======================================================
        ÚLTIMA SINCRONIZAÇÃO
     ====================================================== */
 
-    function updateLastSync() {
+  function updateLastSync() {
+    const now = new Date();
 
-        const now = new Date();
+    const date = now.toLocaleDateString("pt-BR");
 
-        const date = now.toLocaleDateString(
-            "pt-BR"
-        );
+    const time = now.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
-        const time = now.toLocaleTimeString(
-            "pt-BR",
-            {
-                hour: "2-digit",
-                minute: "2-digit"
-            }
-        );
+    setText("lastSync", `Hoje, ${date} às ${time}`);
+  }
 
-        setText(
-            "lastSync",
-            `Hoje, ${date} às ${time}`
-        );
+  updateLastSync();
 
-    }
-
-
-    updateLastSync();
-
-
-    /* ======================================================
+  /* ======================================================
        SIDEBAR MOBILE
     ====================================================== */
 
-    function openSidebar() {
-
-        if (!sidebar) {
-            return;
-        }
-
-        sidebar.classList.add("open");
-
-        if (sidebarOverlay) {
-            sidebarOverlay.classList.add("active");
-        }
-
+  function openSidebar() {
+    if (!sidebar) {
+      return;
     }
 
-
-    function closeSidebar() {
-
-        if (!sidebar) {
-            return;
-        }
-
-        sidebar.classList.remove("open");
-
-        if (sidebarOverlay) {
-            sidebarOverlay.classList.remove("active");
-        }
-
-    }
-
-
-    if (menuButton) {
-
-        menuButton.addEventListener(
-            "click",
-            openSidebar
-        );
-
-    }
-
-
-    if (sidebarClose) {
-
-        sidebarClose.addEventListener(
-            "click",
-            closeSidebar
-        );
-
-    }
-
+    sidebar.classList.add("open");
 
     if (sidebarOverlay) {
+      sidebarOverlay.classList.add("active");
+    }
+  }
 
-        sidebarOverlay.addEventListener(
-            "click",
-            closeSidebar
-        );
-
+  function closeSidebar() {
+    if (!sidebar) {
+      return;
     }
 
+    sidebar.classList.remove("open");
 
-    /* ======================================================
+    if (sidebarOverlay) {
+      sidebarOverlay.classList.remove("active");
+    }
+  }
+
+  if (menuButton) {
+    menuButton.addEventListener("click", openSidebar);
+  }
+
+  if (sidebarClose) {
+    sidebarClose.addEventListener("click", closeSidebar);
+  }
+
+  if (sidebarOverlay) {
+    sidebarOverlay.addEventListener("click", closeSidebar);
+  }
+
+  /* ======================================================
        MENU DO PERFIL
     ====================================================== */
 
-    function closeProfileMenu() {
-
-        if (!profile) {
-            return;
-        }
-
-        profile.classList.remove("open");
-
-        if (profileButton) {
-
-            profileButton.setAttribute(
-                "aria-expanded",
-                "false"
-            );
-
-        }
-
+  function closeProfileMenu() {
+    if (!profile) {
+      return;
     }
 
+    profile.classList.remove("open");
 
-    if (profileButton && profile) {
-
-        profileButton.addEventListener(
-            "click",
-            event => {
-
-                event.stopPropagation();
-
-                closeAllDropdowns();
-
-                const isOpen =
-                    profile.classList.toggle("open");
-
-                profileButton.setAttribute(
-                    "aria-expanded",
-                    String(isOpen)
-                );
-
-            }
-        );
-
+    if (profileButton) {
+      profileButton.setAttribute("aria-expanded", "false");
     }
+  }
 
+  if (profileButton && profile) {
+    profileButton.addEventListener("click", (event) => {
+      event.stopPropagation();
 
-    if (profileDropdown) {
+      closeAllDropdowns();
 
-        profileDropdown.addEventListener(
-            "click",
-            event => {
+      const isOpen = profile.classList.toggle("open");
 
-                event.stopPropagation();
+      profileButton.setAttribute("aria-expanded", String(isOpen));
+    });
+  }
 
-            }
-        );
+  if (profileDropdown) {
+    profileDropdown.addEventListener("click", (event) => {
+      event.stopPropagation();
+    });
+  }
 
-    }
-
-
-    /* ======================================================
+  /* ======================================================
        TROCAR CONTA
     ====================================================== */
 
-    if (switchAccountButton) {
+  if (switchAccountButton) {
+    switchAccountButton.addEventListener("click", () => {
+      /*
+       * Posteriormente podemos limpar apenas
+       * a sessão ativa e manter as contas salvas.
+       */
 
-        switchAccountButton.addEventListener(
-            "click",
-            () => {
+      window.location.href = LOGIN_PAGE;
+    });
+  }
 
-                /*
-                 * Posteriormente podemos limpar apenas
-                 * a sessão ativa e manter as contas salvas.
-                 */
-
-                window.location.href =
-                    LOGIN_PAGE;
-
-            }
-        );
-
-    }
-
-
-    /* ======================================================
+  /* ======================================================
        SAIR
     ====================================================== */
 
-    if (logoutButton) {
+  if (logoutButton) {
+    logoutButton.addEventListener("click", () => {
+      /*
+       * Quando conectarmos a autenticação real,
+       * a limpeza da sessão será feita aqui.
+       */
 
-        logoutButton.addEventListener(
-            "click",
-            () => {
+      try {
+        sessionStorage.removeItem("alunotecSession");
+      } catch (error) {
+        console.warn("Não foi possível limpar a sessão.", error);
+      }
 
-                /*
-                 * Quando conectarmos a autenticação real,
-                 * a limpeza da sessão será feita aqui.
-                 */
+      window.location.href = LOGIN_PAGE;
+    });
+  }
 
-                try {
-
-                    sessionStorage.removeItem(
-                        "alunotecSession"
-                    );
-
-                } catch (error) {
-
-                    console.warn(
-                        "Não foi possível limpar a sessão.",
-                        error
-                    );
-
-                }
-
-
-                window.location.href =
-                    LOGIN_PAGE;
-
-            }
-        );
-
-    }
-
-
-    /* ======================================================
+  /* ======================================================
        DROPDOWNS PERSONALIZADOS
     ====================================================== */
 
-    function closeAllDropdowns(
-        exception = null
-    ) {
+  function closeAllDropdowns(exception = null) {
+    document.querySelectorAll(".custom-select.open").forEach((dropdown) => {
+      if (dropdown === exception) {
+        return;
+      }
 
-        document
-            .querySelectorAll(
-                ".custom-select.open"
-            )
-            .forEach(dropdown => {
+      dropdown.classList.remove("open");
 
-                if (dropdown === exception) {
-                    return;
-                }
+      const trigger = dropdown.querySelector(".custom-select-trigger");
 
-                dropdown.classList.remove(
-                    "open"
-                );
+      if (trigger) {
+        trigger.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
 
-                const trigger =
-                    dropdown.querySelector(
-                        ".custom-select-trigger"
-                    );
+  function initializeCustomDropdown({
+    containerId,
+    hiddenInputId,
+    displayId,
+    onChange,
+  }) {
+    const dropdown = document.getElementById(containerId);
 
-                if (trigger) {
+    const hiddenInput = document.getElementById(hiddenInputId);
 
-                    trigger.setAttribute(
-                        "aria-expanded",
-                        "false"
-                    );
+    const display = document.getElementById(displayId);
 
-                }
-
-            });
-
+    if (!dropdown) {
+      return;
     }
 
+    const trigger = dropdown.querySelector(".custom-select-trigger");
 
-    function initializeCustomDropdown({
-        containerId,
-        hiddenInputId,
-        displayId,
-        onChange
-    }) {
+    const options = dropdown.querySelectorAll(".custom-option");
 
-        const dropdown =
-            document.getElementById(
-                containerId
-            );
+    if (!trigger) {
+      return;
+    }
 
-        const hiddenInput =
-            document.getElementById(
-                hiddenInputId
-            );
+    trigger.addEventListener("click", (event) => {
+      event.stopPropagation();
 
-        const display =
-            document.getElementById(
-                displayId
-            );
+      closeProfileMenu();
 
+      const wasOpen = dropdown.classList.contains("open");
 
-        if (!dropdown) {
-            return;
-        }
+      closeAllDropdowns(dropdown);
 
+      if (wasOpen) {
+        dropdown.classList.remove("open");
 
-        const trigger =
-            dropdown.querySelector(
-                ".custom-select-trigger"
-            );
+        trigger.setAttribute("aria-expanded", "false");
+      } else {
+        dropdown.classList.add("open");
 
-        const options =
-            dropdown.querySelectorAll(
-                ".custom-option"
-            );
+        trigger.setAttribute("aria-expanded", "true");
+      }
+    });
 
+    options.forEach((option) => {
+      option.addEventListener("click", (event) => {
+        event.stopPropagation();
 
-        if (!trigger) {
-            return;
-        }
+        const value = option.dataset.value;
 
+        const firstSpan = option.querySelector("span");
 
-        trigger.addEventListener(
-            "click",
-            event => {
+        const text = firstSpan
+          ? firstSpan.textContent.trim()
+          : option.textContent.trim();
 
-                event.stopPropagation();
+        /*
+         * Remove seleção anterior.
+         */
 
-                closeProfileMenu();
+        options.forEach((item) => {
+          item.classList.remove("selected");
 
-                const wasOpen =
-                    dropdown.classList.contains(
-                        "open"
-                    );
+          const oldCheck = item.querySelector(".option-check");
 
-                closeAllDropdowns(
-                    dropdown
-                );
-
-
-                if (wasOpen) {
-
-                    dropdown.classList.remove(
-                        "open"
-                    );
-
-                    trigger.setAttribute(
-                        "aria-expanded",
-                        "false"
-                    );
-
-                } else {
-
-                    dropdown.classList.add(
-                        "open"
-                    );
-
-                    trigger.setAttribute(
-                        "aria-expanded",
-                        "true"
-                    );
-
-                }
-
-            }
-        );
-
-
-        options.forEach(option => {
-
-            option.addEventListener(
-                "click",
-                event => {
-
-                    event.stopPropagation();
-
-
-                    const value =
-                        option.dataset.value;
-
-
-                    const firstSpan =
-                        option.querySelector(
-                            "span"
-                        );
-
-
-                    const text =
-                        firstSpan
-                            ? firstSpan.textContent.trim()
-                            : option.textContent.trim();
-
-
-                    /*
-                     * Remove seleção anterior.
-                     */
-
-                    options.forEach(item => {
-
-                        item.classList.remove(
-                            "selected"
-                        );
-
-
-                        const oldCheck =
-                            item.querySelector(
-                                ".option-check"
-                            );
-
-
-                        if (oldCheck) {
-                            oldCheck.remove();
-                        }
-
-                    });
-
-
-                    /*
-                     * Nova seleção.
-                     */
-
-                    option.classList.add(
-                        "selected"
-                    );
-
-
-                    const check =
-                        document.createElement(
-                            "span"
-                        );
-
-
-                    check.className =
-                        "option-check";
-
-                    check.textContent =
-                        "✓";
-
-
-                    option.appendChild(
-                        check
-                    );
-
-
-                    /*
-                     * Atualiza texto.
-                     */
-
-                    if (display) {
-
-                        display.textContent =
-                            text;
-
-                    }
-
-
-                    /*
-                     * Atualiza input escondido.
-                     */
-
-                    if (hiddenInput) {
-
-                        hiddenInput.value =
-                            value;
-
-                        hiddenInput.dispatchEvent(
-                            new Event(
-                                "change",
-                                {
-                                    bubbles: true
-                                }
-                            )
-                        );
-
-                    }
-
-
-                    /*
-                     * Fecha menu.
-                     */
-
-                    dropdown.classList.remove(
-                        "open"
-                    );
-
-
-                    trigger.setAttribute(
-                        "aria-expanded",
-                        "false"
-                    );
-
-
-                    /*
-                     * Executa função específica.
-                     */
-
-                    if (
-                        typeof onChange ===
-                        "function"
-                    ) {
-
-                        onChange(
-                            value,
-                            text
-                        );
-
-                    }
-
-                }
-            );
-
+          if (oldCheck) {
+            oldCheck.remove();
+          }
         });
 
-    }
+        /*
+         * Nova seleção.
+         */
 
+        option.classList.add("selected");
 
-    /* ======================================================
+        const check = document.createElement("span");
+
+        check.className = "option-check";
+
+        check.textContent = "✓";
+
+        option.appendChild(check);
+
+        /*
+         * Atualiza texto.
+         */
+
+        if (display) {
+          display.textContent = text;
+        }
+
+        /*
+         * Atualiza input escondido.
+         */
+
+        if (hiddenInput) {
+          hiddenInput.value = value;
+
+          hiddenInput.dispatchEvent(
+            new Event("change", {
+              bubbles: true,
+            }),
+          );
+        }
+
+        /*
+         * Fecha menu.
+         */
+
+        dropdown.classList.remove("open");
+
+        trigger.setAttribute("aria-expanded", "false");
+
+        /*
+         * Executa função específica.
+         */
+
+        if (typeof onChange === "function") {
+          onChange(value, text);
+        }
+      });
+    });
+  }
+
+  /* ======================================================
        ANO LETIVO
     ====================================================== */
 
-    function changeSchoolYear(
-        year,
-        text
-    ) {
+  function changeSchoolYear(year, text) {
+    /*
+     * Salva localmente o ano selecionado.
+     * Quando houver banco de dados, esta informação
+     * poderá vir da configuração do administrador.
+     */
 
-        /*
-         * Salva localmente o ano selecionado.
-         * Quando houver banco de dados, esta informação
-         * poderá vir da configuração do administrador.
-         */
-
-        try {
-
-            localStorage.setItem(
-                "alunotecSchoolYear",
-                year
-            );
-
-        } catch (error) {
-
-            console.warn(
-                "Não foi possível salvar o ano letivo.",
-                error
-            );
-
-        }
-
-
-        console.log(
-            `Ano letivo selecionado: ${text}`
-        );
-
-
-        /*
-         * Aqui futuramente carregaremos os dados
-         * específicos do ano selecionado.
-         */
-
-        updateDashboard();
-
+    try {
+      localStorage.setItem("alunotecSchoolYear", year);
+    } catch (error) {
+      console.warn("Não foi possível salvar o ano letivo.", error);
     }
 
+    console.log(`Ano letivo selecionado: ${text}`);
 
-    function getRegisteredSchoolYears() {
-        try {
-            const saved = JSON.parse(localStorage.getItem("alunotec_turmas_v2") || "null");
-            const years = new Set();
-            ["base", "electives"].forEach(type => {
-                (Array.isArray(saved?.[type]) ? saved[type] : []).forEach(item => {
-                    const year = String(item?.year || "").trim();
-                    if (/^\d{4}$/.test(year)) years.add(year);
-                });
-            });
-            return [...years].sort((a, b) => Number(b) - Number(a));
-        } catch (error) {
-            return [];
-        }
-    }
+    /*
+     * Aqui futuramente carregaremos os dados
+     * específicos do ano selecionado.
+     */
 
-    function renderSchoolYearOptions(preferredYear = null) {
-        const dropdown = document.getElementById("yearDropdown");
-        const menu = dropdown?.querySelector(".custom-select-menu");
-        const hiddenInput = document.getElementById("yearSelect");
-        const display = document.getElementById("selectedYear");
-        if (!dropdown || !menu) return;
+    updateDashboard();
+  }
 
-        let years = getRegisteredSchoolYears();
-        if (!years.length) years = [String(CURRENT_YEAR)];
-        let savedYear = preferredYear;
-        if (!savedYear) {
-            try { savedYear = localStorage.getItem("alunotecSchoolYear"); } catch (error) {}
-        }
-        const selectedYear = years.includes(String(savedYear)) ? String(savedYear) : years[0];
-
-        menu.replaceChildren();
-        years.forEach(year => {
-            const option = document.createElement("button");
-            option.type = "button";
-            option.className = "custom-option" + (year === selectedYear ? " selected" : "");
-            option.dataset.value = year;
-            option.setAttribute("role", "option");
-            option.setAttribute("aria-selected", year === selectedYear ? "true" : "false");
-            const label = document.createElement("span");
-            label.textContent = year;
-            option.append(label);
-            if (year === selectedYear) {
-                const check = document.createElement("span");
-                check.className = "option-check";
-                check.textContent = "✓";
-                option.append(check);
-            }
-            menu.append(option);
+  function getRegisteredSchoolYears() {
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem("alunotec_turmas_v2") || "null",
+      );
+      const years = new Set();
+      ["base", "electives"].forEach((type) => {
+        (Array.isArray(saved?.[type]) ? saved[type] : []).forEach((item) => {
+          const year = String(item?.year || "").trim();
+          if (/^\d{4}$/.test(year)) years.add(year);
         });
-
-        if (display) display.textContent = selectedYear;
-        if (hiddenInput) hiddenInput.value = selectedYear;
-        try { localStorage.setItem("alunotecSchoolYear", selectedYear); } catch (error) {}
+      });
+      return [...years].sort((a, b) => Number(b) - Number(a));
+    } catch (error) {
+      return [];
     }
+  }
 
-    function initializeSchoolYearDropdown() {
-        const dropdown = document.getElementById("yearDropdown");
-        const trigger = dropdown?.querySelector(".custom-select-trigger");
-        const menu = dropdown?.querySelector(".custom-select-menu");
-        const hiddenInput = document.getElementById("yearSelect");
-        const display = document.getElementById("selectedYear");
-        if (!dropdown || !trigger || !menu) return;
+  function renderSchoolYearOptions(preferredYear = null) {
+    const dropdown = document.getElementById("yearDropdown");
+    const menu = dropdown?.querySelector(".custom-select-menu");
+    const hiddenInput = document.getElementById("yearSelect");
+    const display = document.getElementById("selectedYear");
+    if (!dropdown || !menu) return;
 
-        trigger.addEventListener("click", event => {
-            event.stopPropagation();
-            closeProfileMenu();
-            const wasOpen = dropdown.classList.contains("open");
-            closeAllDropdowns(dropdown);
-            dropdown.classList.toggle("open", !wasOpen);
-            trigger.setAttribute("aria-expanded", String(!wasOpen));
-        });
-
-        menu.addEventListener("click", event => {
-            const option = event.target.closest(".custom-option");
-            if (!option || !menu.contains(option)) return;
-            event.stopPropagation();
-            const year = option.dataset.value;
-            menu.querySelectorAll(".custom-option").forEach(item => {
-                item.classList.remove("selected");
-                item.setAttribute("aria-selected", "false");
-                item.querySelector(".option-check")?.remove();
-            });
-            option.classList.add("selected");
-            option.setAttribute("aria-selected", "true");
-            const check = document.createElement("span");
-            check.className = "option-check";
-            check.textContent = "✓";
-            option.append(check);
-            if (display) display.textContent = year;
-            if (hiddenInput) {
-                hiddenInput.value = year;
-                hiddenInput.dispatchEvent(new Event("change", {bubbles:true}));
-            }
-            dropdown.classList.remove("open");
-            trigger.setAttribute("aria-expanded", "false");
-            changeSchoolYear(year, year);
-        });
+    let years = getRegisteredSchoolYears();
+    if (!years.length) years = [String(CURRENT_YEAR)];
+    let savedYear = preferredYear;
+    if (!savedYear) {
+      try {
+        savedYear = localStorage.getItem("alunotecSchoolYear");
+      } catch (error) {}
     }
+    const selectedYear = years.includes(String(savedYear))
+      ? String(savedYear)
+      : years[0];
 
-    renderSchoolYearOptions();
-    initializeSchoolYearDropdown();
+    menu.replaceChildren();
+    years.forEach((year) => {
+      const option = document.createElement("button");
+      option.type = "button";
+      option.className =
+        "custom-option" + (year === selectedYear ? " selected" : "");
+      option.dataset.value = year;
+      option.setAttribute("role", "option");
+      option.setAttribute(
+        "aria-selected",
+        year === selectedYear ? "true" : "false",
+      );
+      const label = document.createElement("span");
+      label.textContent = year;
+      option.append(label);
+      if (year === selectedYear) {
+        const check = document.createElement("span");
+        check.className = "option-check";
+        check.textContent = "✓";
+        option.append(check);
+      }
+      menu.append(option);
+    });
 
+    if (display) display.textContent = selectedYear;
+    if (hiddenInput) hiddenInput.value = selectedYear;
+    try {
+      localStorage.setItem("alunotecSchoolYear", selectedYear);
+    } catch (error) {}
+  }
 
-    /* ======================================================
+  function initializeSchoolYearDropdown() {
+    const dropdown = document.getElementById("yearDropdown");
+    const trigger = dropdown?.querySelector(".custom-select-trigger");
+    const menu = dropdown?.querySelector(".custom-select-menu");
+    const hiddenInput = document.getElementById("yearSelect");
+    const display = document.getElementById("selectedYear");
+    if (!dropdown || !trigger || !menu) return;
+
+    trigger.addEventListener("click", (event) => {
+      event.stopPropagation();
+      closeProfileMenu();
+      const wasOpen = dropdown.classList.contains("open");
+      closeAllDropdowns(dropdown);
+      dropdown.classList.toggle("open", !wasOpen);
+      trigger.setAttribute("aria-expanded", String(!wasOpen));
+    });
+
+    menu.addEventListener("click", (event) => {
+      const option = event.target.closest(".custom-option");
+      if (!option || !menu.contains(option)) return;
+      event.stopPropagation();
+      const year = option.dataset.value;
+      menu.querySelectorAll(".custom-option").forEach((item) => {
+        item.classList.remove("selected");
+        item.setAttribute("aria-selected", "false");
+        item.querySelector(".option-check")?.remove();
+      });
+      option.classList.add("selected");
+      option.setAttribute("aria-selected", "true");
+      const check = document.createElement("span");
+      check.className = "option-check";
+      check.textContent = "✓";
+      option.append(check);
+      if (display) display.textContent = year;
+      if (hiddenInput) {
+        hiddenInput.value = year;
+        hiddenInput.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+      dropdown.classList.remove("open");
+      trigger.setAttribute("aria-expanded", "false");
+      changeSchoolYear(year, year);
+    });
+  }
+
+  renderSchoolYearOptions();
+  initializeSchoolYearDropdown();
+
+  /* ======================================================
        FREQUÊNCIA DE HOJE
     ====================================================== */
 
-    let attendanceFilter =
-        "all";
+  let attendanceFilter = "all";
 
+  function changeAttendanceFilter(value, text) {
+    attendanceFilter = value;
 
-    function changeAttendanceFilter(
-        value,
-        text
-    ) {
+    setText(
+      "attendanceFilterLabel",
+      value === "all" ? "Visualizando todas as turmas" : `Visualizando ${text}`,
+    );
 
-        attendanceFilter =
-            value;
+    updateAttendancePanel();
+  }
 
+  initializeCustomDropdown({
+    containerId: "attendanceDropdown",
+    hiddenInputId: "attendanceClassSelect",
+    displayId: "selectedAttendanceClass",
+    onChange: changeAttendanceFilter,
+  });
 
-        setText(
-            "attendanceFilterLabel",
-            value === "all"
-                ? "Visualizando todas as turmas"
-                : `Visualizando ${text}`
-        );
-
-
-        updateAttendancePanel();
-
-    }
-
-
-    initializeCustomDropdown({
-        containerId: "attendanceDropdown",
-        hiddenInputId: "attendanceClassSelect",
-        displayId: "selectedAttendanceClass",
-        onChange: changeAttendanceFilter
-    });
-
-
-    /* ======================================================
+  /* ======================================================
        SITUAÇÃO DAS TURMAS
     ====================================================== */
 
-    let statusFilter =
-        "all";
+  let statusFilter = "all";
 
+  function changeStatusFilter(value, text) {
+    statusFilter = value;
 
-    function changeStatusFilter(
-        value,
-        text
-    ) {
+    setText(
+      "statusFilterLabel",
+      value === "all" ? "Visualizando todas as turmas" : `Visualizando ${text}`,
+    );
 
-        statusFilter =
-            value;
+    updateClassesPanel();
+  }
 
+  initializeCustomDropdown({
+    containerId: "statusDropdown",
+    hiddenInputId: "statusClassSelect",
+    displayId: "selectedStatusClass",
+    onChange: changeStatusFilter,
+  });
 
-        setText(
-            "statusFilterLabel",
-            value === "all"
-                ? "Visualizando todas as turmas"
-                : `Visualizando ${text}`
-        );
-
-
-        updateClassesPanel();
-
-    }
-
-
-    initializeCustomDropdown({
-        containerId: "statusDropdown",
-        hiddenInputId: "statusClassSelect",
-        displayId: "selectedStatusClass",
-        onChange: changeStatusFilter
-    });
-
-
-    /* ======================================================
+  /* ======================================================
        SOMAR DADOS
     ====================================================== */
 
-    function getAllClasses() {
+  function getAllClasses() {
+    return Object.values(dashboardData);
+  }
 
-        return Object.values(
-            dashboardData
-        );
-
+  function getAttendanceData(filter) {
+    if (filter !== "all" && dashboardData[filter]) {
+      return {
+        ...dashboardData[filter],
+      };
     }
 
+    const classes = getAllClasses();
 
-    function getAttendanceData(
-        filter
-    ) {
+    return classes.reduce(
+      (total, current) => {
+        total.total += current.total;
 
-        if (
-            filter !== "all" &&
-            dashboardData[filter]
-        ) {
+        total.present += current.present;
 
-            return {
-                ...dashboardData[filter]
-            };
+        total.absent += current.absent;
 
-        }
+        total.justified += current.justified;
 
+        return total;
+      },
+      {
+        total: 0,
+        present: 0,
+        absent: 0,
+        justified: 0,
+      },
+    );
+  }
 
-        const classes =
-            getAllClasses();
-
-
-        return classes.reduce(
-            (total, current) => {
-
-                total.total +=
-                    current.total;
-
-                total.present +=
-                    current.present;
-
-                total.absent +=
-                    current.absent;
-
-                total.justified +=
-                    current.justified;
-
-                return total;
-
-            },
-            {
-                total: 0,
-                present: 0,
-                absent: 0,
-                justified: 0
-            }
-        );
-
-    }
-
-
-    /* ======================================================
+  /* ======================================================
        RESUMO GERAL
     ====================================================== */
 
-    function updateSummary() {
+  function updateSummary() {
+    const data = getAttendanceData("all");
 
-        const data =
-            getAttendanceData(
-                "all"
-            );
+    const frequency = calculatePercent(data.present, data.total);
 
+    const absentPercent = calculatePercent(data.absent, data.total);
 
-        const frequency =
-            calculatePercent(
-                data.present,
-                data.total
-            );
+    setText("totalStudents", formatNumber(data.total));
 
+    setText("presentStudents", formatNumber(data.present));
 
-        const absentPercent =
-            calculatePercent(
-                data.absent,
-                data.total
-            );
+    setText("absentStudents", formatNumber(data.absent));
 
+    setText("presentPercent", `${frequency}%`);
 
-        setText(
-            "totalStudents",
-            formatNumber(data.total)
-        );
+    setText("absentPercent", `${absentPercent}%`);
 
+    setText("generalFrequency", `${frequency}%`);
+  }
 
-        setText(
-            "presentStudents",
-            formatNumber(data.present)
-        );
-
-
-        setText(
-            "absentStudents",
-            formatNumber(data.absent)
-        );
-
-
-        setText(
-            "presentPercent",
-            `${frequency}%`
-        );
-
-
-        setText(
-            "absentPercent",
-            `${absentPercent}%`
-        );
-
-
-        setText(
-            "generalFrequency",
-            `${frequency}%`
-        );
-
-    }
-
-
-    /* ======================================================
+  /* ======================================================
        GRÁFICO FREQUÊNCIA
     ====================================================== */
 
-    function updateAttendancePanel() {
+  function updateAttendancePanel() {
+    const data = getAttendanceData(attendanceFilter);
 
-        const data =
-            getAttendanceData(
-                attendanceFilter
-            );
+    const presentPercent = calculatePercent(data.present, data.total);
 
+    const absentPercent = calculatePercent(data.absent, data.total);
 
-        const presentPercent =
-            calculatePercent(
-                data.present,
-                data.total
-            );
+    const justifiedPercent = calculatePercent(data.justified, data.total);
 
+    setText("attendancePresent", formatNumber(data.present));
 
-        const absentPercent =
-            calculatePercent(
-                data.absent,
-                data.total
-            );
+    setText("attendanceAbsent", formatNumber(data.absent));
 
+    setText("attendanceJustified", formatNumber(data.justified));
 
-        const justifiedPercent =
-            calculatePercent(
-                data.justified,
-                data.total
-            );
+    setText("attendanceTotal", formatNumber(data.total));
 
+    setText("attendancePresentPercent", `${presentPercent}%`);
 
-        setText(
-            "attendancePresent",
-            formatNumber(data.present)
-        );
+    setText("attendanceAbsentPercent", `${absentPercent}%`);
 
+    setText("attendanceJustifiedPercent", `${justifiedPercent}%`);
 
-        setText(
-            "attendanceAbsent",
-            formatNumber(data.absent)
-        );
+    setText("attendanceDonutPercent", `${presentPercent}%`);
 
+    const donut = document.getElementById("attendanceDonut");
 
-        setText(
-            "attendanceJustified",
-            formatNumber(data.justified)
-        );
+    if (!donut) {
+      return;
+    }
 
+    /*
+     * Converte porcentagem para graus.
+     */
 
-        setText(
-            "attendanceTotal",
-            formatNumber(data.total)
-        );
+    const presentDegrees = presentPercent * 3.6;
 
+    const absentDegrees = absentPercent * 3.6;
 
-        setText(
-            "attendancePresentPercent",
-            `${presentPercent}%`
-        );
+    const justifiedDegrees = justifiedPercent * 3.6;
 
+    const absentEnd = presentDegrees + absentDegrees;
 
-        setText(
-            "attendanceAbsentPercent",
-            `${absentPercent}%`
-        );
+    const justifiedEnd = absentEnd + justifiedDegrees;
 
-
-        setText(
-            "attendanceJustifiedPercent",
-            `${justifiedPercent}%`
-        );
-
-
-        setText(
-            "attendanceDonutPercent",
-            `${presentPercent}%`
-        );
-
-
-        const donut =
-            document.getElementById(
-                "attendanceDonut"
-            );
-
-
-        if (!donut) {
-            return;
-        }
-
-
-        /*
-         * Converte porcentagem para graus.
-         */
-
-        const presentDegrees =
-            presentPercent * 3.6;
-
-
-        const absentDegrees =
-            absentPercent * 3.6;
-
-
-        const justifiedDegrees =
-            justifiedPercent * 3.6;
-
-
-        const absentEnd =
-            presentDegrees +
-            absentDegrees;
-
-
-        const justifiedEnd =
-            absentEnd +
-            justifiedDegrees;
-
-
-        donut.style.background =
-            `
+    donut.style.background = `
             conic-gradient(
                 #00a663 0deg ${presentDegrees}deg,
                 #ef4e4e ${presentDegrees}deg ${absentEnd}deg,
@@ -1404,201 +1015,107 @@ document.addEventListener("DOMContentLoaded", () => {
                 #d5e1e6 ${justifiedEnd}deg 360deg
             )
             `;
+  }
 
-    }
-
-
-    /* ======================================================
+  /* ======================================================
        SITUAÇÃO DAS TURMAS
     ====================================================== */
 
-    function updateClassesPanel() {
+  function updateClassesPanel() {
+    let classes;
 
-        let classes;
+    if (statusFilter !== "all" && dashboardData[statusFilter]) {
+      classes = [dashboardData[statusFilter]];
+    } else {
+      classes = getAllClasses();
+    }
 
+    const total = classes.length;
 
-        if (
-            statusFilter !== "all" &&
-            dashboardData[statusFilter]
-        ) {
+    const completed = classes.filter(
+      (item) => item.status === "completed",
+    ).length;
 
-            classes = [
-                dashboardData[
-                    statusFilter
-                ]
-            ];
+    const pending = classes.filter((item) => item.status === "pending").length;
 
-        } else {
+    const notStarted = classes.filter(
+      (item) => item.status === "not-started",
+    ).length;
 
-            classes =
-                getAllClasses();
+    setText("classesTotal", total);
 
-        }
+    setText("completedClasses", completed);
 
+    setText("pendingClasses", pending);
 
-        const total =
-            classes.length;
+    setText("notStartedClasses", notStarted);
 
+    const donut = document.getElementById("classesDonut");
 
-        const completed =
-            classes.filter(
-                item =>
-                    item.status ===
-                    "completed"
-            ).length;
+    if (!donut) {
+      return;
+    }
 
+    if (!total) {
+      donut.style.background = "#d5e1e6";
 
-        const pending =
-            classes.filter(
-                item =>
-                    item.status ===
-                    "pending"
-            ).length;
+      return;
+    }
 
+    const completedDegrees = (completed / total) * 360;
 
-        const notStarted =
-            classes.filter(
-                item =>
-                    item.status ===
-                    "not-started"
-            ).length;
+    const pendingDegrees = (pending / total) * 360;
 
+    const pendingEnd = completedDegrees + pendingDegrees;
 
-        setText(
-            "classesTotal",
-            total
-        );
-
-
-        setText(
-            "completedClasses",
-            completed
-        );
-
-
-        setText(
-            "pendingClasses",
-            pending
-        );
-
-
-        setText(
-            "notStartedClasses",
-            notStarted
-        );
-
-
-        const donut =
-            document.getElementById(
-                "classesDonut"
-            );
-
-
-        if (!donut) {
-            return;
-        }
-
-
-        if (!total) {
-
-            donut.style.background =
-                "#d5e1e6";
-
-            return;
-
-        }
-
-
-        const completedDegrees =
-            (completed / total) * 360;
-
-
-        const pendingDegrees =
-            (pending / total) * 360;
-
-
-        const pendingEnd =
-            completedDegrees +
-            pendingDegrees;
-
-
-        donut.style.background =
-            `
+    donut.style.background = `
             conic-gradient(
                 #00a663 0deg ${completedDegrees}deg,
                 #f7bc45 ${completedDegrees}deg ${pendingEnd}deg,
                 #a8bbc5 ${pendingEnd}deg 360deg
             )
             `;
+  }
 
-    }
-
-
-    /* ======================================================
+  /* ======================================================
        ÚLTIMAS CHAMADAS
     ====================================================== */
 
-    function getStatusLabel(
-        status
-    ) {
+  function getStatusLabel(status) {
+    switch (status) {
+      case "completed":
+        return {
+          text: "Concluída",
+          className: "completed",
+        };
 
-        switch (status) {
+      case "pending":
+        return {
+          text: "Pendente",
+          className: "pending",
+        };
 
-            case "completed":
+      default:
+        return {
+          text: "Não iniciada",
+          className: "not-started",
+        };
+    }
+  }
 
-                return {
-                    text: "Concluída",
-                    className: "completed"
-                };
+  function updateRecentCalls() {
+    const body = document.getElementById("recentCallsBody");
 
-
-            case "pending":
-
-                return {
-                    text: "Pendente",
-                    className: "pending"
-                };
-
-
-            default:
-
-                return {
-                    text: "Não iniciada",
-                    className: "not-started"
-                };
-
-        }
-
+    if (!body) {
+      return;
     }
 
+    const classes = getAllClasses()
+      .filter((item) => item.status !== "not-started")
+      .slice(0, 4);
 
-    function updateRecentCalls() {
-
-        const body =
-            document.getElementById(
-                "recentCallsBody"
-            );
-
-
-        if (!body) {
-            return;
-        }
-
-
-        const classes =
-            getAllClasses()
-                .filter(
-                    item =>
-                        item.status !==
-                        "not-started"
-                )
-                .slice(0, 4);
-
-
-        if (!classes.length) {
-
-            body.innerHTML =
-                `
+    if (!classes.length) {
+      body.innerHTML = `
                 <tr>
                     <td colspan="6">
                         Nenhuma chamada registrada.
@@ -1606,28 +1123,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
                 `;
 
-            return;
+      return;
+    }
 
-        }
+    const date = new Date().toLocaleDateString("pt-BR");
 
+    body.innerHTML = classes
+      .map((item) => {
+        const status = getStatusLabel(item.status);
 
-        const date =
-            new Date()
-                .toLocaleDateString(
-                    "pt-BR"
-                );
-
-
-        body.innerHTML =
-            classes.map(item => {
-
-                const status =
-                    getStatusLabel(
-                        item.status
-                    );
-
-
-                return `
+        return `
                     <tr>
 
                         <td>
@@ -1649,11 +1154,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         <td
                             style="
                                 color:
-                                ${
-                                    item.absent > 0
-                                        ? "#ef4e4e"
-                                        : "#31586c"
-                                };
+                                ${item.absent > 0 ? "#ef4e4e" : "#31586c"};
                             "
                         >
                             ${item.absent}
@@ -1669,13 +1170,11 @@ document.addEventListener("DOMContentLoaded", () => {
                             >
 
                                 ${
-                                    status.className ===
-                                    "completed"
-                                        ? "✓"
-                                        : status.className ===
-                                          "pending"
-                                            ? "•"
-                                            : "—"
+                                  status.className === "completed"
+                                    ? "✓"
+                                    : status.className === "pending"
+                                      ? "•"
+                                      : "—"
                                 }
 
                                 ${status.text}
@@ -1686,40 +1185,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     </tr>
                 `;
+      })
+      .join("");
+  }
 
-            }).join("");
-
-    }
-
-
-    /* ======================================================
+  /* ======================================================
        ESTILO DOS STATUS DA TABELA
        INSERIDO PELO JS PARA FUNCIONAR MESMO SEM CSS EXTRA
     ====================================================== */
 
-    function createTableStatusStyles() {
+  function createTableStatusStyles() {
+    if (document.getElementById("alunotec-table-status-style")) {
+      return;
+    }
 
-        if (
-            document.getElementById(
-                "alunotec-table-status-style"
-            )
-        ) {
-            return;
-        }
+    const style = document.createElement("style");
 
+    style.id = "alunotec-table-status-style";
 
-        const style =
-            document.createElement(
-                "style"
-            );
-
-
-        style.id =
-            "alunotec-table-status-style";
-
-
-        style.textContent =
-            `
+    style.textContent = `
 
             .table-status {
                 display: inline-flex;
@@ -1756,114 +1240,62 @@ document.addEventListener("DOMContentLoaded", () => {
 
             `;
 
+    document.head.appendChild(style);
+  }
 
-        document.head.appendChild(
-            style
-        );
+  createTableStatusStyles();
 
-    }
-
-
-    createTableStatusStyles();
-
-
-    /* ======================================================
+  /* ======================================================
        ATUALIZAR DASHBOARD
     ====================================================== */
 
-    function updateDashboard() {
+  function updateDashboard() {
+    updateSummary();
 
-        updateSummary();
+    updateAttendancePanel();
 
-        updateAttendancePanel();
+    updateClassesPanel();
 
-        updateClassesPanel();
+    updateRecentCalls();
+  }
 
-        updateRecentCalls();
+  updateDashboard();
 
-    }
-
-
-    updateDashboard();
-
-
-    /* ======================================================
+  /* ======================================================
        CLIQUE FORA DOS MENUS
     ====================================================== */
 
-    document.addEventListener(
-        "click",
-        event => {
+  document.addEventListener("click", (event) => {
+    closeAllDropdowns();
 
-            closeAllDropdowns();
+    if (profile && !profile.contains(event.target)) {
+      closeProfileMenu();
+    }
+  });
 
-
-            if (
-                profile &&
-                !profile.contains(
-                    event.target
-                )
-            ) {
-
-                closeProfileMenu();
-
-            }
-
-        }
-    );
-
-
-    /* ======================================================
+  /* ======================================================
        ESC
     ====================================================== */
 
-    document.addEventListener(
-        "keydown",
-        event => {
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") {
+      return;
+    }
 
-            if (
-                event.key !==
-                "Escape"
-            ) {
-                return;
-            }
+    closeAllDropdowns();
 
+    closeProfileMenu();
 
-            closeAllDropdowns();
+    closeSidebar();
+  });
 
-            closeProfileMenu();
-
-            closeSidebar();
-
-        }
-    );
-
-
-    /* ======================================================
+  /* ======================================================
        RESPONSIVIDADE
     ====================================================== */
 
-    window.addEventListener(
-        "resize",
-        () => {
-
-            if (
-                window.innerWidth >
-                1000
-            ) {
-
-                closeSidebar();
-
-            }
-
-        }
-    );
-
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 1000) {
+      closeSidebar();
+    }
+  });
 });
-
-
-
-
-
-
-
