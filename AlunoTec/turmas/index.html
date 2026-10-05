@@ -1,0 +1,2654 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Turmas | AlunoTec</title>
+
+    <!-- ÍCONE DA ABA -->
+    <link
+        rel="icon"
+        type="image/png"
+        href="../assets/icons/icone.png"
+    >
+
+    <!-- CSS -->
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+</head>
+
+<body>
+
+<!-- =========================================================
+     ÍCONES SVG
+========================================================= -->
+
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    style="display:none"
+>
+
+    <symbol id="icon-home" viewBox="0 0 24 24">
+        <path d="M3 11.5 12 4l9 7.5"/>
+        <path d="M5.5 10v10h13V10"/>
+        <path d="M9.5 20v-6h5v6"/>
+    </symbol>
+
+    <symbol id="icon-calendar" viewBox="0 0 24 24">
+        <rect x="3" y="5" width="18" height="16" rx="2"/>
+        <path d="M7 3v4M17 3v4M3 10h18"/>
+    </symbol>
+
+    <symbol id="icon-users" viewBox="0 0 24 24">
+        <circle cx="9" cy="8" r="3"/>
+        <path d="M3.5 20v-2.5A4.5 4.5 0 0 1 8 13h2a4.5 4.5 0 0 1 4.5 4.5V20"/>
+        <circle cx="17" cy="9" r="2.5"/>
+        <path d="M16 14h1.5A3.5 3.5 0 0 1 21 17.5V20"/>
+    </symbol>
+
+    <symbol id="icon-book" viewBox="0 0 24 24">
+        <path d="M4 5.5A3.5 3.5 0 0 1 7.5 2H11v17H7.5A3.5 3.5 0 0 0 4 22z"/>
+        <path d="M20 5.5A3.5 3.5 0 0 0 16.5 2H13v17h3.5A3.5 3.5 0 0 1 20 22z"/>
+    </symbol>
+
+    <symbol id="icon-chart" viewBox="0 0 24 24">
+        <path d="M5 20V11M12 20V4M19 20v-7"/>
+    </symbol>
+
+    <symbol id="icon-building" viewBox="0 0 24 24">
+        <path d="m3 9 9-6 9 6"/>
+        <path d="M5 9v12h14V9"/>
+        <path d="M9 21v-6h6v6"/>
+        <path d="M8 12h.01M12 12h.01M16 12h.01"/>
+        <path d="M2 21h20"/>
+    </symbol>
+
+    <symbol id="icon-cloud" viewBox="0 0 24 24">
+        <path d="M6 18h12a4 4 0 0 0 .5-8A6.5 6.5 0 0 0 6.2 8.5 4.8 4.8 0 0 0 6 18z"/>
+    </symbol>
+
+    <symbol id="icon-settings" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3V2.8h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1z"/>
+    </symbol>
+
+    <symbol id="icon-headset" viewBox="0 0 24 24">
+        <path d="M4 13v-2a8 8 0 0 1 16 0v2"/>
+        <path d="M4 13h3v6H5a1 1 0 0 1-1-1z"/>
+        <path d="M20 13h-3v6h2a1 1 0 0 0 1-1z"/>
+    </symbol>
+
+    <symbol id="icon-wifi" viewBox="0 0 24 24">
+        <path d="M2 8.5a15 15 0 0 1 20 0"/>
+        <path d="M5.5 12a10 10 0 0 1 13 0"/>
+        <path d="M9 15.5a5 5 0 0 1 6 0"/>
+        <circle cx="12" cy="19" r="1"/>
+    </symbol>
+
+    <symbol id="icon-chevron-down" viewBox="0 0 24 24">
+        <path d="m7 9.5 5 5 5-5"/>
+    </symbol>
+
+    <symbol id="icon-chevron-left" viewBox="0 0 24 24">
+        <path d="m15 18-6-6 6-6"/>
+    </symbol>
+
+    <symbol id="icon-chevron-right" viewBox="0 0 24 24">
+        <path d="m9 18 6-6-6-6"/>
+    </symbol>
+
+    <symbol id="icon-plus" viewBox="0 0 24 24">
+        <path d="M12 5v14M5 12h14"/>
+    </symbol>
+
+    <symbol id="icon-search" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="7"/>
+        <path d="m20 20-4-4"/>
+    </symbol>
+
+    <symbol id="icon-eye" viewBox="0 0 24 24">
+        <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/>
+        <circle cx="12" cy="12" r="2.5"/>
+    </symbol>
+
+    <symbol id="icon-edit" viewBox="0 0 24 24">
+        <path d="M4 20h4l11-11-4-4L4 16z"/>
+        <path d="m13.5 6.5 4 4"/>
+    </symbol>
+
+    <symbol id="icon-trash" viewBox="0 0 24 24">
+        <path d="M4 7h16"/>
+        <path d="M9 7V4h6v3"/>
+        <path d="m6 7 1 14h10l1-14"/>
+        <path d="M10 11v6M14 11v6"/>
+    </symbol>
+
+    <symbol id="icon-check" viewBox="0 0 24 24">
+        <path d="m5 12 4 4L19 6"/>
+    </symbol>
+
+    <symbol id="icon-phone" viewBox="0 0 24 24">
+        <path d="M6.5 3h3l1.5 5-2 1.5a15 15 0 0 0 5.5 5.5l1.5-2 5 1.5v3A3.5 3.5 0 0 1 17.5 21C9.5 20.5 3.5 14.5 3 6.5A3.5 3.5 0 0 1 6.5 3z"/>
+    </symbol>
+
+    <symbol id="icon-transfer" viewBox="0 0 24 24">
+        <path d="M4 7h13"/>
+        <path d="m14 4 3 3-3 3"/>
+        <path d="M20 17H7"/>
+        <path d="m10 14-3 3 3 3"/>
+    </symbol>
+
+    <symbol id="icon-user-minus" viewBox="0 0 24 24">
+        <circle cx="9" cy="8" r="3"/>
+        <path d="M3 20v-2a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v2"/>
+        <path d="M17 11h5"/>
+    </symbol>
+
+    <symbol id="icon-upload" viewBox="0 0 24 24">
+        <path d="M12 16V4"/>
+        <path d="m7 9 5-5 5 5"/>
+        <path d="M5 20h14"/>
+    </symbol>
+
+    <symbol id="icon-download" viewBox="0 0 24 24">
+        <path d="M12 4v12"/>
+        <path d="m7 11 5 5 5-5"/>
+        <path d="M5 20h14"/>
+    </symbol>
+
+    <symbol id="icon-arrow-left" viewBox="0 0 24 24">
+        <path d="m15 18-6-6 6-6"/>
+        <path d="M9 12h11"/>
+    </symbol>
+
+    <symbol id="icon-copy" viewBox="0 0 24 24">
+        <rect x="8" y="8" width="11" height="11" rx="2"/>
+        <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>
+    </symbol>
+
+</svg>
+
+
+<!-- =========================================================
+     ESTRUTURA PRINCIPAL
+========================================================= -->
+
+<div class="app-layout">
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+    <aside class="sidebar">
+
+        <a
+            href="../admin/dashboard.html"
+            class="sidebar-logo"
+            aria-label="Ir para a página inicial"
+        >
+            <img
+                src="../assets/images/logo-alunotec1.png"
+                alt="AlunoTec"
+                class="sidebar-logo-image"
+            >
+        </a>
+
+
+        <nav class="sidebar-nav">
+
+            <a
+                href="../admin/dashboard.html"
+                class="nav-link"
+            >
+                <svg>
+                    <use href="#icon-home"></use>
+                </svg>
+
+                <span>Início</span>
+            </a>
+
+
+            <a
+                href="../frequencia/index.html"
+                class="nav-link"
+            >
+                <svg>
+                    <use href="#icon-calendar"></use>
+                </svg>
+
+                <span>Frequência</span>
+            </a>
+
+
+            <a
+                href="../alunos/index.html"
+                class="nav-link"
+            >
+                <svg>
+                    <use href="#icon-users"></use>
+                </svg>
+
+                <span>Alunos</span>
+            </a>
+
+
+            <a
+                href="index.html"
+                class="nav-link active"
+            >
+                <svg>
+                    <use href="#icon-book"></use>
+                </svg>
+
+                <span>Turmas</span>
+            </a>
+
+
+            <a
+                href="../relatorios/index.html"
+                class="nav-link"
+            >
+                <svg>
+                    <use href="#icon-chart"></use>
+                </svg>
+
+                <span>Relatórios</span>
+            </a>
+
+
+            <div class="nav-divider"></div>
+
+
+            <p class="nav-section-title">
+                ADMINISTRAÇÃO
+            </p>
+
+
+            <a
+                href="../escola/index.html"
+                class="nav-link"
+            >
+                <svg>
+                    <use href="#icon-building"></use>
+                </svg>
+
+                <span>Instituição</span>
+            </a>
+
+<a
+                href="../configuracoes/index.html"
+                class="nav-link"
+            >
+                <svg>
+                    <use href="#icon-settings"></use>
+                </svg>
+
+                <span>Configurações</span>
+            </a>
+
+        </nav>
+
+
+        <div class="sidebar-bottom">
+
+            <button
+                type="button"
+                class="support-card"
+            >
+                <svg>
+                    <use href="#icon-headset"></use>
+                </svg>
+
+                <span>
+                    <strong>Suporte</strong>
+                    <small>Precisa de ajuda?</small>
+                </span>
+
+                <svg class="support-arrow">
+                    <use href="#icon-chevron-right"></use>
+                </svg>
+            </button>
+
+
+            <div class="sidebar-footer">
+                <span>AlunoTec • 2026</span>
+                <span>Todos os direitos reservados.</span>
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =====================================================
+         ÁREA PRINCIPAL
+    ====================================================== -->
+
+    <main class="main-area">
+
+        <!-- =================================================
+             TOPBAR
+        ================================================== -->
+
+        <header class="topbar">
+
+            <div class="topbar-spacer"></div>
+
+
+            <div class="topbar-right">
+
+                <button type="button" class="activity-bell" id="activityBell" aria-label="Notificações das turmas" aria-expanded="false">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+                    <span class="activity-bell-count" id="activityBellCount" hidden>0</span>
+                </button>
+
+                <div
+                    class="connection-status"
+                    id="connection"
+                    role="button"
+                    tabindex="0"
+                    title="Status e configuração da sincronização"
+                >
+                    <svg>
+                        <use href="#icon-wifi"></use>
+                    </svg>
+
+                    <div>
+                        <strong id="connectionTitle">
+                            Verificando
+                        </strong>
+
+                        <span id="connectionText">
+                            Verificando acesso à internet…
+                        </span>
+                    </div>
+                </div>
+
+
+                <div class="profile-wrapper">
+
+                    <button
+                        type="button"
+                        class="profile-button"
+                        id="profileButton"
+                    >
+                        <span class="profile-avatar">
+                            MB
+                        </span>
+
+                        <span class="profile-info">
+                            <strong>Administrador</strong>
+                            <small>Administrador</small>
+                        </span>
+
+                        <svg class="profile-arrow">
+                            <use href="#icon-chevron-down"></use>
+                        </svg>
+                    </button>
+
+
+                    <div
+                        class="profile-menu"
+                        id="profileMenu"
+                    >
+                        <div class="profile-menu-user">
+
+                            <span class="profile-avatar large">
+                                MB
+                            </span>
+
+                            <div>
+                                <strong>Administrador</strong>
+                                <span>Administrador</span>
+                            </div>
+
+                        </div>
+
+
+                        <div class="profile-menu-divider"></div>
+
+
+                        <button
+                            type="button"
+                            class="profile-menu-item"
+                            id="switchAccountButton"
+                        >
+                            <svg>
+                                <use href="#icon-users"></use>
+                            </svg>
+
+                            <span>Trocar de conta</span>
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="profile-menu-item danger"
+                            id="logoutButton"
+                        >
+                            <svg>
+                                <use href="#icon-arrow-left"></use>
+                            </svg>
+
+                            <span>Sair</span>
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- =================================================
+             TELA DE GERENCIAMENTO
+        ================================================== -->
+
+        <section
+            class="content"
+            id="managementView"
+        >
+
+            <!-- =============================================
+                 HERO
+            ============================================== -->
+
+            <section class="hero">
+
+                <div class="hero-content">
+
+                    <h1>Turmas</h1>
+
+                    <h2>
+                        Gerencie as turmas da instituição
+                    </h2>
+
+                    <p>
+                        Cadastre turmas da Base Comum e Eletivas,
+                        acompanhe os alunos e mantenha toda a
+                        organização escolar em um só lugar.
+                    </p>
+
+                </div>
+
+                <div class="hero-quote" aria-label="Mensagem da instituição">
+                    <p>“Mais organização para uma educação com mais possibilidades.”</p>
+                    <span aria-hidden="true"></span>
+                </div>
+
+                <div class="hero-image">
+                    <img
+                        src="../assets/images/dashboard-sala.png"
+                        alt=""
+                        class="hero-image-file"
+                    >
+                </div>
+
+            </section>
+
+
+            <!-- =============================================
+                 RESUMO
+            ============================================== -->
+
+            <section class="summary-grid">
+
+                <article class="summary-card green">
+
+                    <div class="summary-icon">
+                        <svg>
+                            <use href="#icon-book"></use>
+                        </svg>
+                    </div>
+
+                    <div>
+                        <span>Total de turmas</span>
+
+                        <strong id="totalClasses">
+                            0
+                        </strong>
+                    </div>
+
+                    <i></i>
+
+                </article>
+
+
+                <article class="summary-card green-light">
+
+                    <div class="summary-icon">
+                        <svg>
+                            <use href="#icon-users"></use>
+                        </svg>
+                    </div>
+
+                    <div>
+                        <span>Alunos na Base Comum</span>
+
+                        <strong id="totalBaseStudents">
+                            0
+                        </strong>
+                    </div>
+
+                    <i></i>
+
+                </article>
+
+
+                <article class="summary-card mint">
+
+                    <div class="summary-icon">
+                        <svg>
+                            <use href="#icon-book"></use>
+                        </svg>
+                    </div>
+
+                    <div>
+                        <span>Eletivas cadastradas</span>
+
+                        <strong id="totalElectives">
+                            0
+                        </strong>
+                    </div>
+
+                    <i></i>
+
+                </article>
+
+
+                <article class="summary-card soft-green">
+
+                    <div class="summary-icon">
+                        <svg>
+                            <use href="#icon-users"></use>
+                        </svg>
+                    </div>
+
+                    <div>
+                        <span>Alunos nas Eletivas</span>
+
+                        <strong id="totalElectiveStudents">
+                            0
+                        </strong>
+                    </div>
+
+                    <i></i>
+
+                </article>
+
+            </section>
+
+
+            <!-- =============================================
+                 GERENCIAMENTO
+            ============================================== -->
+
+            <section class="management-card">
+
+                <div class="management-header">
+
+                    <div>
+
+                        <h3>
+                            Lista de turmas
+                        </h3>
+
+                        <p id="managementDescription">
+                            Visualize, cadastre e gerencie todas
+                            as turmas da Base Comum.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="primary-button"
+                        id="newButton"
+                    >
+                        <svg>
+                            <use href="#icon-plus"></use>
+                        </svg>
+
+                        <span id="newButtonText">
+                            Nova turma
+                        </span>
+                    </button>
+
+                </div>
+
+
+                <div class="management-body">
+
+                    <!-- ABAS -->
+
+                    <div class="tabs">
+
+                        <button
+                            type="button"
+                            class="tab active"
+                            data-tab="base"
+                        >
+                            <svg>
+                                <use href="#icon-book"></use>
+                            </svg>
+
+                            Base Comum
+
+                            <span id="baseCount">
+                                0
+                            </span>
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="tab"
+                            data-tab="electives"
+                        >
+                            <svg>
+                                <use href="#icon-book"></use>
+                            </svg>
+
+                            Eletivas
+
+                            <span id="electiveCount">
+                                0
+                            </span>
+                        </button>
+
+                    </div>
+
+
+                    <!-- =====================================
+                         FILTROS
+                    ====================================== -->
+
+                    <div class="filters">
+
+                        <!-- ANO LETIVO -->
+
+                        <div class="filter-group">
+
+                            <label>
+                                Ano letivo
+                            </label>
+
+                            <div
+                                class="custom-select"
+                                id="filterYearSelect"
+                            >
+
+                                <button
+                                    type="button"
+                                    class="custom-select-trigger"
+                                >
+                                    <span data-select-label>
+                                        Todos
+                                    </span>
+
+                                    <svg>
+                                        <use href="#icon-chevron-down"></use>
+                                    </svg>
+                                </button>
+
+
+                                <input
+                                    type="hidden"
+                                    id="filterYear"
+                                    value="all"
+                                >
+
+
+                                <div
+                                    class="custom-select-menu"
+                                    id="filterYearOptions"
+                                >
+
+                                    <button
+                                        type="button"
+                                        class="custom-select-option selected"
+                                        data-value="all"
+                                    >
+                                        <span>Todos</span>
+
+                                        <svg class="option-check">
+                                            <use href="#icon-check"></use>
+                                        </svg>
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- TURNO -->
+
+                        <div
+                            class="filter-group"
+                            id="shiftFilterContainer"
+                        >
+
+                            <label>
+                                Turno
+                            </label>
+
+                            <div
+                                class="custom-select"
+                                id="filterShiftSelect"
+                            >
+
+                                <button
+                                    type="button"
+                                    class="custom-select-trigger"
+                                >
+                                    <span data-select-label>
+                                        Todos
+                                    </span>
+
+                                    <svg>
+                                        <use href="#icon-chevron-down"></use>
+                                    </svg>
+                                </button>
+
+
+                                <input
+                                    type="hidden"
+                                    id="filterShift"
+                                    value="all"
+                                >
+
+
+                                <div class="custom-select-menu">
+
+                                    <button
+                                        type="button"
+                                        class="custom-select-option selected"
+                                        data-value="all"
+                                    >
+                                        <span>Todos</span>
+
+                                        <svg class="option-check">
+                                            <use href="#icon-check"></use>
+                                        </svg>
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        class="custom-select-option"
+                                        data-value="Manhã"
+                                    >
+                                        <span>Manhã</span>
+
+                                        <svg class="option-check">
+                                            <use href="#icon-check"></use>
+                                        </svg>
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        class="custom-select-option"
+                                        data-value="Tarde"
+                                    >
+                                        <span>Tarde</span>
+
+                                        <svg class="option-check">
+                                            <use href="#icon-check"></use>
+                                        </svg>
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        class="custom-select-option"
+                                        data-value="Integral"
+                                    >
+                                        <span>Integral</span>
+
+                                        <svg class="option-check">
+                                            <use href="#icon-check"></use>
+                                        </svg>
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ANO/SÉRIE -->
+
+                        <div
+                            class="filter-group"
+                            id="gradeFilterContainer"
+                        >
+
+                            <label>
+                                Ano/Série
+                            </label>
+
+                            <div
+                                class="custom-select"
+                                id="filterGradeSelect"
+                            >
+
+                                <button
+                                    type="button"
+                                    class="custom-select-trigger"
+                                >
+                                    <span data-select-label>
+                                        Todos
+                                    </span>
+
+                                    <svg>
+                                        <use href="#icon-chevron-down"></use>
+                                    </svg>
+                                </button>
+
+
+                                <input
+                                    type="hidden"
+                                    id="filterGrade"
+                                    value="all"
+                                >
+
+
+                                <div class="custom-select-menu">
+
+                                    <button
+                                        type="button"
+                                        class="custom-select-option selected"
+                                        data-value="all"
+                                    >
+                                        <span>Todos</span>
+
+                                        <svg class="option-check">
+                                            <use href="#icon-check"></use>
+                                        </svg>
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        class="custom-select-option"
+                                        data-value="4º ano"
+                                    >
+                                        <span>4º ano</span>
+
+                                        <svg class="option-check">
+                                            <use href="#icon-check"></use>
+                                        </svg>
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        class="custom-select-option"
+                                        data-value="5º ano"
+                                    >
+                                        <span>5º ano</span>
+
+                                        <svg class="option-check">
+                                            <use href="#icon-check"></use>
+                                        </svg>
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        class="custom-select-option"
+                                        data-value="6º ano"
+                                    >
+                                        <span>6º ano</span>
+
+                                        <svg class="option-check">
+                                            <use href="#icon-check"></use>
+                                        </svg>
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        class="custom-select-option"
+                                        data-value="7º ano"
+                                    >
+                                        <span>7º ano</span>
+
+                                        <svg class="option-check">
+                                            <use href="#icon-check"></use>
+                                        </svg>
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        class="custom-select-option"
+                                        data-value="8º ano"
+                                    >
+                                        <span>8º ano</span>
+
+                                        <svg class="option-check">
+                                            <use href="#icon-check"></use>
+                                        </svg>
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        class="custom-select-option"
+                                        data-value="9º ano"
+                                    >
+                                        <span>9º ano</span>
+
+                                        <svg class="option-check">
+                                            <use href="#icon-check"></use>
+                                        </svg>
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- STATUS -->
+
+                        <div class="filter-group">
+
+                            <label>
+                                Status
+                            </label>
+
+                            <div
+                                class="custom-select"
+                                id="filterStatusSelect"
+                            >
+
+                                <button
+                                    type="button"
+                                    class="custom-select-trigger"
+                                >
+                                    <span data-select-label>
+                                        Todos
+                                    </span>
+
+                                    <svg>
+                                        <use href="#icon-chevron-down"></use>
+                                    </svg>
+                                </button>
+
+
+                                <input
+                                    type="hidden"
+                                    id="filterStatus"
+                                    value="all"
+                                >
+
+
+                                <div class="custom-select-menu">
+
+                                    <button
+                                        type="button"
+                                        class="custom-select-option selected"
+                                        data-value="all"
+                                    >
+                                        <span>Todos</span>
+
+                                        <svg class="option-check">
+                                            <use href="#icon-check"></use>
+                                        </svg>
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        class="custom-select-option"
+                                        data-value="Ativa"
+                                    >
+                                        <span>Ativa</span>
+
+                                        <svg class="option-check">
+                                            <use href="#icon-check"></use>
+                                        </svg>
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        class="custom-select-option"
+                                        data-value="Inativa"
+                                    >
+                                        <span>Inativa</span>
+
+                                        <svg class="option-check">
+                                            <use href="#icon-check"></use>
+                                        </svg>
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- PESQUISA -->
+
+                        <div class="search-box">
+
+                            <svg>
+                                <use href="#icon-search"></use>
+                            </svg>
+
+                            <input
+                                type="text"
+                                id="searchInput"
+                                placeholder="Pesquisar turma..."
+                                autocomplete="off"
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =====================================
+                         BASE COMUM
+                    ====================================== -->
+
+                    <div id="basePanel">
+
+                        <div class="table-wrapper">
+
+                            <table>
+
+                                <thead>
+                                    <tr>
+                                        <th>Nº</th>
+                                        <th>Nome da turma</th>
+                                        <th>Ano/Série</th>
+                                        <th>Turno</th>
+                                        <th>Ano letivo</th>
+                                        <th>Alunos ativos</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+
+                                <!--
+                                    SEM TURMAS PRÉ-CADASTRADAS.
+                                    O JAVASCRIPT INSERE SOMENTE
+                                    AS TURMAS CRIADAS PELO USUÁRIO.
+                                -->
+
+                                <tbody id="baseTableBody"></tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =====================================
+                         ELETIVAS
+                    ====================================== -->
+
+                    <div
+                        id="electivesPanel"
+                        class="hidden"
+                    >
+
+                        <div class="table-wrapper">
+
+                            <table>
+
+                                <thead>
+                                    <tr>
+                                        <th>Nº</th>
+                                        <th>Nome da eletiva</th>
+                                        <th>Turno</th>
+                                        <th>Professor</th>
+                                        <th>Ano letivo</th>
+                                        <th>Alunos ativos</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+
+                                <!--
+                                    SEM ELETIVAS PRÉ-CADASTRADAS.
+                                    O JAVASCRIPT INSERE SOMENTE
+                                    AS ELETIVAS CRIADAS PELO USUÁRIO.
+                                -->
+
+                                <tbody id="electivesTableBody"></tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </section>
+
+
+        <!-- =================================================
+             DETALHES DA TURMA / ELETIVA
+        ================================================== -->
+
+        <section
+            class="content hidden"
+            id="classDetailsView"
+        >
+
+            <button
+                type="button"
+                class="back-button"
+                id="backToClasses"
+            >
+                <span class="back-button-icon">
+                    <svg>
+                        <use href="#icon-arrow-left"></use>
+                    </svg>
+                </span>
+
+                <span>
+                    Voltar para turmas
+                </span>
+            </button>
+
+
+            <section class="class-details-header">
+
+                <div>
+
+                    <span
+                        class="class-type"
+                        id="openedClassType"
+                    >
+                        BASE COMUM
+                    </span>
+
+                    <h1 id="openedClassName">
+                        Turma
+                    </h1>
+
+                    <p id="openedClassInformation">
+                        —
+                    </p>
+
+                </div>
+
+
+                <div class="class-details-meta">
+
+                    <div>
+                        <span>Status da turma</span>
+
+                        <strong
+                            class="status active"
+                            id="openedClassStatus"
+                        >
+                            Ativa
+                        </strong>
+                    </div>
+
+
+                    <div>
+                        <span>Alunos ativos</span>
+
+                        <strong id="openedClassStudents">
+                            0
+                        </strong>
+                    </div>
+
+
+                    <div>
+                        <span>Ano letivo</span>
+
+                        <strong id="openedClassYear">
+                            —
+                        </strong>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =============================================
+                 ALUNOS
+            ============================================== -->
+
+            <section class="students-card">
+
+                <div class="students-header">
+
+                    <div>
+
+                        <h2>
+                            Alunos da turma
+                        </h2>
+
+                        <p id="studentsDescription">
+                            Gerencie os alunos cadastrados nesta turma.
+                        </p>
+
+                    </div>
+
+
+                    <div class="students-header-actions">
+
+                        <button
+                            type="button"
+                            class="secondary-button"
+                            id="importStudentsButton"
+                        >
+                            <svg>
+                                <use href="#icon-upload"></use>
+                            </svg>
+
+                            Importar
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="secondary-button"
+                            id="exportStudentsButton"
+                        >
+                            <svg>
+                                <use href="#icon-download"></use>
+                            </svg>
+
+                            Exportar
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="primary-button"
+                            id="addStudentButton"
+                        >
+                            <svg>
+                                <use href="#icon-plus"></use>
+                            </svg>
+
+                            Cadastrar aluno
+                        </button>
+
+
+                        <input
+                            type="file"
+                            id="studentImportInput"
+                            accept=".csv,text/csv"
+                            hidden
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="student-toolbar">
+
+                    <div class="search-box student-search">
+
+                        <svg>
+                            <use href="#icon-search"></use>
+                        </svg>
+
+                        <input
+                            type="text"
+                            id="studentSearch"
+                            placeholder="Pesquisar aluno..."
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="students-table-area">
+
+                    <div class="table-wrapper students-table-wrapper">
+
+                        <table class="students-table">
+
+                            <thead>
+                                <tr>
+
+                                    <th>Nº</th>
+
+                                    <th>
+                                        Nome do aluno
+                                    </th>
+
+                                    <th>
+                                        WhatsApp do responsável
+                                    </th>
+
+                                    <th class="student-actions-column">
+                                        Ações
+                                    </th>
+
+                                </tr>
+                            </thead>
+
+
+                            <!--
+                                BASE COMUM:
+                                - Editar
+                                - Transferir
+                                - Copiar para eletiva
+                                - Remover
+                                - Ativo/Inativo
+
+                                ELETIVA:
+                                - Editar
+                                - Transferir para outra eletiva
+                                - Remover
+                                - Ativo/Inativo
+                            -->
+
+                            <tbody id="studentsTableBody"></tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<!-- =========================================================
+     MODAL TURMA / ELETIVA
+========================================================= -->
+
+<div
+    class="modal-overlay"
+    id="modalOverlay"
+>
+
+    <div class="modal">
+
+        <div class="modal-header">
+
+            <div>
+
+                <span
+                    class="modal-tag"
+                    id="modalTag"
+                >
+                    BASE COMUM
+                </span>
+
+                <h2 id="modalTitle">
+                    Nova turma
+                </h2>
+
+                <p id="modalSubtitle">
+                    Cadastre uma nova turma da Base Comum.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="modal-close"
+                id="modalClose"
+                aria-label="Fechar"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <!-- =================================================
+             FORMULÁRIO BASE COMUM
+        ================================================== -->
+
+        <form
+            class="modal-form"
+            id="baseForm"
+        >
+
+            <!--
+                NOVO = vazio
+                EDIÇÃO = recebe ID da turma
+            -->
+
+            <input
+                type="hidden"
+                id="baseEditId"
+            >
+
+
+            <div class="form-grid">
+
+                <!-- NOME -->
+
+                <div class="form-group full">
+
+                    <label for="className">
+                        Nome da turma
+                    </label>
+
+                    <input
+                        type="text"
+                        id="className"
+                        placeholder="Ex.: Turma 08"
+                        autocomplete="off"
+                    >
+
+                </div>
+
+
+                <!-- ANO / SÉRIE -->
+
+                <div class="form-group">
+
+                    <label>
+                        Ano/Série
+                    </label>
+
+                    <div
+                        class="custom-select"
+                        id="classGradeSelect"
+                    >
+
+                        <button
+                            type="button"
+                            class="custom-select-trigger"
+                        >
+                            <span data-select-label>
+                                Selecione
+                            </span>
+
+                            <svg>
+                                <use href="#icon-chevron-down"></use>
+                            </svg>
+                        </button>
+
+
+                        <input
+                            type="hidden"
+                            id="classGrade"
+                        >
+
+
+                        <div class="custom-select-menu">
+
+                            <button
+                                type="button"
+                                class="custom-select-option"
+                                data-value="4º ano"
+                            >
+                                <span>4º ano</span>
+
+                                <svg class="option-check">
+                                    <use href="#icon-check"></use>
+                                </svg>
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="custom-select-option"
+                                data-value="5º ano"
+                            >
+                                <span>5º ano</span>
+
+                                <svg class="option-check">
+                                    <use href="#icon-check"></use>
+                                </svg>
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="custom-select-option"
+                                data-value="6º ano"
+                            >
+                                <span>6º ano</span>
+
+                                <svg class="option-check">
+                                    <use href="#icon-check"></use>
+                                </svg>
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="custom-select-option"
+                                data-value="7º ano"
+                            >
+                                <span>7º ano</span>
+
+                                <svg class="option-check">
+                                    <use href="#icon-check"></use>
+                                </svg>
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="custom-select-option"
+                                data-value="8º ano"
+                            >
+                                <span>8º ano</span>
+
+                                <svg class="option-check">
+                                    <use href="#icon-check"></use>
+                                </svg>
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="custom-select-option"
+                                data-value="9º ano"
+                            >
+                                <span>9º ano</span>
+
+                                <svg class="option-check">
+                                    <use href="#icon-check"></use>
+                                </svg>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- TURNO -->
+
+                <div class="form-group">
+
+                    <label>
+                        Turno
+                    </label>
+
+                    <div
+                        class="custom-select"
+                        id="classShiftSelect"
+                    >
+
+                        <button
+                            type="button"
+                            class="custom-select-trigger"
+                        >
+                            <span data-select-label>
+                                Selecione
+                            </span>
+
+                            <svg>
+                                <use href="#icon-chevron-down"></use>
+                            </svg>
+                        </button>
+
+
+                        <input
+                            type="hidden"
+                            id="classShift"
+                        >
+
+
+                        <div class="custom-select-menu">
+
+                            <button
+                                type="button"
+                                class="custom-select-option"
+                                data-value="Manhã"
+                            >
+                                <span>Manhã</span>
+
+                                <svg class="option-check">
+                                    <use href="#icon-check"></use>
+                                </svg>
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="custom-select-option"
+                                data-value="Tarde"
+                            >
+                                <span>Tarde</span>
+
+                                <svg class="option-check">
+                                    <use href="#icon-check"></use>
+                                </svg>
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="custom-select-option"
+                                data-value="Integral"
+                            >
+                                <span>Integral</span>
+
+                                <svg class="option-check">
+                                    <use href="#icon-check"></use>
+                                </svg>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ANO LETIVO -->
+
+                <div class="form-group">
+
+                    <label for="classYear">
+                        Ano letivo
+                    </label>
+
+                    <input
+                        type="text"
+                        id="classYear"
+                        inputmode="numeric"
+                        maxlength="4"
+                        placeholder="Ex.: 2026"
+                        autocomplete="off"
+                    >
+
+                </div>
+
+
+                <!-- STATUS -->
+
+                <div class="form-group">
+
+                    <label>
+                        Status
+                    </label>
+
+                    <div
+                        class="custom-select"
+                        id="classStatusSelect"
+                    >
+
+                        <button
+                            type="button"
+                            class="custom-select-trigger"
+                        >
+                            <span data-select-label>
+                                Ativa
+                            </span>
+
+                            <svg>
+                                <use href="#icon-chevron-down"></use>
+                            </svg>
+                        </button>
+
+
+                        <input
+                            type="hidden"
+                            id="classStatus"
+                            value="Ativa"
+                        >
+
+
+                        <div class="custom-select-menu">
+
+                            <button
+                                type="button"
+                                class="custom-select-option selected"
+                                data-value="Ativa"
+                            >
+                                <span>Ativa</span>
+
+                                <svg class="option-check">
+                                    <use href="#icon-check"></use>
+                                </svg>
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="custom-select-option"
+                                data-value="Inativa"
+                            >
+                                <span>Inativa</span>
+
+                                <svg class="option-check">
+                                    <use href="#icon-check"></use>
+                                </svg>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- PROFESSOR -->
+
+                <div class="form-group full">
+
+                    <label for="classTeacher">
+                        Professor responsável
+                    </label>
+
+                    <input
+                        type="text"
+                        id="classTeacher"
+                        placeholder="Opcional"
+                        autocomplete="off"
+                    >
+
+                </div>
+
+
+                <!-- DATA -->
+
+                <div class="form-group full date-group">
+
+                    <label>
+                        Data de criação
+                    </label>
+
+
+                    <button
+                        type="button"
+                        class="date-trigger"
+                        id="classDateButton"
+                    >
+                        <svg>
+                            <use href="#icon-calendar"></use>
+                        </svg>
+
+                        <span id="classDateLabel">
+                            Selecione uma data
+                        </span>
+
+                        <svg class="date-arrow">
+                            <use href="#icon-chevron-down"></use>
+                        </svg>
+                    </button>
+
+
+                    <input
+                        type="hidden"
+                        id="classDate"
+                    >
+
+
+                    <div
+                        class="date-picker"
+                        id="classDatePicker"
+                    >
+
+                        <div class="calendar-header">
+
+                            <button
+                                type="button"
+                                id="calendarPrevious"
+                            >
+                                <svg>
+                                    <use href="#icon-chevron-left"></use>
+                                </svg>
+                            </button>
+
+
+                            <strong id="calendarMonth">
+                                —
+                            </strong>
+
+
+                            <button
+                                type="button"
+                                id="calendarNext"
+                            >
+                                <svg>
+                                    <use href="#icon-chevron-right"></use>
+                                </svg>
+                            </button>
+
+                        </div>
+
+
+                        <div class="calendar-weekdays">
+                            <span>Dom</span>
+                            <span>Seg</span>
+                            <span>Ter</span>
+                            <span>Qua</span>
+                            <span>Qui</span>
+                            <span>Sex</span>
+                            <span>Sáb</span>
+                        </div>
+
+
+                        <div
+                            class="calendar-days"
+                            id="calendarDays"
+                        ></div>
+
+
+                        <button
+                            type="button"
+                            class="calendar-today"
+                            id="calendarToday"
+                        >
+                            Hoje
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    class="cancel-button"
+                    data-close-modal
+                >
+                    Cancelar
+                </button>
+
+
+                <button
+                    type="submit"
+                    class="primary-button save-button"
+                    id="baseSubmitButton"
+                >
+                    Cadastrar turma
+                </button>
+
+            </div>
+
+        </form>
+
+
+        <!-- =================================================
+             FORMULÁRIO ELETIVA
+        ================================================== -->
+
+        <form
+            class="modal-form hidden"
+            id="electiveForm"
+        >
+
+            <!--
+                NOVA = vazio
+                EDIÇÃO = recebe ID da eletiva
+            -->
+
+            <input
+                type="hidden"
+                id="electiveEditId"
+            >
+
+
+            <div class="form-grid">
+
+                <!-- NOME -->
+
+                <div class="form-group full">
+
+                    <label for="electiveName">
+                        Nome da eletiva
+                    </label>
+
+                    <input
+                        type="text"
+                        id="electiveName"
+                        placeholder="Ex.: Robótica"
+                        autocomplete="off"
+                    >
+
+                </div>
+
+
+                <!-- TURNO -->
+
+                <div class="form-group">
+
+                    <label>
+                        Turno
+                    </label>
+
+                    <div
+                        class="custom-select"
+                        id="electiveShiftSelect"
+                    >
+
+                        <button
+                            type="button"
+                            class="custom-select-trigger"
+                        >
+                            <span data-select-label>
+                                Selecione
+                            </span>
+
+                            <svg>
+                                <use href="#icon-chevron-down"></use>
+                            </svg>
+                        </button>
+
+
+                        <input
+                            type="hidden"
+                            id="electiveShift"
+                        >
+
+
+                        <div class="custom-select-menu">
+
+                            <button
+                                type="button"
+                                class="custom-select-option"
+                                data-value="Manhã"
+                            >
+                                <span>Manhã</span>
+
+                                <svg class="option-check">
+                                    <use href="#icon-check"></use>
+                                </svg>
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="custom-select-option"
+                                data-value="Tarde"
+                            >
+                                <span>Tarde</span>
+
+                                <svg class="option-check">
+                                    <use href="#icon-check"></use>
+                                </svg>
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="custom-select-option"
+                                data-value="Integral"
+                            >
+                                <span>Integral</span>
+
+                                <svg class="option-check">
+                                    <use href="#icon-check"></use>
+                                </svg>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ANO LETIVO -->
+
+                <div class="form-group">
+
+                    <label for="electiveYear">
+                        Ano letivo
+                    </label>
+
+                    <input
+                        type="text"
+                        id="electiveYear"
+                        inputmode="numeric"
+                        maxlength="4"
+                        placeholder="Ex.: 2026"
+                        autocomplete="off"
+                    >
+
+                </div>
+
+
+                <!-- STATUS -->
+
+                <div class="form-group">
+
+                    <label>
+                        Status
+                    </label>
+
+                    <div
+                        class="custom-select"
+                        id="electiveStatusSelect"
+                    >
+
+                        <button
+                            type="button"
+                            class="custom-select-trigger"
+                        >
+                            <span data-select-label>
+                                Ativa
+                            </span>
+
+                            <svg>
+                                <use href="#icon-chevron-down"></use>
+                            </svg>
+                        </button>
+
+
+                        <input
+                            type="hidden"
+                            id="electiveStatus"
+                            value="Ativa"
+                        >
+
+
+                        <div class="custom-select-menu">
+
+                            <button
+                                type="button"
+                                class="custom-select-option selected"
+                                data-value="Ativa"
+                            >
+                                <span>Ativa</span>
+
+                                <svg class="option-check">
+                                    <use href="#icon-check"></use>
+                                </svg>
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="custom-select-option"
+                                data-value="Inativa"
+                            >
+                                <span>Inativa</span>
+
+                                <svg class="option-check">
+                                    <use href="#icon-check"></use>
+                                </svg>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- PROFESSOR -->
+
+                <div class="form-group">
+
+                    <label for="electiveTeacher">
+                        Professor responsável
+                    </label>
+
+                    <input
+                        type="text"
+                        id="electiveTeacher"
+                        placeholder="Opcional"
+                        autocomplete="off"
+                    >
+
+                </div>
+
+
+                <!-- DATA -->
+
+                <div class="form-group full date-group">
+
+                    <label>
+                        Data de criação
+                    </label>
+
+
+                    <button
+                        type="button"
+                        class="date-trigger"
+                        id="electiveDateButton"
+                    >
+                        <svg>
+                            <use href="#icon-calendar"></use>
+                        </svg>
+
+                        <span id="electiveDateLabel">
+                            Selecione uma data
+                        </span>
+
+                        <svg class="date-arrow">
+                            <use href="#icon-chevron-down"></use>
+                        </svg>
+                    </button>
+
+
+                    <input
+                        type="hidden"
+                        id="electiveDate"
+                    >
+
+
+                    <div
+                        class="date-picker"
+                        id="electiveDatePicker"
+                    >
+
+                        <div class="calendar-header">
+
+                            <button
+                                type="button"
+                                id="electiveCalendarPrevious"
+                            >
+                                <svg>
+                                    <use href="#icon-chevron-left"></use>
+                                </svg>
+                            </button>
+
+
+                            <strong id="electiveCalendarMonth">
+                                —
+                            </strong>
+
+
+                            <button
+                                type="button"
+                                id="electiveCalendarNext"
+                            >
+                                <svg>
+                                    <use href="#icon-chevron-right"></use>
+                                </svg>
+                            </button>
+
+                        </div>
+
+
+                        <div class="calendar-weekdays">
+                            <span>Dom</span>
+                            <span>Seg</span>
+                            <span>Ter</span>
+                            <span>Qua</span>
+                            <span>Qui</span>
+                            <span>Sex</span>
+                            <span>Sáb</span>
+                        </div>
+
+
+                        <div
+                            class="calendar-days"
+                            id="electiveCalendarDays"
+                        ></div>
+
+
+                        <button
+                            type="button"
+                            class="calendar-today"
+                            id="electiveCalendarToday"
+                        >
+                            Hoje
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    class="cancel-button"
+                    data-close-modal
+                >
+                    Cancelar
+                </button>
+
+
+                <button
+                    type="submit"
+                    class="primary-button save-button"
+                    id="electiveSubmitButton"
+                >
+                    Cadastrar eletiva
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     MODAL CADASTRAR / EDITAR ALUNO
+========================================================= -->
+
+<div
+    class="modal-overlay"
+    id="studentModalOverlay"
+>
+
+    <div class="modal student-modal">
+
+        <div class="modal-header">
+
+            <div>
+
+                <span class="modal-tag">
+                    ALUNO
+                </span>
+
+                <h2 id="studentModalTitle">
+                    Cadastrar aluno
+                </h2>
+
+                <p id="studentModalSubtitle">
+                    Adicione um aluno à turma selecionada.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="modal-close"
+                id="studentModalClose"
+                aria-label="Fechar"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form
+            class="modal-form"
+            id="studentForm"
+        >
+
+            <input
+                type="hidden"
+                id="studentEditId"
+            >
+
+
+            <div class="form-grid">
+
+                <div class="form-group full">
+
+                    <label for="studentName">
+                        Nome do aluno
+                    </label>
+
+                    <input
+                        type="text"
+                        id="studentName"
+                        placeholder="Nome completo"
+                        autocomplete="off"
+                    >
+
+                </div>
+
+
+                <div class="form-group full">
+
+                    <label for="studentWhatsapp">
+                        WhatsApp do pai ou responsável
+                    </label>
+
+                    <input
+                        type="tel"
+                        id="studentWhatsapp"
+                        placeholder="(88) 99999-9999"
+                        autocomplete="off"
+                    >
+
+                    <span class="field-help">
+                        Campo opcional.
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    class="cancel-button"
+                    id="cancelStudentButton"
+                >
+                    Cancelar
+                </button>
+
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                    id="studentSubmitButton"
+                >
+                    Cadastrar aluno
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     MODAL TRANSFERIR ALUNO
+========================================================= -->
+
+<div
+    class="modal-overlay"
+    id="transferModalOverlay"
+>
+
+    <div class="modal small-modal">
+
+        <div class="modal-header">
+
+            <div>
+
+                <span class="modal-tag">
+                    TRANSFERÊNCIA
+                </span>
+
+                <h2>
+                    Transferir aluno
+                </h2>
+
+                <p id="transferStudentText">
+                    Selecione a turma de destino.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="modal-close"
+                id="transferModalClose"
+                aria-label="Fechar"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form
+            class="modal-form"
+            id="transferForm"
+        >
+
+            <input
+                type="hidden"
+                id="transferStudentId"
+            >
+
+
+            <div class="form-group">
+
+                <label id="transferDestinationLabel">
+                    Turma de destino
+                </label>
+
+
+                <div
+                    class="custom-select"
+                    id="transferClassSelect"
+                >
+
+                    <button
+                        type="button"
+                        class="custom-select-trigger"
+                    >
+                        <span data-select-label>
+                            Selecione a turma
+                        </span>
+
+                        <svg>
+                            <use href="#icon-chevron-down"></use>
+                        </svg>
+                    </button>
+
+
+                    <input
+                        type="hidden"
+                        id="transferClassId"
+                    >
+
+
+                    <div
+                        class="custom-select-menu"
+                        id="transferClassOptions"
+                    ></div>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    class="cancel-button"
+                    id="cancelTransferButton"
+                >
+                    Cancelar
+                </button>
+
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+                    <svg>
+                        <use href="#icon-transfer"></use>
+                    </svg>
+
+                    Transferir aluno
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     MODAL COPIAR ALUNO PARA ELETIVA
+========================================================= -->
+
+<div
+    class="modal-overlay"
+    id="copyElectiveModalOverlay"
+>
+
+    <div class="modal small-modal">
+
+        <div class="modal-header">
+
+            <div>
+
+                <span class="modal-tag">
+                    ELETIVA
+                </span>
+
+                <h2>
+                    Copiar para eletiva
+                </h2>
+
+                <p id="copyElectiveStudentText">
+                    Selecione a eletiva para copiar o aluno.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="modal-close"
+                id="copyElectiveModalClose"
+                aria-label="Fechar"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form
+            class="modal-form"
+            id="copyElectiveForm"
+        >
+
+            <input
+                type="hidden"
+                id="copyElectiveStudentId"
+            >
+
+
+            <div class="form-group">
+
+                <label>
+                    Eletiva de destino
+                </label>
+
+
+                <div
+                    class="custom-select"
+                    id="copyElectiveSelect"
+                >
+
+                    <button
+                        type="button"
+                        class="custom-select-trigger"
+                    >
+                        <span data-select-label>
+                            Selecione a eletiva
+                        </span>
+
+                        <svg>
+                            <use href="#icon-chevron-down"></use>
+                        </svg>
+                    </button>
+
+
+                    <input
+                        type="hidden"
+                        id="copyElectiveId"
+                    >
+
+
+                    <div
+                        class="custom-select-menu"
+                        id="copyElectiveOptions"
+                    ></div>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    class="cancel-button"
+                    id="cancelCopyElectiveButton"
+                >
+                    Cancelar
+                </button>
+
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+                    <svg>
+                        <use href="#icon-copy"></use>
+                    </svg>
+
+                    Copiar aluno
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     TOAST
+========================================================= -->
+
+<div
+    class="toast"
+    id="toast"
+></div>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
+
+<script src="script.js"></script>
+
+</body>
+</html>
+
+
+

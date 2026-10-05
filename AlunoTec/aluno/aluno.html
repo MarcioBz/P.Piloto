@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#183f1c">
+    <title>Alunos | AlunoTec</title>
+    <link rel="icon" type="image/png" href="../assets/icons/icone.png">
+    <link rel="stylesheet" href="aluno.css">
+    <script src="aluno.js" defer></script>
+</head>
+<body>
+    <svg class="svg-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8M5 10v11h14V10M9 21v-7h6v7"/></symbol>
+        <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></symbol>
+        <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="7" r="3"/><path d="M2 21v-3a7 7 0 0 1 14 0v3M17 4a3 3 0 0 1 0 6M18 14a5 5 0 0 1 4 5v2"/></symbol>
+        <symbol id="i-book" viewBox="0 0 24 24"><path d="M3 5a4 4 0 0 1 4-2h5v17H7a4 4 0 0 0-4 2zM21 5a4 4 0 0 0-4-2h-5v17h5a4 4 0 0 1 4 2z"/></symbol>
+        <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20v-6h3v6M10.5 20V9h3v11M17 20V3h3v17"/></symbol>
+        <symbol id="i-school" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7M5 9v12h14V9M9 21v-7h6v7M2 21h20"/></symbol>
+        <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>
+        <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+        <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></symbol>
+        <symbol id="i-transfer" viewBox="0 0 24 24"><path d="M4 7h15l-3-3M20 17H5l3 3M19 7l-3 3M5 17l3-3"/></symbol>
+        <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+        <symbol id="i-x" viewBox="0 0 24 24"><path d="m18 6-12 12M6 6l12 12"/></symbol>
+        <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M2 8.5a16 16 0 0 1 20 0M5 12a11 11 0 0 1 14 0M8.5 15.5a6 6 0 0 1 7 0"/><circle cx="12" cy="19" r="1"/></symbol>
+        <symbol id="i-headset" viewBox="0 0 24 24"><path d="M3 13v-1a9 9 0 0 1 18 0v1"/><path d="M3 13h4v7H5a2 2 0 0 1-2-2zM21 13h-4v7h2a2 2 0 0 0 2-2z"/></symbol>
+        <symbol id="i-logout" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5M15 12H3M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/></symbol>
+        <symbol id="i-switch" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0M19 8l2 2 2-2"/></symbol>
+        <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+    </svg>
+
+    <aside class="sidebar">
+        <a class="brand" href="../admin/dashboard.html" aria-label="AlunoTec">
+            <img src="../assets/images/logo-alunotec1.png" alt="AlunoTec">
+        </a>
+
+        <nav class="main-nav">
+            <a class="nav-link" href="../admin/dashboard.html"><svg><use href="#i-home"></use></svg><span>Início</span></a>
+            <a class="nav-link" href="#"><svg><use href="#i-calendar"></use></svg><span>Frequência</span></a>
+            <a class="nav-link active" href="aluno.html"><svg><use href="#i-users"></use></svg><span>Alunos</span></a>
+            <a class="nav-link" href="../turmas/index.html"><svg><use href="#i-book"></use></svg><span>Turmas</span></a>
+            <a class="nav-link" href="#"><svg><use href="#i-chart"></use></svg><span>Relatórios</span></a>
+            <div class="nav-divider"></div>
+            <p class="nav-caption">ADMINISTRAÇÃO</p>
+            <a class="nav-link" href="#"><svg><use href="#i-school"></use></svg><span>Instituição</span></a>
+            <a class="nav-link" href="#"><svg><use href="#i-calendar"></use></svg><span>Ano letivo</span></a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <a class="support-card" href="#">
+                <svg class="support-icon"><use href="#i-headset"></use></svg>
+                <span><strong>Suporte</strong><small>Precisa de ajuda?</small></span>
+                <span class="support-arrow">›</span>
+            </a>
+            <p class="sidebar-footer">AlunoTec • 2026<br>Todos os direitos reservados.</p>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div class="year-picker">
+                <svg><use href="#i-calendar"></use></svg>
+                <span class="year-label">
+                    <small>Ano letivo</small>
+                    <select id="yearFilter" aria-label="Ano letivo"></select>
+                </span>
+            </div>
+
+            <div class="topbar-right">
+                <button class="bell-button" id="bellButton" type="button" aria-label="Notificações">
+                    <svg><use href="#i-bell"></use></svg>
+                    <span id="bellCount" class="bell-count" hidden>0</span>
+                </button>
+
+                <button class="connection" id="connectionButton" type="button" aria-label="Verificar conexão">
+                    <svg><use href="#i-wifi"></use></svg>
+                    <span>
+                        <strong id="connectionText">Verificando</strong>
+                        <small id="connectionSubtitle">Verificando acesso à internet…</small>
+                    </span>
+                </button>
+
+                <div class="account-wrap">
+                    <button class="profile" id="profileButton" type="button" aria-expanded="false">
+                        <span class="avatar">MB</span>
+                        <span class="profile-text">
+                            <strong>Márcio Bezerra</strong>
+                            <small>Super Administrador</small>
+                        </span>
+                        <svg class="profile-menu-icon"><use href="#i-menu"></use></svg>
+                    </button>
+                    <div class="account-menu" id="accountMenu" hidden>
+                        <div class="account-identity">
+                            <span class="avatar">MB</span>
+                            <span><strong>Márcio Bezerra</strong><small>Super Administrador</small></span>
+                        </div>
+                        <button type="button" id="switchAccount"><svg><use href="#i-switch"></use></svg>Trocar de conta</button>
+                        <button type="button" id="logoutButton" class="logout-option"><svg><use href="#i-logout"></use></svg>Sair</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section class="content">
+            <section class="hero">
+                <div class="hero-copy">
+                    <div class="hero-title">
+                        <svg><use href="#i-users"></use></svg>
+                        <div><h1>Alunos</h1><h2>Gerencie os alunos da instituição</h2></div>
+                    </div>
+                    <p>Acompanhe os alunos, suas turmas de origem, as eletivas vinculadas e os remanejamentos.</p>
+                </div>
+                <div class="hero-quote">
+                    <blockquote>“Cada aluno<br>é uma nova história<br>de conquistas.”</blockquote>
+                    <span></span>
+                </div>
+                <div class="hero-photo"></div>
+            </section>
+
+            <section class="summary-grid">
+                <article class="summary-card"><span class="summary-icon green"><svg><use href="#i-users"></use></svg></span><span><small>Total de alunos</small><strong id="totalCount">0</strong></span></article>
+                <article class="summary-card"><span class="summary-icon green"><svg><use href="#i-check"></use></svg></span><span><small>Ativos</small><strong><b id="activeCount">0</b><em id="activePercent">0%</em></strong></span></article>
+                <article class="summary-card"><span class="summary-icon red"><svg><use href="#i-x"></use></svg></span><span><small>Inativos</small><strong><b id="inactiveCount">0</b><em id="inactivePercent">0%</em></strong></span></article>
+                <article class="summary-card"><span class="summary-icon blue"><svg><use href="#i-transfer"></use></svg></span><span><small>Remanejados</small><strong><b id="movedCount">0</b><em id="movedPercent">0%</em></strong></span></article>
+            </section>
+
+            <section class="student-panel">
+                <div class="panel-heading">
+                    <div class="panel-title">
+                        <svg><use href="#i-users"></use></svg>
+                        <div><h2>Lista de alunos</h2><p>Alunos cadastrados nas turmas e eletivas.</p></div>
+                    </div>
+                </div>
+
+                <div class="filters">
+                    <label class="search-field">
+                        <svg><use href="#i-search"></use></svg>
+                        <input id="searchInput" type="search" placeholder="Pesquisar por nome, telefone, turma ou eletiva...">
+                    </label>
+                    <label class="field"><small>Turma de origem</small><select id="classFilter"><option value="">Todas</option></select></label>
+                    <label class="field"><small>Ano letivo</small><select id="listYearFilter"><option value="">Todos</option></select></label>
+                    <label class="field"><small>Status</small><select id="statusFilter"><option value="">Todos</option><option value="Ativo">Ativo</option><option value="Inativo">Inativo</option><option value="Remanejado">Remanejado</option></select></label>
+                </div>
+
+                <div class="tabs" role="tablist">
+                    <button class="tab active" data-tab="Todos" type="button">Todos <span id="tabAll">0</span></button>
+                    <button class="tab" data-tab="Ativos" type="button">Ativos <span id="tabActive">0</span></button>
+                    <button class="tab" data-tab="Inativos" type="button">Inativos <span id="tabInactive">0</span></button>
+                    <button class="tab" data-tab="Remanejados" type="button">Remanejados <span id="tabMoved">0</span></button>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nº</th><th>NOME DO ALUNO</th><th>TURMA DE ORIGEM</th>
+                                <th>ELETIVA VINCULADA</th><th>ANO/SÉRIE</th><th>STATUS</th>
+                                <th>TURMA DA FREQUÊNCIA / REMANEJAMENTO</th><th>AÇÕES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentRows"></tbody>
+                    </table>
+                </div>
+                <p class="storage-note" id="storageNote"></p>
+            </section>
+        </section>
+    </main>
+
+    <dialog class="dialog" id="appDialog"><div class="dialog-box" id="dialogBox"></div></dialog>
+
+    <dialog class="notification-dialog" id="notificationDialog">
+        <section class="notification-box">
+            <header class="notification-heading">
+                <span class="notification-icon"><svg><use href="#i-bell"></use></svg></span>
+                <span><strong>Atividades dos alunos</strong><small>Alterações de hoje</small></span>
+                <button type="button" class="notification-close" data-close-notifications aria-label="Fechar">×</button>
+            </header>
+            <div class="notification-list" id="notificationList"></div>
+            <footer class="notification-footer">
+                <button type="button" class="button secondary" id="clearNotifications">Limpar notificações</button>
+            </footer>
+        </section>
+    </dialog>
+
+    <div class="toast" id="toast" role="status"></div>
+</body>
+</html>

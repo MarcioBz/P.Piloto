@@ -1,0 +1,1598 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <meta
+        name="theme-color"
+        content="#183f1c"
+    >
+
+    <title>AlunoTec | Dashboard Administrativo</title>
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="../assets/icons/icone.png"
+    >
+
+    <link
+        rel="stylesheet"
+        href="dashboard.css"
+    >
+
+    <script
+        src="dashboard.js"
+        defer
+    ></script>
+</head>
+
+<body>
+
+    <!-- =====================================================
+         BIBLIOTECA DE ÍCONES
+    ====================================================== -->
+
+    <svg
+        class="svg-library"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+    >
+
+        <symbol id="icon-menu" viewBox="0 0 24 24">
+            <path d="M4 6h16M4 12h16M4 18h16"/>
+        </symbol>
+
+        <symbol id="icon-home" viewBox="0 0 24 24">
+            <path d="m3 11 9-8 9 8"/>
+            <path d="M5 10v11h14V10"/>
+            <path d="M9 21v-7h6v7"/>
+        </symbol>
+
+        <symbol id="icon-calendar" viewBox="0 0 24 24">
+            <rect x="3" y="5" width="18" height="16" rx="2"/>
+            <path d="M7 3v4M17 3v4M3 10h18"/>
+        </symbol>
+
+        <symbol id="icon-user" viewBox="0 0 24 24">
+            <circle cx="12" cy="7" r="4"/>
+            <path d="M4 21v-3a8 8 0 0 1 16 0v3"/>
+        </symbol>
+
+        <symbol id="icon-users" viewBox="0 0 24 24">
+            <circle cx="9" cy="7" r="3"/>
+            <path d="M2 21v-3a7 7 0 0 1 14 0v3"/>
+            <path d="M17 4a3 3 0 0 1 0 6"/>
+            <path d="M18 14a5 5 0 0 1 4 5v2"/>
+        </symbol>
+
+        <symbol id="icon-book" viewBox="0 0 24 24">
+            <path d="M3 5a4 4 0 0 1 4-2h5v17H7a4 4 0 0 0-4 2Z"/>
+            <path d="M21 5a4 4 0 0 0-4-2h-5v17h5a4 4 0 0 1 4 2Z"/>
+        </symbol>
+
+        <symbol id="icon-chart" viewBox="0 0 24 24">
+            <path d="M4 20v-6h3v6"/>
+            <path d="M10.5 20V9h3v11"/>
+            <path d="M17 20V3h3v17"/>
+        </symbol>
+
+        <symbol id="icon-building" viewBox="0 0 24 24">
+            <path d="m3 9 9-6 9 6"/>
+            <path d="M5 9v12h14V9"/>
+            <path d="M9 21v-6h6v6"/>
+            <path d="M8 12h.01M12 12h.01M16 12h.01"/>
+            <path d="M2 21h20"/>
+        </symbol>
+
+        <symbol id="icon-settings" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.7a8 8 0 0 1-1.8 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.8-1l-1.7.7-1.4-2.4L7.1 15a8 8 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.7a8 8 0 0 1 1.8-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.8 1l1.7-.7 1.4 2.4-1.4 1.1a8 8 0 0 1-.1 2Z" transform="translate(-1 -1)"/>
+        </symbol>
+
+        <symbol id="icon-cloud" viewBox="0 0 24 24">
+            <path d="M7 18h11a4 4 0 0 0 .5-8A7 7 0 0 0 5 9a4.5 4.5 0 0 0 2 9Z"/>
+        </symbol>
+
+        <symbol id="icon-wifi" viewBox="0 0 24 24">
+            <path d="M2 8.5a16 16 0 0 1 20 0"/>
+            <path d="M5 12a11 11 0 0 1 14 0"/>
+            <path d="M8.5 15.5a6 6 0 0 1 7 0"/>
+            <circle cx="12" cy="19" r="1"/>
+        </symbol>
+
+        <symbol id="icon-chevron-down" viewBox="0 0 24 24">
+            <path d="m6 9 6 6 6-6"/>
+        </symbol>
+
+        <symbol id="icon-arrow-right" viewBox="0 0 24 24">
+            <path d="M4 12h16"/>
+            <path d="m14 6 6 6-6 6"/>
+        </symbol>
+
+        <symbol id="icon-clock" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 7v5l3 2"/>
+        </symbol>
+
+        <symbol id="icon-check" viewBox="0 0 24 24">
+            <path d="m5 12 4 4 10-10"/>
+        </symbol>
+
+        <symbol id="icon-x" viewBox="0 0 24 24">
+            <path d="m6 6 12 12M18 6 6 18"/>
+        </symbol>
+
+        <symbol id="icon-percent" viewBox="0 0 24 24">
+            <circle cx="7" cy="7" r="2"/>
+            <circle cx="17" cy="17" r="2"/>
+            <path d="m18 5-12 14"/>
+        </symbol>
+
+        <symbol id="icon-headset" viewBox="0 0 24 24">
+            <path d="M4 14v-2a8 8 0 0 1 16 0v2"/>
+            <path d="M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2Z"/>
+            <path d="M20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/>
+        </symbol>
+
+        <symbol id="icon-switch" viewBox="0 0 24 24">
+            <path d="M4 7h13"/>
+            <path d="m14 4 3 3-3 3"/>
+            <path d="M20 17H7"/>
+            <path d="m10 14-3 3 3 3"/>
+        </symbol>
+
+        <symbol id="icon-logout" viewBox="0 0 24 24">
+            <path d="M10 5H5v14h5"/>
+            <path d="M13 8l4 4-4 4"/>
+            <path d="M17 12H9"/>
+        </symbol>
+
+    </svg>
+
+
+    <!-- =====================================================
+         APLICAÇÃO
+    ====================================================== -->
+
+    <div class="app">
+
+        <!-- =================================================
+             SIDEBAR
+        ================================================== -->
+
+        <aside
+            class="sidebar"
+            id="sidebar"
+        >
+
+            <div class="sidebar-brand">
+
+                <a
+                    href="dashboard.html"
+                    class="sidebar-logo-link"
+                    aria-label="Ir para página inicial do AlunoTec"
+                >
+
+                    <img
+                        src="../assets/images/logo-alunotec1.png"
+                        alt="AlunoTec"
+                    >
+
+                </a>
+
+
+                <button
+                    class="sidebar-close"
+                    id="sidebarClose"
+                    type="button"
+                    aria-label="Fechar menu"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <!-- =================================================
+                 MENU PRINCIPAL
+            ================================================== -->
+
+            <nav class="sidebar-nav">
+
+                <a
+                    href="dashboard.html"
+                    class="nav-link active"
+                >
+
+                    <svg>
+                        <use href="#icon-home"></use>
+                    </svg>
+
+                    <span>Início</span>
+
+                </a>
+
+
+                <a
+                    href="../frequencia/frequencia.html"
+                    class="nav-link"
+                >
+
+                    <svg>
+                        <use href="#icon-calendar"></use>
+                    </svg>
+
+                    <span>Frequência</span>
+
+                </a>
+
+
+                <a
+                    href="../aluno/aluno.html"
+                    class="nav-link"
+                >
+
+                    <svg>
+                        <use href="#icon-users"></use>
+                    </svg>
+
+                    <span>Alunos</span>
+
+                </a>
+
+
+                <!-- TURMAS VINCULADO -->
+
+                <a
+                    href="../turmas/index.html"
+                    class="nav-link"
+                >
+
+                    <svg>
+                        <use href="#icon-book"></use>
+                    </svg>
+
+                    <span>Turmas</span>
+
+                </a>
+
+
+                <a
+                    href="../relat/relat.html"
+                    class="nav-link"
+                >
+
+                    <svg>
+                        <use href="#icon-chart"></use>
+                    </svg>
+
+                    <span>Relatórios</span>
+
+                </a>
+
+
+                <div class="nav-separator"></div>
+
+
+                <p class="nav-title">
+                    ADMINISTRAÇÃO
+                </p>
+
+
+                <a
+                    href="../inst/inst.html"
+                    class="nav-link"
+                >
+
+                    <svg>
+                        <use href="#icon-building"></use>
+                    </svg>
+
+                    <span>Instituição</span>
+
+                </a>
+
+
+                <a
+                    href="../config/config.html"
+                    class="nav-link"
+                >
+
+                    <svg>
+                        <use href="#icon-settings"></use>
+                    </svg>
+
+                    <span>Configurações</span>
+
+                </a>
+
+</nav>
+
+
+            <!-- =================================================
+                 SIDEBAR INFERIOR
+            ================================================== -->
+
+            <div class="sidebar-bottom">
+
+                <button
+                    class="support-card"
+                    type="button"
+                >
+
+                    <svg>
+                        <use href="#icon-headset"></use>
+                    </svg>
+
+
+                    <span>
+
+                        <strong>
+                            Suporte
+                        </strong>
+
+                        <small>
+                            Precisa de ajuda?
+                        </small>
+
+                    </span>
+
+                </button>
+
+
+                <footer class="sidebar-footer">
+
+                    <strong>
+                        AlunoTec • 2026
+                    </strong>
+
+                    <span>
+                        Todos os direitos reservados.
+                    </span>
+
+                </footer>
+
+            </div>
+
+        </aside>
+
+
+        <!-- =================================================
+             PRINCIPAL
+        ================================================== -->
+
+        <main class="main">
+
+
+            <!-- =================================================
+                 TOPBAR
+            ================================================== -->
+
+            <header class="topbar">
+
+                <div class="topbar-left">
+
+                    <button
+                        class="menu-button"
+                        id="menuButton"
+                        type="button"
+                        aria-label="Abrir menu"
+                    >
+
+                        <svg>
+                            <use href="#icon-menu"></use>
+                        </svg>
+
+                    </button>
+
+
+                    <!-- ANO LETIVO -->
+
+                    <div
+                        class="custom-select year-custom-select"
+                        id="yearDropdown"
+                    >
+
+                        <button
+                            class="custom-select-trigger"
+                            type="button"
+                            aria-haspopup="listbox"
+                            aria-expanded="false"
+                        >
+
+                            <span class="custom-select-icon">
+
+                                <svg>
+                                    <use href="#icon-calendar"></use>
+                                </svg>
+
+                            </span>
+
+
+                            <span class="custom-select-content">
+
+                                <small>
+                                    Ano letivo
+                                </small>
+
+                                <strong id="selectedYear">
+                                    2026
+                                </strong>
+
+                            </span>
+
+
+                            <svg class="custom-select-chevron">
+                                <use href="#icon-chevron-down"></use>
+                            </svg>
+
+                        </button>
+
+
+                        <div
+                            class="custom-select-menu"
+                            role="listbox"
+                        >
+
+                            <button
+                                type="button"
+                                class="custom-option"
+                                data-value="2024"
+                            >
+                                <span>2024</span>
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="custom-option"
+                                data-value="2025"
+                            >
+                                <span>2025</span>
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="custom-option selected"
+                                data-value="2026"
+                            >
+
+                                <span>2026</span>
+
+                                <span class="option-check">
+                                    ✓
+                                </span>
+
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="custom-option"
+                                data-value="2027"
+                            >
+                                <span>2027</span>
+                            </button>
+
+                        </div>
+
+
+                        <input
+                            type="hidden"
+                            id="yearSelect"
+                            value="2026"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     TOPO DIREITO
+                ================================================== -->
+
+                <div class="topbar-right">
+
+                    <button class="activity-bell" id="activityBell" type="button" aria-label="Notificações das turmas" aria-expanded="false">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+                        <span class="activity-bell-count" id="activityBellCount" hidden>0</span>
+                    </button>
+
+                    <button
+                        class="connection"
+                        id="connectionStatus"
+                        type="button"
+                        aria-label="Verificar conexão com a internet"
+                    >
+
+                        <svg>
+                            <use href="#icon-wifi"></use>
+                        </svg>
+
+
+                        <span>
+
+                            <strong id="connectionTitle">
+                                Verificando
+                            </strong>
+
+                            <small id="connectionSubtitle">
+                                Verificando acesso à internet…
+                            </small>
+
+                        </span>
+
+                    </button>
+
+
+                    <!-- PERFIL -->
+
+                    <div class="profile">
+
+                        <button
+                            class="profile-button"
+                            id="profileButton"
+                            type="button"
+                            aria-expanded="false"
+                        >
+
+                            <span class="avatar">
+                                MB
+                            </span>
+
+
+                            <span class="profile-text">
+
+                                <strong>
+                                    Márcio Bezerra
+                                </strong>
+
+                                <small>
+                                    Super Administrador
+                                </small>
+
+                            </span>
+
+
+                            <svg class="profile-menu-icon">
+                                <use href="#icon-menu"></use>
+                            </svg>
+
+                        </button>
+
+
+                        <div
+                            class="profile-dropdown"
+                            id="profileDropdown"
+                        >
+
+                            <div class="dropdown-profile">
+
+                                <span class="avatar">
+                                    MB
+                                </span>
+
+
+                                <div>
+
+                                    <strong>
+                                        Márcio Bezerra
+                                    </strong>
+
+                                    <small>
+                                        Super Administrador
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="dropdown-divider"></div>
+
+
+                            <button
+                                id="switchAccount"
+                                type="button"
+                            >
+
+                                <svg>
+                                    <use href="#icon-switch"></use>
+                                </svg>
+
+                                <span>
+                                    Trocar de conta
+                                </span>
+
+                            </button>
+
+
+                            <div class="dropdown-divider"></div>
+
+
+                            <button
+                                class="logout"
+                                id="logoutButton"
+                                type="button"
+                            >
+
+                                <svg>
+                                    <use href="#icon-logout"></use>
+                                </svg>
+
+                                <span>
+                                    Sair
+                                </span>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <!-- =================================================
+                 CONTEÚDO
+            ================================================== -->
+
+            <div class="content">
+
+
+                <!-- =================================================
+                     BANNER
+                ================================================== -->
+
+                <section class="hero">
+
+                    <div class="hero-copy">
+
+                        <h1>
+                            Olá!
+                        </h1>
+
+                        <h2>
+                            Visão geral da frequência escolar
+                        </h2>
+
+                        <p>
+                            Acompanhe em tempo real a frequência dos
+                            alunos, turmas e as principais informações
+                            da sua instituição.
+                        </p>
+
+                    </div>
+
+
+                    <div class="hero-quote">
+
+                        <blockquote>
+                            “Mais presença<br>
+                            para um futuro<br>
+                            com mais<br>
+                            oportunidades.”
+                        </blockquote>
+
+                        <span></span>
+
+                    </div>
+
+
+                    <div
+                        class="hero-photo"
+                        aria-hidden="true"
+                    ></div>
+
+                </section>
+
+
+                <!-- =================================================
+                     RESUMO
+                ================================================== -->
+
+                <section class="summary-section">
+
+                    <div class="section-heading">
+
+                        <div class="section-title">
+
+                            <svg>
+                                <use href="#icon-calendar"></use>
+                            </svg>
+
+
+                            <h2>
+                                Resumo de hoje
+                            </h2>
+
+
+                            <span id="todayDate">
+                                Quarta-feira, 30 de setembro de 2026
+                            </span>
+
+                        </div>
+
+
+                        <a href="../relat/relat.html">
+
+                            Ver mais detalhes
+
+                            <svg>
+                                <use href="#icon-arrow-right"></use>
+                            </svg>
+
+                        </a>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         CARDS
+                    ================================================== -->
+
+                    <div class="stats-grid">
+
+                        <article class="stat-card stat-total">
+
+                            <span class="stat-icon">
+
+                                <svg>
+                                    <use href="#icon-users"></use>
+                                </svg>
+
+                            </span>
+
+
+                            <div class="stat-content">
+
+                                <span>
+                                    Total de alunos
+                                </span>
+
+                                <strong id="totalStudents">
+                                    0
+                                </strong>
+
+                            </div>
+
+
+                            <span class="stat-wave"></span>
+
+                        </article>
+
+
+                        <article class="stat-card stat-present">
+
+                            <span class="stat-icon">
+
+                                <svg>
+                                    <use href="#icon-check"></use>
+                                </svg>
+
+                            </span>
+
+
+                            <div class="stat-content">
+
+                                <span>
+                                    Presentes
+                                </span>
+
+
+                                <div class="stat-value-row">
+
+                                    <strong id="presentStudents">
+                                        0
+                                    </strong>
+
+                                    <b id="presentPercent">
+                                        0%
+                                    </b>
+
+                                </div>
+
+                            </div>
+
+
+                            <span class="stat-wave"></span>
+
+                        </article>
+
+
+                        <article class="stat-card stat-absent">
+
+                            <span class="stat-icon">
+
+                                <svg>
+                                    <use href="#icon-x"></use>
+                                </svg>
+
+                            </span>
+
+
+                            <div class="stat-content">
+
+                                <span>
+                                    Ausentes
+                                </span>
+
+
+                                <div class="stat-value-row">
+
+                                    <strong id="absentStudents">
+                                        0
+                                    </strong>
+
+                                    <b id="absentPercent">
+                                        0%
+                                    </b>
+
+                                </div>
+
+                            </div>
+
+
+                            <span class="stat-wave"></span>
+
+                        </article>
+
+
+                        <article class="stat-card stat-frequency">
+
+                            <span class="stat-icon">
+
+                                <svg>
+                                    <use href="#icon-percent"></use>
+                                </svg>
+
+                            </span>
+
+
+                            <div class="stat-content">
+
+                                <span>
+                                    Frequência geral
+                                </span>
+
+                                <strong id="generalFrequency">
+                                    0%
+                                </strong>
+
+                            </div>
+
+
+                            <span class="stat-wave"></span>
+
+                        </article>
+
+                    </div>
+
+                </section>
+
+
+                <!-- =================================================
+                     PAINÉIS
+                ================================================== -->
+
+                <section class="dashboard-grid">
+
+
+                    <!-- =================================================
+                         FREQUÊNCIA DE HOJE
+                    ================================================== -->
+
+                    <article class="panel attendance-panel">
+
+                        <header class="panel-header">
+
+                            <div>
+
+                                <h2>
+                                    Frequência de hoje
+                                </h2>
+
+                                <span
+                                    class="panel-subtitle"
+                                    id="attendanceFilterLabel"
+                                >
+                                    Visualizando todas as turmas
+                                </span>
+
+                            </div>
+
+
+                            <div
+                                class="custom-select panel-custom-select"
+                                id="attendanceDropdown"
+                            >
+
+                                <button
+                                    class="custom-select-trigger"
+                                    type="button"
+                                    aria-haspopup="listbox"
+                                    aria-expanded="false"
+                                >
+
+                                    <span class="custom-select-icon">
+
+                                        <svg>
+                                            <use href="#icon-users"></use>
+                                        </svg>
+
+                                    </span>
+
+
+                                    <span class="custom-select-content">
+
+                                        <strong id="selectedAttendanceClass">
+                                            Todas as turmas
+                                        </strong>
+
+                                    </span>
+
+
+                                    <svg class="custom-select-chevron">
+                                        <use href="#icon-chevron-down"></use>
+                                    </svg>
+
+                                </button>
+
+
+                                <div
+                                    class="custom-select-menu"
+                                    role="listbox"
+                                >
+
+                                    <button
+                                        type="button"
+                                        class="custom-option selected"
+                                        data-value="all"
+                                    >
+
+                                        <span>
+                                            Todas as turmas
+                                        </span>
+
+                                        <span class="option-check">
+                                            ✓
+                                        </span>
+
+                                    </button>
+
+
+                                    <button type="button" class="custom-option" data-value="turma01">
+                                        <span>Turma 01</span>
+                                    </button>
+
+                                    <button type="button" class="custom-option" data-value="turma02">
+                                        <span>Turma 02</span>
+                                    </button>
+
+                                    <button type="button" class="custom-option" data-value="turma03">
+                                        <span>Turma 03</span>
+                                    </button>
+
+                                    <button type="button" class="custom-option" data-value="turma04">
+                                        <span>Turma 04</span>
+                                    </button>
+
+                                    <button type="button" class="custom-option" data-value="turma05">
+                                        <span>Turma 05</span>
+                                    </button>
+
+                                    <button type="button" class="custom-option" data-value="turma06">
+                                        <span>Turma 06</span>
+                                    </button>
+
+                                    <button type="button" class="custom-option" data-value="turma07">
+                                        <span>Turma 07</span>
+                                    </button>
+
+                                    <button type="button" class="custom-option" data-value="turma08">
+                                        <span>Turma 08</span>
+                                    </button>
+
+                                    <button type="button" class="custom-option" data-value="turma09">
+                                        <span>Turma 09</span>
+                                    </button>
+
+                                    <button type="button" class="custom-option" data-value="turma10">
+                                        <span>Turma 10</span>
+                                    </button>
+
+                                </div>
+
+
+                                <input
+                                    type="hidden"
+                                    id="attendanceClassSelect"
+                                    value="all"
+                                >
+
+                            </div>
+
+                        </header>
+
+
+                        <div class="attendance-body">
+
+                            <div
+                                class="donut green-donut"
+                                id="attendanceDonut"
+                            >
+
+                                <div class="donut-center">
+
+                                    <strong id="attendanceDonutPercent">
+                                        0%
+                                    </strong>
+
+                                    <span>
+                                        Frequência<br>
+                                        geral
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="legend">
+
+                                <div class="legend-row">
+
+                                    <span class="dot green"></span>
+
+                                    <strong id="attendancePresent">
+                                        0
+                                    </strong>
+
+                                    <span>
+                                        Presentes
+                                    </span>
+
+                                    <b id="attendancePresentPercent">
+                                        0%
+                                    </b>
+
+                                </div>
+
+
+                                <div class="legend-row">
+
+                                    <span class="dot red"></span>
+
+                                    <strong id="attendanceAbsent">
+                                        0
+                                    </strong>
+
+                                    <span>
+                                        Ausentes
+                                    </span>
+
+                                    <b id="attendanceAbsentPercent">
+                                        0%
+                                    </b>
+
+                                </div>
+
+
+                                <div class="legend-row">
+
+                                    <span class="dot gray"></span>
+
+                                    <strong id="attendanceJustified">
+                                        0
+                                    </strong>
+
+                                    <span>
+                                        Justificados
+                                    </span>
+
+                                    <b id="attendanceJustifiedPercent">
+                                        0%
+                                    </b>
+
+                                </div>
+
+
+                                <div class="legend-row">
+
+                                    <span class="dot pale"></span>
+
+                                    <strong id="attendanceTotal">
+                                        0
+                                    </strong>
+
+                                    <span>
+                                        Total
+                                    </span>
+
+                                    <b>
+                                        100%
+                                    </b>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- =================================================
+                         SITUAÇÃO DAS TURMAS
+                    ================================================== -->
+
+                    <article class="panel classes-panel">
+
+                        <header class="panel-header">
+
+                            <div>
+
+                                <h2>
+                                    Situação das turmas
+                                </h2>
+
+                                <span
+                                    class="panel-subtitle"
+                                    id="statusFilterLabel"
+                                >
+                                    Visualizando todas as turmas
+                                </span>
+
+                            </div>
+
+
+                            <div
+                                class="custom-select panel-custom-select"
+                                id="statusDropdown"
+                            >
+
+                                <button
+                                    class="custom-select-trigger"
+                                    type="button"
+                                    aria-haspopup="listbox"
+                                    aria-expanded="false"
+                                >
+
+                                    <span class="custom-select-icon">
+
+                                        <svg>
+                                            <use href="#icon-users"></use>
+                                        </svg>
+
+                                    </span>
+
+
+                                    <span class="custom-select-content">
+
+                                        <strong id="selectedStatusClass">
+                                            Todas as turmas
+                                        </strong>
+
+                                    </span>
+
+
+                                    <svg class="custom-select-chevron">
+                                        <use href="#icon-chevron-down"></use>
+                                    </svg>
+
+                                </button>
+
+
+                                <div
+                                    class="custom-select-menu"
+                                    role="listbox"
+                                >
+
+                                    <button
+                                        type="button"
+                                        class="custom-option selected"
+                                        data-value="all"
+                                    >
+
+                                        <span>
+                                            Todas as turmas
+                                        </span>
+
+                                        <span class="option-check">
+                                            ✓
+                                        </span>
+
+                                    </button>
+
+
+                                    <button type="button" class="custom-option" data-value="turma01">
+                                        <span>Turma 01</span>
+                                    </button>
+
+                                    <button type="button" class="custom-option" data-value="turma02">
+                                        <span>Turma 02</span>
+                                    </button>
+
+                                    <button type="button" class="custom-option" data-value="turma03">
+                                        <span>Turma 03</span>
+                                    </button>
+
+                                    <button type="button" class="custom-option" data-value="turma04">
+                                        <span>Turma 04</span>
+                                    </button>
+
+                                    <button type="button" class="custom-option" data-value="turma05">
+                                        <span>Turma 05</span>
+                                    </button>
+
+                                    <button type="button" class="custom-option" data-value="turma06">
+                                        <span>Turma 06</span>
+                                    </button>
+
+                                    <button type="button" class="custom-option" data-value="turma07">
+                                        <span>Turma 07</span>
+                                    </button>
+
+                                    <button type="button" class="custom-option" data-value="turma08">
+                                        <span>Turma 08</span>
+                                    </button>
+
+                                    <button type="button" class="custom-option" data-value="turma09">
+                                        <span>Turma 09</span>
+                                    </button>
+
+                                    <button type="button" class="custom-option" data-value="turma10">
+                                        <span>Turma 10</span>
+                                    </button>
+
+                                </div>
+
+
+                                <input
+                                    type="hidden"
+                                    id="statusClassSelect"
+                                    value="all"
+                                >
+
+                            </div>
+
+                        </header>
+
+
+                        <div class="attendance-body">
+
+                            <div
+                                class="donut classes-donut"
+                                id="classesDonut"
+                            >
+
+                                <div class="donut-center">
+
+                                    <strong id="classesTotal">
+                                        10
+                                    </strong>
+
+                                    <span>
+                                        Turmas<br>
+                                        total
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="legend class-legend">
+
+                                <div class="legend-row">
+
+                                    <span class="dot green"></span>
+
+                                    <strong id="completedClasses">
+                                        0
+                                    </strong>
+
+                                    <span>
+                                        Concluídas
+
+                                        <small>
+                                            com frequência lançada
+                                        </small>
+                                    </span>
+
+                                </div>
+
+
+                                <div class="legend-row">
+
+                                    <span class="dot yellow"></span>
+
+                                    <strong id="pendingClasses">
+                                        0
+                                    </strong>
+
+                                    <span>
+                                        Pendentes
+
+                                        <small>
+                                            sem frequência
+                                        </small>
+                                    </span>
+
+                                </div>
+
+
+                                <div class="legend-row">
+
+                                    <span class="dot gray"></span>
+
+                                    <strong id="notStartedClasses">
+                                        10
+                                    </strong>
+
+                                    <span>
+                                        Não iniciadas
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- =================================================
+                         ATALHOS RÁPIDOS
+                    ================================================== -->
+
+                    <article class="panel shortcuts-panel">
+
+                        <header class="panel-header">
+
+                            <h2>
+                                Atalhos rápidos
+                            </h2>
+
+                        </header>
+
+
+                        <div class="shortcuts">
+
+                            <!-- FAZER CHAMADA -->
+
+                            <a
+                                href="../frequencia/frequencia.html"
+                                class="shortcut green"
+                            >
+
+                                <svg>
+                                    <use href="#icon-calendar"></use>
+                                </svg>
+
+                                <strong>
+                                    Fazer chamada
+                                </strong>
+
+                                <span>›</span>
+
+                            </a>
+
+
+                            <!-- GERENCIAR TURMAS -->
+
+                            <a
+                                href="../turmas/index.html"
+                                class="shortcut blue"
+                            >
+
+                                <svg>
+                                    <use href="#icon-users"></use>
+                                </svg>
+
+                                <strong>
+                                    Gerenciar turmas
+                                </strong>
+
+                                <span>›</span>
+
+                            </a>
+
+
+                            <!-- =================================================
+                                 STATUS ALUNO
+                                 ALTERADO DE "CADASTRAR ALUNO"
+                            ================================================== -->
+
+                            <a
+                                href="../aluno/aluno.html"
+                                class="shortcut emerald"
+                            >
+
+                                <svg>
+                                    <use href="#icon-user"></use>
+                                </svg>
+
+                                <strong>
+                                    Status Aluno
+                                </strong>
+
+                                <span>›</span>
+
+                            </a>
+
+
+                            <!-- RELATÓRIOS -->
+
+                            <a
+                                href="../relat/relat.html"
+                                class="shortcut purple"
+                            >
+
+                                <svg>
+                                    <use href="#icon-chart"></use>
+                                </svg>
+
+                                <strong>
+                                    Ver relatórios
+                                </strong>
+
+                                <span>›</span>
+
+                            </a>
+
+                        </div>
+
+                    </article>
+
+                </section>
+
+
+                <!-- =================================================
+                     PARTE INFERIOR
+                ================================================== -->
+
+                <section class="bottom-grid">
+
+
+                    <!-- =================================================
+                         ÚLTIMAS CHAMADAS
+                    ================================================== -->
+
+                    <article class="panel recent-panel">
+
+                        <header class="panel-header">
+
+                            <div class="title-with-icon">
+
+                                <svg>
+                                    <use href="#icon-clock"></use>
+                                </svg>
+
+                                <h2>
+                                    Últimas chamadas
+                                </h2>
+
+                            </div>
+
+
+                            <a href="../turmas/index.html">
+
+                                Ver todas as turmas
+
+                                <svg>
+                                    <use href="#icon-arrow-right"></use>
+                                </svg>
+
+                            </a>
+
+                        </header>
+
+
+                        <div class="table-wrapper">
+
+                            <table>
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>
+                                            TURMA
+                                        </th>
+
+                                        <th>
+                                            TURNO
+                                        </th>
+
+                                        <th>
+                                            DATA
+                                        </th>
+
+                                        <th>
+                                            PRESENTES
+                                        </th>
+
+                                        <th>
+                                            AUSENTES
+                                        </th>
+
+                                        <th>
+                                            STATUS
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody id="recentCallsBody">
+
+                                    <tr>
+
+                                        <td colspan="6">
+                                            Nenhuma chamada registrada.
+                                        </td>
+
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </article>
+
+                    <article class="panel today-activity-panel" aria-labelledby="todayActivityTitle">
+                        <header class="panel-header today-activity-header">
+                            <div class="title-with-icon">
+                                <span class="activity-icon today-activity-icon">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+                                </span>
+                                <span class="today-activity-title-wrap">
+                                    <h2 id="todayActivityTitle">Atividades de hoje</h2>
+                                    <small>Alterações nas turmas registradas hoje</small>
+                                </span>
+                            </div>
+                        </header>
+                        <div class="activity-list today-activity-list" id="todayActivitiesList" aria-live="polite">
+                            <p class="activity-empty">Carregando notificações…</p>
+                        </div>
+                    </article>
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <!-- =====================================================
+         OVERLAY MOBILE
+    ====================================================== -->
+
+    <div
+        class="sidebar-overlay"
+        id="sidebarOverlay"
+    ></div>
+
+</body>
+
+</html>
+
+

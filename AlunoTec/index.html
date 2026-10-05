@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#008c51">
+
+  <title>AlunoTec | Sistema de Frequência Escolar</title>
+
+  <link rel="stylesheet" href="login/login.css">
+  <script src="login/login.js" defer></script>
+</head>
+
+<body>
+
+  <!-- =====================================================
+       BIBLIOTECA DE ÍCONES
+  ====================================================== -->
+
+  <svg
+    class="svg-library"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+
+    <symbol id="icon-user" viewBox="0 0 24 24">
+      <circle cx="12" cy="7" r="4"/>
+      <path d="M4 21v-3a8 8 0 0 1 16 0v3Z"/>
+    </symbol>
+
+    <symbol id="icon-lock" viewBox="0 0 24 24">
+      <rect x="5" y="10" width="14" height="11" rx="2"/>
+      <path d="M8 10V7a4 4 0 0 1 8 0v3M12 15v2"/>
+    </symbol>
+
+    <symbol id="icon-eye" viewBox="0 0 24 24">
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </symbol>
+
+    <symbol id="icon-eye-off" viewBox="0 0 24 24">
+      <path
+        d="m3 3 18 18M10.6 5.1A12 12 0 0 1 12 5c6.5 0 10 7 10 7a19 19 0 0 1-3.1 4M6.1 6.1A20 20 0 0 0 2 12s3.5 7 10 7a13 13 0 0 0 5.9-1.4M10 10a3 3 0 0 0 4 4"
+      />
+    </symbol>
+
+    <symbol id="icon-arrow" viewBox="0 0 24 24">
+      <path d="M4 12h16m-7-7 7 7-7 7"/>
+    </symbol>
+
+    <symbol id="icon-building" viewBox="0 0 24 24">
+      <path d="m3 8 9-5 9 5H3Zm2 0v12m5-12v12m4-12v12m5-12v12M3 21h18"/>
+    </symbol>
+
+    <symbol id="icon-calendar" viewBox="0 0 24 24">
+      <rect x="3" y="5" width="18" height="16" rx="2"/>
+      <path d="M7 3v4m10-4v4M3 10h18m-13 4h1m6 0h1m-8 4h1m6 0h1"/>
+    </symbol>
+
+    <symbol id="icon-users" viewBox="0 0 24 24">
+      <circle cx="9" cy="7" r="3"/>
+      <path d="M2 21v-3a7 7 0 0 1 14 0v3M17 4a3 3 0 0 1 0 6m1 4a5 5 0 0 1 4 5v2"/>
+    </symbol>
+
+    <symbol id="icon-chart" viewBox="0 0 24 24">
+      <path d="M4 20v-6h3v6Zm7 0V9h3v11Zm7 0V3h3v17Z"/>
+    </symbol>
+
+    <symbol id="icon-shield" viewBox="0 0 24 24">
+      <path d="m12 2 8 3v6c0 5-4 9-8 11-4-2-8-6-8-11V5Z"/>
+      <path d="m8 12 3 3 5-6"/>
+    </symbol>
+
+    <symbol id="icon-guest" viewBox="0 0 24 24">
+      <circle cx="12" cy="8" r="3.5"/>
+      <path d="M5 20v-2a7 7 0 0 1 14 0v2"/>
+    </symbol>
+
+    <symbol id="icon-school" viewBox="0 0 24 24">
+      <path d="M3 10 12 4l9 6"/>
+      <path d="M5 9v11h14V9"/>
+      <path d="M9 20v-6h6v6"/>
+      <path d="M8 10h2m4 0h2"/>
+    </symbol>
+
+    <symbol id="icon-close" viewBox="0 0 24 24">
+      <path d="M6 6 18 18M18 6 6 18"/>
+    </symbol>
+
+  </svg>
+
+
+  <!-- =====================================================
+       PÁGINA PRINCIPAL
+  ====================================================== -->
+
+  <main class="login-page">
+
+    <!-- LADO ESQUERDO -->
+
+    <section
+      class="presentation"
+      aria-label="Conheça o AlunoTec"
+    >
+
+      <div class="presentation-content">
+
+        <img
+          class="brand-logo"
+          src="assets/images/logo-alunotec.png"
+          alt="AlunoTec — Sistema de Frequência Escolar"
+        >
+
+        <div class="presentation-text">
+
+          <h1>
+            Mais<br>
+            <span>presença</span><br>
+            para um futuro<br>
+            com mais<br>
+            <span>oportunidades.</span>
+          </h1>
+
+          <div
+            class="green-line"
+            aria-hidden="true"
+          ></div>
+
+          <p>
+            Registro de frequência de forma simples, organizada e em
+            tempo real, contribuindo para a permanência e o sucesso
+            dos alunos.
+          </p>
+
+        </div>
+
+
+        <!-- BENEFÍCIOS -->
+
+        <ul class="benefits">
+
+          <li>
+
+            <span class="benefit-icon">
+
+              <svg class="icon" aria-hidden="true">
+                <use href="#icon-calendar"/>
+              </svg>
+
+            </span>
+
+            <strong>
+              Registro<br>
+              de frequência
+            </strong>
+
+          </li>
+
+
+          <li>
+
+            <span class="benefit-icon">
+
+              <svg class="icon" aria-hidden="true">
+                <use href="#icon-users"/>
+              </svg>
+
+            </span>
+
+            <strong>
+              Acompanhamento<br>
+              de alunos
+            </strong>
+
+          </li>
+
+
+          <li>
+
+            <span class="benefit-icon">
+
+              <svg class="icon" aria-hidden="true">
+                <use href="#icon-chart"/>
+              </svg>
+
+            </span>
+
+            <strong>
+              Relatórios<br>
+              em tempo real
+            </strong>
+
+          </li>
+
+
+          <li>
+
+            <span class="benefit-icon">
+
+              <svg class="icon" aria-hidden="true">
+                <use href="#icon-shield"/>
+              </svg>
+
+            </span>
+
+            <strong>
+              Mais permanência,<br>
+              mais aprendizagem
+            </strong>
+
+          </li>
+
+        </ul>
+
+
+        <footer class="presentation-footer">
+
+          <span
+            class="footer-line"
+            aria-hidden="true"
+          ></span>
+
+          <span>
+            © 2026 AlunoTec. Todos os direitos reservados.
+          </span>
+
+        </footer>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         LADO DIREITO
+    ==================================================== -->
+
+    <section
+      class="login-section"
+      aria-labelledby="login-title"
+    >
+
+      <div class="login-card">
+
+
+        <!-- CABEÇALHO -->
+
+        <header class="login-header">
+
+          <div
+            class="title-line"
+            aria-hidden="true"
+          ></div>
+
+          <h2 id="login-title">
+            Bem-vindo ao
+          </h2>
+
+          <div
+            class="login-brand"
+            aria-label="AlunoTec"
+          >
+            Aluno<span>Tec</span>
+          </div>
+
+          <p>
+            Acesse sua conta para continuar.
+          </p>
+
+        </header>
+
+
+        <!-- CONEXÃO -->
+
+        <div
+          id="connectionStatus"
+          class="connection-status"
+          role="status"
+          aria-live="polite"
+        >
+
+          <span
+            class="status-dot"
+            aria-hidden="true"
+          ></span>
+
+          <span id="connectionText">
+            Verificando conexão…
+          </span>
+
+        </div>
+
+
+        <!-- LOGIN ADMINISTRADOR -->
+
+        <form id="loginForm">
+
+          <div class="field">
+
+            <label
+              class="sr-only"
+              for="email"
+            >
+              E-mail
+            </label>
+
+            <div class="input-container">
+
+              <svg
+                class="icon input-icon"
+                aria-hidden="true"
+              >
+                <use href="#icon-user"/>
+              </svg>
+
+              <input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="E-mail"
+                autocomplete="username"
+                autocapitalize="none"
+                spellcheck="false"
+                required
+              >
+
+            </div>
+
+          </div>
+
+
+          <div class="field">
+
+            <label
+              class="sr-only"
+              for="password"
+            >
+              Senha
+            </label>
+
+            <div class="input-container">
+
+              <svg
+                class="icon input-icon"
+                aria-hidden="true"
+              >
+                <use href="#icon-lock"/>
+              </svg>
+
+              <input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Senha"
+                autocomplete="current-password"
+                required
+              >
+
+              <button
+                id="togglePassword"
+                class="toggle-password"
+                type="button"
+                aria-label="Mostrar senha"
+                aria-controls="password"
+                aria-pressed="false"
+              >
+
+                <svg
+                  class="icon"
+                  aria-hidden="true"
+                >
+                  <use
+                    id="eyeIcon"
+                    href="#icon-eye"
+                  />
+                </svg>
+
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div class="login-options">
+
+            <label class="remember">
+
+              <input
+                id="remember"
+                name="remember"
+                type="checkbox"
+              >
+
+              <span>
+                Lembrar de mim
+              </span>
+
+            </label>
+
+
+            <button
+              id="forgotPassword"
+              class="forgot"
+              type="button"
+            >
+              Esqueci minha senha?
+            </button>
+
+          </div>
+
+
+          <p
+            id="loginMessage"
+            class="message"
+            role="alert"
+            hidden
+          ></p>
+
+
+          <button
+            id="loginButton"
+            class="primary-button"
+            type="submit"
+          >
+
+            <span id="loginButtonText">
+              ENTRAR
+            </span>
+
+            <svg
+              class="icon"
+              aria-hidden="true"
+            >
+              <use href="#icon-arrow"/>
+            </svg>
+
+          </button>
+
+        </form>
+
+
+        <!-- DIVISOR -->
+
+        <div class="divider">
+          <span>OU</span>
+        </div>
+
+
+        <!-- CONTA INSTITUCIONAL -->
+
+        <button
+          id="institutionalLogin"
+          class="institutional-button"
+          type="button"
+        >
+
+          <svg
+            class="icon"
+            aria-hidden="true"
+          >
+            <use href="#icon-building"/>
+          </svg>
+
+          <span>
+            Conta institucional
+          </span>
+
+        </button>
+
+
+        <!-- CONTA CONVIDADO -->
+
+        <button
+          id="guestLogin"
+          class="institutional-button guest-button"
+          type="button"
+        >
+
+          <svg
+            class="icon"
+            aria-hidden="true"
+          >
+            <use href="#icon-guest"/>
+          </svg>
+
+          <span>
+            Conta convidado
+          </span>
+
+        </button>
+
+
+        <!-- RODAPÉ -->
+
+        <footer class="login-footer">
+
+          AlunoTec
+
+          <span>•</span>
+
+          Gestão de Frequência Escolar
+
+          <span>•</span>
+
+          2026
+
+        </footer>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =====================================================
+       MODAL - CONTA INSTITUCIONAL
+  ====================================================== -->
+
+  <div
+    id="institutionalModal"
+    class="access-modal"
+    aria-hidden="true"
+  >
+
+    <!-- FUNDO ESCURO -->
+
+    <div
+      id="institutionalOverlay"
+      class="access-modal-overlay"
+    ></div>
+
+
+    <!-- JANELA -->
+
+    <div
+      class="access-modal-card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="institutionalModalTitle"
+    >
+
+      <!-- FECHAR -->
+
+      <button
+        id="closeInstitutionalModal"
+        class="access-modal-close"
+        type="button"
+        aria-label="Fechar"
+      >
+
+        <svg
+          class="icon"
+          aria-hidden="true"
+        >
+          <use href="#icon-close"/>
+        </svg>
+
+      </button>
+
+
+      <!-- ÍCONE -->
+
+      <div class="access-modal-icon">
+
+        <svg
+          class="icon"
+          aria-hidden="true"
+        >
+          <use href="#icon-school"/>
+        </svg>
+
+      </div>
+
+
+      <!-- CABEÇALHO -->
+
+      <div class="access-modal-header">
+
+        <span>
+          ACESSO INSTITUCIONAL
+        </span>
+
+        <h2 id="institutionalModalTitle">
+          Agente Educacional
+        </h2>
+
+        <p>
+          Entre com os dados da sua instituição.
+        </p>
+
+      </div>
+
+
+      <!-- FORMULÁRIO -->
+
+      <form id="institutionalForm">
+
+        <!-- INEP -->
+
+        <div class="modal-field">
+
+          <label for="institutionalInep">
+            INEP
+          </label>
+
+          <div class="input-container">
+
+            <svg
+              class="icon input-icon"
+              aria-hidden="true"
+            >
+              <use href="#icon-building"/>
+            </svg>
+
+            <input
+              id="institutionalInep"
+              name="inep"
+              type="text"
+              inputmode="numeric"
+              autocomplete="username"
+              placeholder="Digite o INEP da instituição"
+              maxlength="8"
+              required
+            >
+
+          </div>
+
+        </div>
+
+
+        <!-- SENHA -->
+
+        <div class="modal-field">
+
+          <label for="institutionalPassword">
+            Senha
+          </label>
+
+          <div class="input-container">
+
+            <svg
+              class="icon input-icon"
+              aria-hidden="true"
+            >
+              <use href="#icon-lock"/>
+            </svg>
+
+            <input
+              id="institutionalPassword"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              placeholder="Digite sua senha"
+              required
+            >
+
+
+            <button
+              id="toggleInstitutionalPassword"
+              class="toggle-password"
+              type="button"
+              aria-label="Mostrar senha"
+              aria-controls="institutionalPassword"
+              aria-pressed="false"
+            >
+
+              <svg
+                class="icon"
+                aria-hidden="true"
+              >
+                <use
+                  id="institutionalEyeIcon"
+                  href="#icon-eye"
+                />
+              </svg>
+
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- MENSAGEM -->
+
+        <p
+          id="institutionalMessage"
+          class="message"
+          role="alert"
+          hidden
+        ></p>
+
+
+        <!-- ENTRAR -->
+
+        <button
+          id="institutionalSubmit"
+          class="primary-button institutional-submit"
+          type="submit"
+        >
+
+          <span id="institutionalSubmitText">
+            ENTRAR
+          </span>
+
+          <svg
+            class="icon"
+            aria-hidden="true"
+          >
+            <use href="#icon-arrow"/>
+          </svg>
+
+        </button>
+
+      </form>
+
+
+      <!-- INFORMAÇÃO -->
+
+      <div class="institutional-info">
+
+        <svg
+          class="icon"
+          aria-hidden="true"
+        >
+          <use href="#icon-shield"/>
+        </svg>
+
+        <p>
+          Acesso destinado ao
+          <strong>Agente Educacional</strong>
+          cadastrado pelo administrador.
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</body>
+</html>
