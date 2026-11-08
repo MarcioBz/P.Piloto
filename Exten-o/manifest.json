@@ -1,0 +1,41 @@
+{
+   "action": {
+      "default_title": "Nexo - Auto Meta Vibes on Vibes.ai"
+   },
+   "author": {
+      "email": "marcio.bezerrati@gmail.com"
+   },
+   "background": {
+      "service_worker": "service-worker-loader.js",
+      "type": "module"
+   },
+   "content_scripts": [ {
+      "all_frames": false,
+      "js": [ "assets/index.ts-loader-DqsvrYqF.js" ],
+      "matches": [ "*://vibes.ai/*", "*://www.vibes.ai/*" ],
+      "run_at": "document_end"
+   } ],
+   "description": "Auto Meta Vibes your prompts at scale. Batch generate and auto-download videos and images on vibes.ai.",
+   "host_permissions": [ "*://vibes.ai/*", "*://*.vibes.ai/*" ],
+   "icons": {
+      "128": "src/assets/logo.png",
+      "16": "src/assets/logo.png",
+      "24": "src/assets/logo.png",
+      "32": "src/assets/logo.png"
+   },
+   "manifest_version": 3,
+   "name": "Nexo",
+   "offline_enabled": true,
+   "permissions": [ "storage", "unlimitedStorage", "tabs", "background", "sidePanel", "activeTab", "downloads" ],
+   "side_panel": {
+      "default_path": "src/ui/side-panel/index.html"
+   },
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "1.1.9.0",
+   "version_name": "1.1.9",
+   "web_accessible_resources": [ {
+      "matches": [ "*://vibes.ai/*", "*://www.vibes.ai/*" ],
+      "resources": [ "assets/workflowResults-qoMMSAXH.js", "assets/catchUploadFile.ts-CQpHS9LI.js", "assets/index.ts-BlWBiylK.js" ],
+      "use_dynamic_url": false
+   } ]
+}
