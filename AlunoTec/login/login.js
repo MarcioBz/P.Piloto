@@ -1,3 +1,11 @@
+/* ==========================================================
+   ALUNOTEC | MAPA DE EDIÇÃO — LÓGICA DE ENTRADA
+   As seções abaixo tratam acesso principal, institucional e convidado,
+   estado da conexão, mensagens e modal. Os IDs devem corresponder a
+   ../index.html. Regras de autenticação e permissões pertencem ao
+   servidor; este arquivo cuida da interface e das chamadas existentes.
+========================================================== */
+
 "use strict";
 
 /*

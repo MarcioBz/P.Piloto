@@ -1,3 +1,12 @@
+/* ==========================================================
+   ALUNOTEC | MAPA DE EDIÇÃO — LÓGICA DO PAINEL
+   Áreas abaixo: atividades/notificações; utilitários e data; conexão e
+   sincronização; menus/perfil; ano letivo e filtros; dados dos cartões,
+   chamadas recentes e inicialização. Ctrl+F pelo nome da função ajuda
+   a localizar uma ação. As chaves de armazenamento são contratos com
+   os demais módulos: altere-as apenas junto com os módulos relacionados.
+========================================================== */
+
 "use strict";
 
 /* ==========================================================
@@ -12,7 +21,6 @@ document.addEventListener("DOMContentLoaded", () => {
     ====================================================== */
 
   const LOGIN_PAGE = "../index.html";
-
 
   /* ======================================================
        ELEMENTOS
@@ -231,10 +239,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  
-
-
-
   /* ======================================================
        FUNÇÕES AUXILIARES
     ====================================================== */
@@ -244,9 +248,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function escapeDashboardHTML(value) {
-    return String(value ?? "").replace(/[&<>"']/g, (character) => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
-    })[character]);
+    return String(value ?? "").replace(
+      /[&<>"']/g,
+      (character) =>
+        ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;",
+        })[character],
+    );
   }
 
   function calculatePercent(value, total) {
@@ -534,84 +546,84 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     dropdown.addEventListener("click", (event) => {
-        const option = event.target.closest(".custom-option");
-        if (!option || !dropdown.contains(option)) return;
-        const options = dropdown.querySelectorAll(".custom-option");
-        event.stopPropagation();
+      const option = event.target.closest(".custom-option");
+      if (!option || !dropdown.contains(option)) return;
+      const options = dropdown.querySelectorAll(".custom-option");
+      event.stopPropagation();
 
-        const value = option.dataset.value;
+      const value = option.dataset.value;
 
-        const firstSpan = option.querySelector("span");
+      const firstSpan = option.querySelector("span");
 
-        const text = firstSpan
-          ? firstSpan.textContent.trim()
-          : option.textContent.trim();
+      const text = firstSpan
+        ? firstSpan.textContent.trim()
+        : option.textContent.trim();
 
-        /*
-         * Remove seleção anterior.
-         */
+      /*
+       * Remove seleção anterior.
+       */
 
-        options.forEach((item) => {
-          item.classList.remove("selected");
+      options.forEach((item) => {
+        item.classList.remove("selected");
 
-          const oldCheck = item.querySelector(".option-check");
+        const oldCheck = item.querySelector(".option-check");
 
-          if (oldCheck) {
-            oldCheck.remove();
-          }
-        });
-
-        /*
-         * Nova seleção.
-         */
-
-        option.classList.add("selected");
-
-        const check = document.createElement("span");
-
-        check.className = "option-check";
-
-        check.textContent = "✓";
-
-        option.appendChild(check);
-
-        /*
-         * Atualiza texto.
-         */
-
-        if (display) {
-          display.textContent = text;
+        if (oldCheck) {
+          oldCheck.remove();
         }
+      });
 
-        /*
-         * Atualiza input escondido.
-         */
+      /*
+       * Nova seleção.
+       */
 
-        if (hiddenInput) {
-          hiddenInput.value = value;
+      option.classList.add("selected");
 
-          hiddenInput.dispatchEvent(
-            new Event("change", {
-              bubbles: true,
-            }),
-          );
-        }
+      const check = document.createElement("span");
 
-        /*
-         * Fecha menu.
-         */
+      check.className = "option-check";
 
-        dropdown.classList.remove("open");
+      check.textContent = "✓";
 
-        trigger.setAttribute("aria-expanded", "false");
+      option.appendChild(check);
 
-        /*
-         * Executa função específica.
-         */
+      /*
+       * Atualiza texto.
+       */
 
-        if (typeof onChange === "function") {
-          onChange(value, text);
-        }
+      if (display) {
+        display.textContent = text;
+      }
+
+      /*
+       * Atualiza input escondido.
+       */
+
+      if (hiddenInput) {
+        hiddenInput.value = value;
+
+        hiddenInput.dispatchEvent(
+          new Event("change", {
+            bubbles: true,
+          }),
+        );
+      }
+
+      /*
+       * Fecha menu.
+       */
+
+      dropdown.classList.remove("open");
+
+      trigger.setAttribute("aria-expanded", "false");
+
+      /*
+       * Executa função específica.
+       */
+
+      if (typeof onChange === "function") {
+        onChange(value, text);
+      }
     });
   }
 
@@ -816,47 +828,103 @@ document.addEventListener("DOMContentLoaded", () => {
     let savedClasses = {};
     let attendance = {};
     try {
-      savedClasses = JSON.parse(localStorage.getItem("alunotec_turmas_v2") || "{}");
-      attendance = JSON.parse(localStorage.getItem("alunotec_frequencia_v1") || "{}");
+      savedClasses = JSON.parse(
+        localStorage.getItem("alunotec_turmas_v2") || "{}",
+      );
+      attendance = JSON.parse(
+        localStorage.getItem("alunotec_frequencia_v1") || "{}",
+      );
     } catch (error) {
       console.warn("Não foi possível ler os dados locais do painel.", error);
     }
-    const year = localStorage.getItem("alunotecSchoolYear") || String(new Date().getFullYear());
-    const calls = Object.values(attendance && typeof attendance === "object" ? attendance : {})
-      .filter((call) => call && String(call.year || call.date?.slice?.(0, 4)) === year);
+    const year =
+      localStorage.getItem("alunotecSchoolYear") ||
+      String(new Date().getFullYear());
+    const calls = Object.values(
+      attendance && typeof attendance === "object" ? attendance : {},
+    ).filter(
+      (call) => call && String(call.year || call.date?.slice?.(0, 4)) === year,
+    );
     const classes = Array.isArray(savedClasses?.base) ? savedClasses.base : [];
     const now = new Date();
-    const today = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, "0"), String(now.getDate()).padStart(2, "0")].join("-");
-    return classes.filter((item) => item && item.id != null && String(item.year || year) === year).map((item) => {
-      const records = calls.filter((call) => String(call.classId) === String(item.id));
-      const latest = records.slice().sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")))[0];
-      const studentRecords = Object.values(latest?.students || {})
-        .filter((record) => record && typeof record === "object" && record.status);
-      const present = studentRecords.filter((record) => record.status === "presente").length;
-      const absent = studentRecords.filter((record) => record.status === "ausente").length;
-      const justified = studentRecords.filter((record) => record.status === "justificado").length;
-      return {
-        id: String(item.id), name: String(item.name || "Turma sem nome"),
-        total: studentRecords.length, present, absent, justified,
-        status: latest?.date === today ? "completed" : records.length ? "pending" : "not-started",
-        shift: latest?.shift || item.shift || "Não informado", date: latest?.date || "",
-      };
-    });
+    const today = [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, "0"),
+      String(now.getDate()).padStart(2, "0"),
+    ].join("-");
+    return classes
+      .filter(
+        (item) => item && item.id != null && String(item.year || year) === year,
+      )
+      .map((item) => {
+        const records = calls.filter(
+          (call) => String(call.classId) === String(item.id),
+        );
+        const latest = records
+          .slice()
+          .sort((a, b) =>
+            String(b.date || "").localeCompare(String(a.date || "")),
+          )[0];
+        const studentRecords = Object.values(latest?.students || {}).filter(
+          (record) => record && typeof record === "object" && record.status,
+        );
+        const present = studentRecords.filter(
+          (record) => record.status === "presente",
+        ).length;
+        const absent = studentRecords.filter(
+          (record) => record.status === "ausente",
+        ).length;
+        const justified = studentRecords.filter(
+          (record) => record.status === "justificado",
+        ).length;
+        return {
+          id: String(item.id),
+          name: String(item.name || "Turma sem nome"),
+          total: studentRecords.length,
+          present,
+          absent,
+          justified,
+          status:
+            latest?.date === today
+              ? "completed"
+              : records.length
+                ? "pending"
+                : "not-started",
+          shift: latest?.shift || item.shift || "Não informado",
+          date: latest?.date || "",
+        };
+      });
   }
 
   function populateDashboardClassOptions() {
     const classes = getAllClasses();
     [
-      { id: "attendanceDropdown", filter: "attendanceFilter", labelId: "selectedAttendanceClass", inputId: "attendanceClassSelect" },
-      { id: "statusDropdown", filter: "statusFilter", labelId: "selectedStatusClass", inputId: "statusClassSelect" },
+      {
+        id: "attendanceDropdown",
+        filter: "attendanceFilter",
+        labelId: "selectedAttendanceClass",
+        inputId: "attendanceClassSelect",
+      },
+      {
+        id: "statusDropdown",
+        filter: "statusFilter",
+        labelId: "selectedStatusClass",
+        inputId: "statusClassSelect",
+      },
     ].forEach((config) => {
       const menu = document.querySelector(`#${config.id} .custom-select-menu`);
       if (!menu) return;
-      const state = config.filter === "attendanceFilter" ? attendanceFilter : statusFilter;
-      const selected = classes.some((item) => item.id === state) ? state : "all";
+      const state =
+        config.filter === "attendanceFilter" ? attendanceFilter : statusFilter;
+      const selected = classes.some((item) => item.id === state)
+        ? state
+        : "all";
       if (config.filter === "attendanceFilter") attendanceFilter = selected;
       else statusFilter = selected;
-      const options = [{ id: "all", name: "Todas as turmas" }, ...classes.map((item) => ({ id: item.id, name: item.name }))];
+      const options = [
+        { id: "all", name: "Todas as turmas" },
+        ...classes.map((item) => ({ id: item.id, name: item.name })),
+      ];
       menu.replaceChildren();
       options.forEach((item) => {
         const option = document.createElement("button");
@@ -885,7 +953,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getAttendanceData(filter) {
-    const classes = getAllClasses().filter((item) => filter === "all" || item.id === filter);
+    const classes = getAllClasses().filter(
+      (item) => filter === "all" || item.id === filter,
+    );
 
     return classes.reduce(
       (total, current) => {
@@ -998,7 +1068,9 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateClassesPanel() {
     let classes;
 
-    classes = getAllClasses().filter((item) => statusFilter === "all" || item.id === statusFilter);
+    classes = getAllClasses().filter(
+      (item) => statusFilter === "all" || item.id === statusFilter,
+    );
 
     const total = classes.length;
 

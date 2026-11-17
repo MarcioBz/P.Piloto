@@ -1,3 +1,11 @@
+/* ==========================================================
+   ALUNOTEC | MAPA DE EDIÇÃO — ESTILOS DE ALUNOS
+   Ordem: variáveis e base; estrutura da página; filtros, cartões e
+   tabela; modais e menus; responsividade e ajustes finais.
+   O HTML correspondente está em aluno.html. Classes compartilhadas
+   de perfil/navegação podem vir de ../shared/.
+========================================================== */
+
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 
 :root {
@@ -60,6 +68,7 @@ svg {
   overflow: hidden;
 }
 
+/* NAVEGAÇÃO: menu lateral, marca e links da área de Alunos. */
 .sidebar {
   position: fixed;
   inset: 0 auto 0 0;
@@ -196,6 +205,7 @@ svg {
   line-height: 1.5;
 }
 
+/* ESTRUTURA DA PÁGINA: conteúdo principal e barra superior. */
 .main {
   width: calc(100% - var(--sidebar-width));
   min-height: 100vh;
@@ -554,6 +564,7 @@ svg {
   color: #1684ed;
 }
 
+/* ESTUDANTES: painel, cartões e controles de pesquisa/filtro. */
 .student-panel {
   padding: 18px 20px 20px;
   border: 1px solid var(--border);
@@ -808,6 +819,7 @@ svg {
   color: var(--green-dark);
 }
 
+/* TABELA: rolagem e apresentação das linhas de estudantes. */
 .table-wrap {
   width: 100%;
   overflow-x: auto;
@@ -1141,6 +1153,7 @@ tbody tr:hover {
   transform: translateY(0);
 }
 
+/* RESPONSIVIDADE PRINCIPAL: adapta navegação e conteúdo a telas menores. */
 @media (max-width: 1200px) {
   :root {
     --sidebar-width: 225px;
@@ -1371,96 +1384,96 @@ html {
   }
 }
 
-  .topbar {
-    justify-content: flex-start;
-    gap: 8px;
-    padding: 10px;
-  }
+.topbar {
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 10px;
+}
 
-  .year-picker {
-    flex: 0 1 145px;
-    width: 145px;
-    min-width: 0;
-  }
+.year-picker {
+  flex: 0 1 145px;
+  width: 145px;
+  min-width: 0;
+}
 
-  .topbar-right {
-    gap: 6px;
-    margin-left: auto;
-  }
+.topbar-right {
+  gap: 6px;
+  margin-left: auto;
+}
 
-  .profile-text {
-    display: none;
-  }
+.profile-text {
+  display: none;
+}
 
-  .content {
-    padding: 12px;
-  }
+.content {
+  padding: 12px;
+}
 
-  .hero {
-    grid-template-columns: minmax(0, 1fr);
-    min-height: 180px;
-    padding: 20px;
-  }
+.hero {
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 180px;
+  padding: 20px;
+}
 
-  .hero-photo {
-    opacity: 0.2;
-    pointer-events: none;
-  }
+.hero-photo {
+  opacity: 0.2;
+  pointer-events: none;
+}
 
-  .hero-copy {
-    z-index: 2;
-  }
+.hero-copy {
+  z-index: 2;
+}
 
-  .hero h1 {
-    font-size: 28px;
-  }
+.hero h1 {
+  font-size: 28px;
+}
 
-  .hero h2 {
-    font-size: 16px;
-    line-height: 1.4;
-  }
+.hero h2 {
+  font-size: 16px;
+  line-height: 1.4;
+}
 
-  .summary-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
+.summary-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
 
-  .summary-card {
-    min-width: 0;
-    flex-wrap: wrap;
-    padding: 12px;
-  }
+.summary-card {
+  min-width: 0;
+  flex-wrap: wrap;
+  padding: 12px;
+}
 
-  .filters,
-  .form-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
+.filters,
+.form-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
 
-  .table-wrap table {
-    min-width: 850px;
-  }
+.table-wrap table {
+  min-width: 850px;
+}
 
-  .dialog,
-  .notification-dialog {
-    width: calc(100% - 24px);
-    max-width: calc(100vw - 24px);
-    max-height: calc(100dvh - 24px);
-  }
+.dialog,
+.notification-dialog {
+  width: calc(100% - 24px);
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 24px);
+}
 
-  .dialog-box,
-  .notification-box {
-    padding: 20px;
-    overflow-wrap: anywhere;
-  }
+.dialog-box,
+.notification-box {
+  padding: 20px;
+  overflow-wrap: anywhere;
+}
 
-  .dialog-actions {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
+.dialog-actions {
+  flex-wrap: wrap;
+  gap: 10px;
+}
 
-  .dialog-actions .button {
-    flex: 1 1 140px;
-  }
+.dialog-actions .button {
+  flex: 1 1 140px;
+}
 
 /* Menu compacto igual ao de Frequência */
 @media (min-width: 601px) and (max-width: 850px) {

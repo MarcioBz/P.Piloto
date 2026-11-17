@@ -1,3 +1,12 @@
+/* ==========================================================
+   ALUNOTEC | MAPA DE EDIÇÃO — LÓGICA DE FREQUÊNCIA
+   Ordem aproximada: chaves/helpers; turmas e remanejamentos; montagem
+   da chamada e estatísticas; alertas/anexos; calendário; gravação e
+   edição; conexão e eventos. Os IDs vêm de frequencia.html. As chaves
+   de armazenamento conectam esta tela às telas de Turmas e Alunos.
+   Para editar uma ação, pesquise o nome da função com Ctrl+F.
+========================================================== */
+
 (() => {
   "use strict";
 
@@ -58,6 +67,7 @@
     `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
   const today = () => isoDate(new Date());
 
+  /* DATAS, AVISOS E DADOS LOCAIS: funções comuns usadas pelos blocos abaixo. */
   function dateBR(value) {
     if (!value) return "";
     const [year, month, day] = value.split("-");
@@ -168,6 +178,7 @@
     return String(destination);
   }
 
+  /* FILTROS: mantém os seletores personalizados sincronizados com os campos. */
   function setupCustomSelect(select) {
     if (select.dataset.customReady) return;
     select.dataset.customReady = "true";
@@ -223,8 +234,7 @@
       .join("");
   }
 
-
-
+  /* TURMA E LISTA: encontra a chamada e os estudantes válidos para a data. */
   function selectedClass() {
     return classes.find((c) => c.id === $("classSelect").value);
   }
@@ -270,6 +280,7 @@
     return { absent, justified, total: absent + justified };
   }
 
+  /* CHAMADA: desenha a lista e os controles de presença/falta. */
   function render() {
     classes = loadClasses();
     const classItem = selectedClass();
@@ -357,6 +368,7 @@
     return `<button type="button" class="status-button ${current === status ? "selected" : ""}" data-status="${status}" data-student="${esc(studentId)}" ${locked}><svg><use href="#${icon}"></use></svg>${label}</button>`;
   }
 
+  /* RESUMO E ALERTAS: calcula estatísticas e datas que precisam de atenção. */
   function updateStats() {
     const statuses = roster.map((student) => draft[student.id]?.status);
     const total = roster.length;
@@ -415,75 +427,66 @@
     return statuses;
   }
 
-
-
-
-
   function weekStart(value) {
     const date = new Date(`${value}T12:00:00`);
     date.setDate(date.getDate() - ((date.getDay() + 6) % 7));
     return isoDate(date);
   }
 
- function calculateAlerts() {
-  const grouped = new Map();
-  const currentWeek = weekStart(today());
-  const selectedYear = localStorage.getItem(KEYS.year);
+  function calculateAlerts() {
+    const grouped = new Map();
+    const currentWeek = weekStart(today());
+    const selectedYear = localStorage.getItem(KEYS.year);
 
-  Object.values(calls()).forEach((call) => {
-    if (String(call.year) !== selectedYear) return;
-    if (!call.date || call.date > today()) return;
-    if (weekStart(call.date) !== currentWeek) return;
+    Object.values(calls()).forEach((call) => {
+      if (String(call.year) !== selectedYear) return;
+      if (!call.date || call.date > today()) return;
+      if (weekStart(call.date) !== currentWeek) return;
 
-    Object.entries(call.students || {}).forEach(([id, record]) => {
-      if (record.status !== "ausente") return;
+      Object.entries(call.students || {}).forEach(([id, record]) => {
+        if (record.status !== "ausente") return;
 
-      if (!grouped.has(id)) {
-        grouped.set(id, {
-          dates: new Set(),
-          name: "Aluno",
-          className: "sua turma",
-          lastDate: "",
-        });
-      }
+        if (!grouped.has(id)) {
+          grouped.set(id, {
+            dates: new Set(),
+            name: "Aluno",
+            className: "sua turma",
+            lastDate: "",
+          });
+        }
 
-      const student = grouped.get(id);
+        const student = grouped.get(id);
 
-      // Várias chamadas no mesmo dia contam apenas uma vez.
-      student.dates.add(call.date);
+        // Várias chamadas no mesmo dia contam apenas uma vez.
+        student.dates.add(call.date);
 
-      if (call.date >= student.lastDate) {
-        student.lastDate = call.date;
-        student.name = record.studentName || "Aluno";
-        student.className =
-          record.currentClassName || call.className || "sua turma";
-      }
+        if (call.date >= student.lastDate) {
+          student.lastDate = call.date;
+          student.name = record.studentName || "Aluno";
+          student.className =
+            record.currentClassName || call.className || "sua turma";
+        }
+      });
     });
-  });
 
-  const alerts = [];
+    const alerts = [];
 
-  grouped.forEach((student, studentId) => {
-    if (student.dates.size < 3) return;
+    grouped.forEach((student, studentId) => {
+      if (student.dates.size < 3) return;
 
-    alerts.push({
-      signature: `${studentId}|semanal|${currentWeek}`,
-      message:
-        `${student.name} teve ${student.dates.size} dias com falta ` +
-        `sem justificativa nesta semana em ${student.className}.`,
-      date: student.lastDate,
+      alerts.push({
+        signature: `${studentId}|semanal|${currentWeek}`,
+        message:
+          `${student.name} teve ${student.dates.size} dias com falta ` +
+          `sem justificativa nesta semana em ${student.className}.`,
+        date: student.lastDate,
+      });
     });
-  });
 
-  return alerts;
-}
+    return alerts;
+  }
 
-
-
-
-
-
-
+  /* NOTIFICAÇÕES E ANEXOS: exibe avisos e recupera documentos anexados. */
   function clearNotifications() {
     const alerts = read(KEYS.alerts, []);
     const dismissed = new Set(read(KEYS.dismissedAlerts, []));
@@ -499,10 +502,6 @@
     updateBell();
     toast("Notificações limpas.");
   }
-
-
-
-
 
   function retrieveAttachment(id) {
     return new Promise((resolve, reject) => {
@@ -569,6 +568,7 @@
     }
   }
 
+  /* CALENDÁRIO: seleciona ano/mês e permite navegar por datas futuras. */
   function fillFutureCertificateDays(
     studentId,
     startDate,
@@ -632,23 +632,15 @@
     return filled;
   }
 
-
-
-
-
-
-
   function populateYears() {
     classes = loadClasses();
     let selected = localStorage.getItem(KEYS.year);
     const years = [
-      ...new Set(
-        [
-          String(new Date().getFullYear()),
-          ...(selected ? [String(selected)] : []),
-          ...classes.map((c) => String(c.year || new Date().getFullYear())),
-        ],
-      ),
+      ...new Set([
+        String(new Date().getFullYear()),
+        ...(selected ? [String(selected)] : []),
+        ...classes.map((c) => String(c.year || new Date().getFullYear())),
+      ]),
     ].sort((a, b) => Number(b) - Number(a));
     if (!years.includes(selected))
       selected = years[0] || String(new Date().getFullYear());
@@ -678,8 +670,6 @@
       $("classSelect").value = previous;
     refreshCustomSelect($("classSelect"));
   }
-
-
 
   function drawCalendar() {
     const year = calendarMonth.getFullYear();
@@ -734,10 +724,7 @@
     $("calendarGrid").innerHTML = html;
   }
 
-
-
-
-
+  /* EDIÇÃO E GRAVAÇÃO: salva ajustes individuais e a chamada do dia. */
   function saveStudentEdit(studentId) {
     const classItem = selectedClass();
     if (!classItem) return;
@@ -828,6 +815,7 @@
     );
   }
 
+  /* HISTÓRICO, JUSTIFICATIVAS E CONEXÃO: mantém dados auxiliares da chamada. */
   function addActivity(message) {
     const activities = read(KEYS.activities, []);
     activities.unshift({
@@ -860,7 +848,6 @@
     write(KEYS.alerts, active);
     updateBell();
   }
-
 
   function updateBell() {
     const unread = read(KEYS.alerts, []).filter(
@@ -908,6 +895,7 @@
     $("notificationDialog").showModal();
   }
 
+  /* ARQUIVOS DE JUSTIFICATIVA: guarda e abre os anexos associados ao registro. */
   function storeAttachment(id, file) {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open("alunotec-anexos-frequencia", 1);
@@ -983,6 +971,7 @@
     );
   }
 
+  /* CONEXÃO: verifica a disponibilidade da rede e atualiza o indicador. */
   async function checkConnection() {
     const title = $("connectionTitle"),
       text = $("connectionText"),
@@ -1014,6 +1003,7 @@
     }
   }
 
+  /* INICIALIZAÇÃO E EVENTOS: prepara campos e liga filtros, botões e menus. */
   function initialize() {
     $("attendanceDate").value = today();
     $("dateDisplay").textContent = dateBR(today());
@@ -1262,6 +1252,7 @@
     checkConnection();
   }
 
+  /* FILTRO FINAL: limpa seleções incompatíveis quando a turma/data muda. */
   function resetForFilterChange() {
     editingRows.clear();
     dirtyRows.clear();
@@ -1272,6 +1263,7 @@
   document.addEventListener("DOMContentLoaded", initialize);
 })();
 
+/* MENU RESPONSIVO: abre/fecha a navegação lateral em telas menores. */
 document.addEventListener("DOMContentLoaded", () => {
   const button = document.getElementById("mobileMenuButton");
   const sidebar = document.getElementById("frequencySidebar");
@@ -1281,10 +1273,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function setMenu(open) {
     document.body.classList.toggle("frequency-menu-open", open);
     button.setAttribute("aria-expanded", String(open));
-    button.setAttribute(
-      "aria-label",
-      open ? "Fechar menu" : "Abrir menu"
-    );
+    button.setAttribute("aria-label", open ? "Fechar menu" : "Abrir menu");
   }
 
   button.addEventListener("click", () => {
@@ -1292,8 +1281,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.addEventListener("click", (event) => {
-    if (!sidebar.contains(event.target) &&
-        !button.contains(event.target)) {
+    if (!sidebar.contains(event.target) && !button.contains(event.target)) {
       setMenu(false);
     }
   });

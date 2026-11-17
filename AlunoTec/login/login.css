@@ -1,3 +1,11 @@
+/* ==========================================================
+   ALUNOTEC | MAPA DE EDIÇÃO — ESTILOS DE ENTRADA
+   Ordem: cores/base; apresentação da tela; campos e botões de acesso;
+   modal institucional; estados de interação e regras responsivas.
+   O HTML está em ../index.html. Preserve classes de estado usadas pelo
+   login.js, como mensagens, carregamento e visibilidade do modal.
+========================================================== */
+
 :root {
   --navy: #082b3d;
   --green: #009c58;

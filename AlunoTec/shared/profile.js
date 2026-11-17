@@ -1,6 +1,13 @@
-/*=================
-FERRAMENTA DO BIXO RUIM!!! A IA VAI DOMINAR O MUNDO
-================*/
+/* ==========================================================
+   ALUNOTEC | MAPA DE EDIÇÃO — LÓGICA DE PERFIL COMPARTILHADA
+   Lê e salva os dados do perfil, atualiza avatares e controla a janela
+   de edição/pré-visualização da foto. Os seletores aceitam os diferentes
+   cabeçalhos das páginas que usam o módulo; mudanças afetam todas elas.
+========================================================== */
+
+/* ==========================================================
+   PERFIL COMPARTILHADO — leitura, prévia e salvamento dos dados.
+========================================================== */
 
 (() => {
   "use strict";

@@ -1,4 +1,12 @@
 <!doctype html>
+<!-- =====================================================
+  ALUNOTEC | MAPA DE EDIÇÃO — INSTITUIÇÃO
+  Estrutura: formulário dos dados da escola e status de salvamento.
+  Visual compartilhado: ../shared/management.css.
+  Comportamento: inst.js carrega/salva os campos pelo ID; mantenha os
+  IDs alinhados entre o formulário e a lista de campos do script.
+===================================================== -->
+
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
@@ -27,39 +35,110 @@
       <div class="management-heading">
         <p>Administração</p>
         <h1>Instituição</h1>
-        <div class="lead">Mantenha os dados de identificação da escola usados pela equipe.</div>
+        <div class="lead">
+          Mantenha os dados de identificação da escola usados pela equipe.
+        </div>
       </div>
       <section class="management-card" aria-labelledby="institutionTitle">
         <h2 id="institutionTitle">Dados da escola</h2>
         <form id="institutionForm">
           <div class="management-form-grid">
-            <label class="management-field management-span-2" for="schoolName">Nome da instituição
-              <input id="schoolName" name="schoolName" maxlength="120" required autocomplete="organization" />
+            <label class="management-field management-span-2" for="schoolName"
+              >Nome da instituição
+              <input
+                id="schoolName"
+                name="schoolName"
+                maxlength="120"
+                required
+                autocomplete="organization"
+              />
             </label>
-            <label class="management-field" for="schoolInep">Código INEP
-              <input id="schoolInep" name="schoolInep" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" title="Informe os 8 números do código INEP" />
+            <label class="management-field" for="schoolInep"
+              >Código INEP
+              <input
+                id="schoolInep"
+                name="schoolInep"
+                inputmode="numeric"
+                pattern="[0-9]{8}"
+                maxlength="8"
+                title="Informe os 8 números do código INEP"
+              />
             </label>
-            <label class="management-field" for="schoolPhone">Telefone
-              <input id="schoolPhone" name="schoolPhone" type="tel" maxlength="30" autocomplete="tel" />
+            <label class="management-field" for="schoolPhone"
+              >Telefone
+              <input
+                id="schoolPhone"
+                name="schoolPhone"
+                type="tel"
+                maxlength="30"
+                autocomplete="tel"
+              />
             </label>
-            <label class="management-field management-span-2" for="schoolEmail">E-mail institucional
-              <input id="schoolEmail" name="schoolEmail" type="email" maxlength="160" autocomplete="email" />
+            <label class="management-field management-span-2" for="schoolEmail"
+              >E-mail institucional
+              <input
+                id="schoolEmail"
+                name="schoolEmail"
+                type="email"
+                maxlength="160"
+                autocomplete="email"
+              />
             </label>
-            <label class="management-field management-span-2" for="schoolAddress">Endereço
-              <input id="schoolAddress" name="schoolAddress" maxlength="180" autocomplete="street-address" />
+            <label
+              class="management-field management-span-2"
+              for="schoolAddress"
+              >Endereço
+              <input
+                id="schoolAddress"
+                name="schoolAddress"
+                maxlength="180"
+                autocomplete="street-address"
+              />
             </label>
-            <label class="management-field" for="schoolCity">Município
-              <input id="schoolCity" name="schoolCity" maxlength="100" autocomplete="address-level2" />
+            <label class="management-field" for="schoolCity"
+              >Município
+              <input
+                id="schoolCity"
+                name="schoolCity"
+                maxlength="100"
+                autocomplete="address-level2"
+              />
             </label>
-            <label class="management-field" for="schoolState">UF
-              <input id="schoolState" name="schoolState" maxlength="2" pattern="[A-Za-z]{2}" title="Informe a sigla de dois caracteres" autocomplete="address-level1" />
+            <label class="management-field" for="schoolState"
+              >UF
+              <input
+                id="schoolState"
+                name="schoolState"
+                maxlength="2"
+                pattern="[A-Za-z]{2}"
+                title="Informe a sigla de dois caracteres"
+                autocomplete="address-level1"
+              />
             </label>
           </div>
-          <div class="management-actions"><button class="management-button" type="submit">Salvar dados</button><button class="management-button secondary" id="clearInstitution" type="button">Limpar formulário</button></div>
-          <p class="management-status" id="institutionStatus" role="status" aria-live="polite"></p>
+          <div class="management-actions">
+            <button class="management-button" type="submit">Salvar dados</button
+            ><button
+              class="management-button secondary"
+              id="clearInstitution"
+              type="button"
+            >
+              Limpar formulário
+            </button>
+          </div>
+          <p
+            class="management-status"
+            id="institutionStatus"
+            role="status"
+            aria-live="polite"
+          ></p>
         </form>
       </section>
-      <p class="management-note">Essas informações são salvas somente no armazenamento local deste navegador. A autenticação institucional precisa ser conectada separadamente a um serviço seguro.</p>
+      <p class="management-note">
+        Essas informações são salvas somente no armazenamento local deste
+        navegador. A autenticação institucional precisa ser conectada
+        separadamente a um serviço seguro.
+      </p>
     </main>
   </body>
 </html>

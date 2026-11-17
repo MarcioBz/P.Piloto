@@ -1,4 +1,12 @@
 /* ==========================================================
+   ALUNOTEC | MAPA DE EDIÇÃO — ESTILOS DO PAINEL
+   Ordem: fontes/variáveis e reset; estrutura da navegação e cabeçalho;
+   cartões, gráficos e tabelas; menus/modais; ajustes responsivos.
+   Prefira editar a regra já existente para o componente; o final do
+   arquivo contém ajustes posteriores que podem complementar regras.
+========================================================== */
+
+/* ==========================================================
    ALUNOTEC
    DASHBOARD ADMINISTRATIVO
    dashboard.css

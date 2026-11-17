@@ -1,4 +1,12 @@
 <!doctype html>
+<!-- =====================================================
+  ALUNOTEC | MAPA DE EDIÇÃO — CONFIGURAÇÕES
+  Estrutura: formulário de ano letivo e ações de cópia/backup.
+  Visual compartilhado: ../shared/management.css.
+  Comportamento: config.js preenche o ano e executa as ações; os IDs
+  do formulário/status são a ligação entre HTML e JavaScript.
+===================================================== -->
+
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
@@ -27,23 +35,53 @@
       <div class="management-heading">
         <p>Administração</p>
         <h1>Configurações</h1>
-        <div class="lead">Defina o ano letivo ativo e exporte uma cópia local dos dados do AlunoTec.</div>
+        <div class="lead">
+          Defina o ano letivo ativo e exporte uma cópia local dos dados do
+          AlunoTec.
+        </div>
       </div>
       <section class="management-card" aria-labelledby="yearTitle">
         <h2 id="yearTitle">Ano letivo ativo</h2>
         <form id="yearForm">
-          <label class="management-field" for="schoolYear">Ano letivo
+          <label class="management-field" for="schoolYear"
+            >Ano letivo
             <select id="schoolYear" name="schoolYear" required></select>
           </label>
-          <div class="management-actions"><button class="management-button" type="submit">Salvar ano letivo</button></div>
-          <p class="management-status" id="yearStatus" role="status" aria-live="polite"></p>
+          <div class="management-actions">
+            <button class="management-button" type="submit">
+              Salvar ano letivo
+            </button>
+          </div>
+          <p
+            class="management-status"
+            id="yearStatus"
+            role="status"
+            aria-live="polite"
+          ></p>
         </form>
       </section>
       <section class="management-card" aria-labelledby="backupTitle">
         <h2 id="backupTitle">Cópia de segurança</h2>
-        <p class="management-note">Baixe os dados escolares salvos neste navegador em um arquivo JSON. A cópia inclui turmas, frequências, remanejamentos, notificações, alertas e o ano letivo. Ela não inclui tokens de acesso.</p>
-        <div class="management-actions"><button class="management-button secondary" id="exportBackup" type="button">Baixar cópia de segurança</button></div>
-        <p class="management-status" id="backupStatus" role="status" aria-live="polite"></p>
+        <p class="management-note">
+          Baixe os dados escolares salvos neste navegador em um arquivo JSON. A
+          cópia inclui turmas, frequências, remanejamentos, notificações,
+          alertas e o ano letivo. Ela não inclui tokens de acesso.
+        </p>
+        <div class="management-actions">
+          <button
+            class="management-button secondary"
+            id="exportBackup"
+            type="button"
+          >
+            Baixar cópia de segurança
+          </button>
+        </div>
+        <p
+          class="management-status"
+          id="backupStatus"
+          role="status"
+          aria-live="polite"
+        ></p>
       </section>
     </main>
   </body>

@@ -1,3 +1,11 @@
+/* ==========================================================
+   ALUNOTEC | MAPA DE EDIÇÃO — LÓGICA DE ALUNOS
+   Ordem: chaves/helpers e leitura de dados; filtros e listas; resumo
+   e renderização; detalhes e remanejamento; avisos/conexão; eventos.
+   Os IDs usados aqui vêm de aluno.html. As chaves alunotec_* são usadas
+   também pelo painel, turmas e frequência; não as renomeie isoladamente.
+========================================================== */
+
 (() => {
   "use strict";
 
@@ -19,6 +27,7 @@
   let internetReachable = null;
   let toastTimer;
 
+  /* UTILITÁRIOS: normalizam textos e protegem valores inseridos no HTML. */
   function escapeHtml(value) {
     return String(value ?? "").replace(
       /[&<>"']/g,
@@ -42,6 +51,7 @@
       .trim();
   }
 
+  /* DADOS LOCAIS: leitura, busca e agrupamento das turmas e estudantes. */
   function readClasses() {
     try {
       const data = JSON.parse(localStorage.getItem(TURMAS_KEY) || "{}");
@@ -194,6 +204,7 @@
       );
   }
 
+  /* AVISOS E ATIVIDADES: mensagens temporárias e histórico compartilhado. */
   function showToast(message) {
     const toast = $("#toast");
     toast.textContent = message;
@@ -239,6 +250,7 @@
     return localDateKey(new Date());
   }
 
+  /* FILTROS: personaliza os seletores sem perder o valor do campo original. */
   function enhanceSelect(select) {
     if (select.dataset.enhanced === "true") {
       refreshSelect(select);
@@ -319,6 +331,7 @@
     $$("select", root).forEach(enhanceSelect);
   }
 
+  /* LISTA E RESUMO: opções dos filtros, contagens e renderização da tela. */
   function fillFilters() {
     const data = readClasses();
     const baseClasses = data.base;
@@ -482,6 +495,7 @@
       "A turma de origem continua registrada. A frequência considera a turma de destino após o remanejamento.";
   }
 
+  /* DETALHES E REMANEJAMENTOS: janelas e movimentação entre turmas. */
   function showDialog(content) {
     $("#dialogBox").innerHTML = content;
     enhanceAllSelects($("#dialogBox"));
@@ -622,6 +636,7 @@
     showToast("Remanejamento registrado. O aluno continua na turma de origem.");
   }
 
+  /* NOTIFICAÇÕES E CONEXÃO: atividades recentes e estado da rede. */
   function showNotifications() {
     const items = readActivities()
       .filter(
@@ -775,6 +790,7 @@
 
   $("#connectionButton").addEventListener("click", checkInternetConnection);
 
+  /* EVENTOS DA PÁGINA: filtros, pesquisa, ações e fechamento de diálogos. */
   document.addEventListener("click", (event) => {
     if (!event.target.closest(".account-wrap")) {
       $("#accountMenu").hidden = true;
@@ -829,10 +845,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function setMenu(open) {
     document.body.classList.toggle("students-menu-open", open);
     button.setAttribute("aria-expanded", String(open));
-    button.setAttribute(
-      "aria-label",
-      open ? "Fechar menu" : "Abrir menu"
-    );
+    button.setAttribute("aria-label", open ? "Fechar menu" : "Abrir menu");
   }
 
   button.addEventListener("click", () => {
@@ -840,15 +853,16 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.addEventListener("click", (event) => {
-    if (!sidebar.contains(event.target) &&
-        !button.contains(event.target)) {
+    if (!sidebar.contains(event.target) && !button.contains(event.target)) {
       setMenu(false);
     }
   });
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" &&
-        document.body.classList.contains("students-menu-open")) {
+    if (
+      event.key === "Escape" &&
+      document.body.classList.contains("students-menu-open")
+    ) {
       setMenu(false);
       button.focus();
     }

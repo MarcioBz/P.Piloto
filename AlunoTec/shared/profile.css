@@ -1,6 +1,13 @@
-/*=================
-FERRAMENTA DO BIXO RUIM!!! A IA VAI DOMINAR O MUNDO
-================*/
+/* ==========================================================
+   ALUNOTEC | MAPA DE EDIÇÃO — ESTILOS DE PERFIL COMPARTILHADOS
+   Reúne botão de edição, avatar/foto, janela de perfil, cabeçalho e
+   campos de envio de imagem. É carregado por mais de uma página:
+   mudanças visuais aqui podem aparecer em todas elas.
+========================================================== */
+
+/* ==========================================================
+   PERFIL COMPARTILHADO — botões, avatares, edição e envio de foto.
+========================================================== */
 
 /* Botão de edição no menu */
 .at-edit-profile {

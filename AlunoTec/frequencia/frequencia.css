@@ -1,3 +1,11 @@
+/* ==========================================================
+   ALUNOTEC | MAPA DE EDIÇÃO — ESTILOS DE FREQUÊNCIA
+   Ordem: tokens e base; cabeçalho/navegação; filtros e chamada;
+   calendário, notificações e modais; regras responsivas e ajustes.
+   O arquivo é extenso e possui complementos no fim: pesquise primeiro
+   a classe no HTML antes de criar uma regra nova para o mesmo elemento.
+========================================================== */
+
 :root {
   --g950: #12391d;
   --g900: #174523;
@@ -48,6 +56,7 @@ svg {
 .app-shell {
   min-height: 100vh;
 }
+/* NAVEGAÇÃO: menu lateral e marca da área de Frequência. */
 .sidebar {
   position: fixed;
   inset: 0 auto 0 0;
@@ -158,6 +167,7 @@ svg {
   color: #8fa494;
   margin: 18px 7px 0;
 }
+/* ESTRUTURA DA PÁGINA: área principal e cabeçalho. */
 .main-area {
   margin-left: 245px;
   min-height: 100vh;
@@ -392,6 +402,7 @@ svg {
   border-bottom: 0;
   color: #d34b50;
 }
+/* CONTEÚDO DA CHAMADA: filtros, cartões e áreas da página. */
 .page-content {
   padding: 20px 32px 40px;
   max-width: 1800px;
@@ -544,6 +555,7 @@ svg {
   border-radius: 15px;
   box-shadow: var(--shadow);
 }
+/* LISTA E TABELA: painel de chamada e controles de presença. */
 .attendance-panel {
   padding: 18px 20px 14px;
 }
@@ -732,6 +744,7 @@ svg {
   border: 1px solid #cbdccc;
   color: var(--g800);
 }
+/* TABELA: largura, rolagem e alinhamento dos registros. */
 .table-wrap {
   overflow: auto;
   border: 1px solid var(--line);
@@ -1142,6 +1155,7 @@ td {
   opacity: 1;
   transform: translateY(0);
 }
+/* RESPONSIVIDADE PRINCIPAL: adapta a tela a tablets e celulares. */
 @media (max-width: 1300px) {
   .stats-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2067,7 +2081,9 @@ TESTE DO SINAL VERMELHO
     padding: 20px 15px;
     transform: translateX(-100%);
     visibility: hidden;
-    transition: transform 0.2s, visibility 0.2s;
+    transition:
+      transform 0.2s,
+      visibility 0.2s;
     z-index: 30;
   }
 

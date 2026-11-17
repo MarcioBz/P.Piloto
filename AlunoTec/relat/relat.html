@@ -1,4 +1,12 @@
 <!doctype html>
+<!-- =====================================================
+  ALUNOTEC | MAPA DE EDIÇÃO — RELATÓRIOS
+  Estrutura: filtros de ano/mês, estado vazio, tabela e exportação.
+  Visual compartilhado: ../shared/management.css.
+  Comportamento: relat.js filtra as chamadas e gera o CSV; preserve os
+  IDs dos filtros e da tabela para manter esses controles conectados.
+===================================================== -->
+
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
@@ -27,33 +35,78 @@
       <div class="management-heading">
         <p>Acompanhamento escolar</p>
         <h1>Relatórios de frequência</h1>
-        <div class="lead">Consulte as chamadas registradas neste navegador e exporte o resumo filtrado.</div>
+        <div class="lead">
+          Consulte as chamadas registradas neste navegador e exporte o resumo
+          filtrado.
+        </div>
       </div>
       <section class="management-card" aria-label="Filtros do relatório">
         <div class="management-form-grid">
-          <label class="management-field" for="reportYear">Ano letivo<select id="reportYear"></select></label>
-          <label class="management-field" for="reportMonth">Mês<select id="reportMonth"><option value="all">Todos os meses</option></select></label>
+          <label class="management-field" for="reportYear"
+            >Ano letivo<select id="reportYear"></select
+          ></label>
+          <label class="management-field" for="reportMonth"
+            >Mês<select id="reportMonth">
+              <option value="all">Todos os meses</option>
+            </select></label
+          >
         </div>
-        <div class="management-actions"><button class="management-button secondary" id="exportReport" type="button">Exportar CSV</button></div>
+        <div class="management-actions">
+          <button
+            class="management-button secondary"
+            id="exportReport"
+            type="button"
+          >
+            Exportar CSV
+          </button>
+        </div>
       </section>
       <div class="management-summary" aria-live="polite">
-        <div class="management-stat"><span>Chamadas</span><strong id="callCount">0</strong></div>
-        <div class="management-stat"><span>Registros de alunos</span><strong id="studentCount">0</strong></div>
-        <div class="management-stat"><span>Presenças</span><strong id="presentCount">0</strong></div>
-        <div class="management-stat"><span>Faltas</span><strong id="absenceCount">0</strong></div>
+        <div class="management-stat">
+          <span>Chamadas</span><strong id="callCount">0</strong>
+        </div>
+        <div class="management-stat">
+          <span>Registros de alunos</span><strong id="studentCount">0</strong>
+        </div>
+        <div class="management-stat">
+          <span>Presenças</span><strong id="presentCount">0</strong>
+        </div>
+        <div class="management-stat">
+          <span>Faltas</span><strong id="absenceCount">0</strong>
+        </div>
       </div>
       <section class="management-card">
         <h2>Resumo por turma</h2>
         <div class="management-table-wrap">
           <table class="management-table">
-            <thead><tr><th>Turma</th><th>Chamadas</th><th>Alunos registrados</th><th>Presenças</th><th>Faltas</th><th>Justificadas</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Turma</th>
+                <th>Chamadas</th>
+                <th>Alunos registrados</th>
+                <th>Presenças</th>
+                <th>Faltas</th>
+                <th>Justificadas</th>
+              </tr>
+            </thead>
             <tbody id="reportRows"></tbody>
           </table>
         </div>
-        <p class="management-empty" id="emptyMessage" hidden>Nenhuma chamada foi encontrada para os filtros escolhidos.</p>
-        <p class="management-status" id="reportStatus" role="status" aria-live="polite"></p>
+        <p class="management-empty" id="emptyMessage" hidden>
+          Nenhuma chamada foi encontrada para os filtros escolhidos.
+        </p>
+        <p
+          class="management-status"
+          id="reportStatus"
+          role="status"
+          aria-live="polite"
+        ></p>
       </section>
-      <p class="management-note">O relatório considera os dados locais de frequência armazenados neste navegador. Para obter dados de outros dispositivos, configure e valide a sincronização do servidor.</p>
+      <p class="management-note">
+        O relatório considera os dados locais de frequência armazenados neste
+        navegador. Para obter dados de outros dispositivos, configure e valide a
+        sincronização do servidor.
+      </p>
     </main>
   </body>
 </html>
