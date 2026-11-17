@@ -1,11 +1,11 @@
 <!doctype html>
 <!-- =====================================================
-  ALUNOTEC | MAPA DE EDIÇÃO — ENTRADA E LOGIN
-  Estrutura: biblioteca SVG, apresentação, formulário de acesso,
-  opções de conta e janela de acesso institucional.
-  Integração: os IDs dos campos e botões são usados por login/login.js;
-  a aparência desta página fica em login/login.css.
-  Para editar o login, mantenha os IDs ligados ao JavaScript.
+     ALUNOTEC | MAPA DE EDIÇÃO — ENTRADA E LOGIN
+     Estrutura: biblioteca SVG, apresentação, formulário de acesso,
+     opções de conta e janela de acesso institucional.
+     Integração: os IDs dos campos e botões são usados por login/login.js;
+     a aparência desta página fica em login/login.css.
+     Para editar o login, mantenha os IDs ligados ao JavaScript.
 ===================================================== -->
 
 <html lang="pt-BR">
@@ -22,8 +22,9 @@
 
   <body>
     <!-- =====================================================
-       BIBLIOTECA DE ÍCONES
-  ====================================================== -->
+         BIBLIOTECA DE ÍCONES
+         Símbolos SVG reutilizados nos botões, formulários e mensagens da tela.
+    ===================================================== -->
 
     <svg
       class="svg-library"
@@ -98,11 +99,15 @@
     </svg>
 
     <!-- =====================================================
-       PÁGINA PRINCIPAL
-  ====================================================== -->
+         PÁGINA PRINCIPAL
+         Divide a apresentação do produto e a área de autenticação.
+    ===================================================== -->
 
     <main class="login-page">
-      <!-- LADO ESQUERDO -->
+      <!-- =====================================================
+           APRESENTAÇÃO DO SISTEMA
+           Coluna com a marca, a descrição do AlunoTec e seus benefícios.
+      ===================================================== -->
 
       <section class="presentation" aria-label="Conheça o AlunoTec">
         <div class="presentation-content">
@@ -129,7 +134,10 @@
             </p>
           </div>
 
-          <!-- BENEFÍCIOS -->
+          <!-- =====================================================
+               BENEFÍCIOS
+               Lista os recursos oferecidos pelo sistema nesta página.
+          ===================================================== -->
 
           <ul class="benefits">
             <li>
@@ -193,13 +201,17 @@
         </div>
       </section>
 
-      <!-- ===================================================
-         LADO DIREITO
-    ==================================================== -->
+      <!-- =====================================================
+           LADO DIREITO
+           Área com o formulário principal e as opções alternativas de acesso.
+      ===================================================== -->
 
       <section class="login-section" aria-labelledby="login-title">
         <div class="login-card">
-          <!-- CABEÇALHO -->
+          <!-- =====================================================
+               CABEÇALHO DE ACESSO
+               Marca e título exibidos acima dos controles de login.
+          ===================================================== -->
 
           <header class="login-header">
             <div class="title-line" aria-hidden="true"></div>
@@ -213,7 +225,10 @@
             <p>Acesse sua conta para continuar.</p>
           </header>
 
-          <!-- CONEXÃO -->
+          <!-- =====================================================
+               STATUS DE CONEXÃO
+               Mostra o estado de acesso à internet informado por login.js.
+          ===================================================== -->
 
           <div
             id="connectionStatus"
@@ -226,7 +241,10 @@
             <span id="connectionText"> Verificando conexão… </span>
           </div>
 
-          <!-- LOGIN ADMINISTRADOR -->
+          <!-- =====================================================
+               FORMULÁRIO DO ADMINISTRADOR
+               E-mail, senha, opção de lembrar acesso e envio do login.
+          ===================================================== -->
 
           <form id="loginForm">
             <div class="field">
@@ -305,13 +323,19 @@
             </button>
           </form>
 
-          <!-- DIVISOR -->
+          <!-- =====================================================
+               DIVISOR DE FORMAS DE ACESSO
+               Separa o login principal das opções institucional e convidado.
+          ===================================================== -->
 
           <div class="divider">
             <span>OU</span>
           </div>
 
-          <!-- CONTA INSTITUCIONAL -->
+          <!-- =====================================================
+               ACESSO INSTITUCIONAL
+               Abre o modal de autenticação com código INEP e senha.
+          ===================================================== -->
 
           <button
             id="institutionalLogin"
@@ -325,7 +349,10 @@
             <span> Conta institucional </span>
           </button>
 
-          <!-- CONTA CONVIDADO -->
+          <!-- =====================================================
+               ACESSO DE CONVIDADO
+               Botão para abrir a área com permissão somente de visualização.
+          ===================================================== -->
 
           <button
             id="guestLogin"
@@ -339,7 +366,10 @@
             <span> Conta convidado </span>
           </button>
 
-          <!-- RODAPÉ -->
+          <!-- =====================================================
+               RODAPÉ DO LOGIN
+               Informações de identificação e direitos da página de entrada.
+          ===================================================== -->
 
           <footer class="login-footer">
             AlunoTec
@@ -357,15 +387,22 @@
     </main>
 
     <!-- =====================================================
-       MODAL - CONTA INSTITUCIONAL
-  ====================================================== -->
+         MODAL - CONTA INSTITUCIONAL
+         Janela aberta pelo botão institucional; login.js controla sua abertura.
+    ===================================================== -->
 
     <div id="institutionalModal" class="access-modal" aria-hidden="true">
-      <!-- FUNDO ESCURO -->
+      <!-- =====================================================
+           FUNDO DO MODAL
+           Camada escura que fecha a janela ao ser acionada.
+      ===================================================== -->
 
       <div id="institutionalOverlay" class="access-modal-overlay"></div>
 
-      <!-- JANELA -->
+      <!-- =====================================================
+           PAINEL DO MODAL
+           Conteúdo e formulário de acesso da conta institucional.
+      ===================================================== -->
 
       <div
         class="access-modal-card"
@@ -373,7 +410,10 @@
         aria-modal="true"
         aria-labelledby="institutionalModalTitle"
       >
-        <!-- FECHAR -->
+        <!-- =====================================================
+             FECHAR O MODAL
+             Retorna à tela de login sem enviar o formulário institucional.
+        ===================================================== -->
 
         <button
           id="closeInstitutionalModal"
@@ -386,7 +426,10 @@
           </svg>
         </button>
 
-        <!-- ÍCONE -->
+        <!-- =====================================================
+             ÍCONE INSTITUCIONAL
+             Símbolo visual que identifica esta forma de acesso.
+        ===================================================== -->
 
         <div class="access-modal-icon">
           <svg class="icon" aria-hidden="true">
@@ -394,7 +437,10 @@
           </svg>
         </div>
 
-        <!-- CABEÇALHO -->
+        <!-- =====================================================
+             CABEÇALHO DO MODAL
+             Título e instruções exibidos acima dos campos de autenticação.
+        ===================================================== -->
 
         <div class="access-modal-header">
           <span> ACESSO INSTITUCIONAL </span>
@@ -404,10 +450,16 @@
           <p>Entre com os dados da sua instituição.</p>
         </div>
 
-        <!-- FORMULÁRIO -->
+        <!-- =====================================================
+             FORMULÁRIO INSTITUCIONAL
+             Campos e estado de envio usados por login.js.
+        ===================================================== -->
 
         <form id="institutionalForm">
-          <!-- INEP -->
+          <!-- =====================================================
+               CAMPO INEP
+               Código que identifica a instituição de ensino.
+          ===================================================== -->
 
           <div class="modal-field">
             <label for="institutionalInep"> INEP </label>
@@ -430,7 +482,10 @@
             </div>
           </div>
 
-          <!-- SENHA -->
+          <!-- =====================================================
+               CAMPO DE SENHA
+               Credencial da instituição com controle para exibir ou ocultar.
+          ===================================================== -->
 
           <div class="modal-field">
             <label for="institutionalPassword"> Senha </label>
@@ -464,11 +519,17 @@
             </div>
           </div>
 
-          <!-- MENSAGEM -->
+          <!-- =====================================================
+               MENSAGEM DE RETORNO
+               Exibe erros ou confirmações da tentativa de autenticação.
+          ===================================================== -->
 
           <p id="institutionalMessage" class="message" role="alert" hidden></p>
 
-          <!-- ENTRAR -->
+          <!-- =====================================================
+               ENVIO DO FORMULÁRIO
+               Botão que inicia a tentativa de acesso institucional.
+          ===================================================== -->
 
           <button
             id="institutionalSubmit"
@@ -483,7 +544,10 @@
           </button>
         </form>
 
-        <!-- INFORMAÇÃO -->
+        <!-- =====================================================
+             INFORMAÇÕES DE SEGURANÇA
+             Orientação apresentada abaixo do formulário institucional.
+        ===================================================== -->
 
         <div class="institutional-info">
           <svg class="icon" aria-hidden="true">

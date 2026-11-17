@@ -1,11 +1,11 @@
 <!doctype html>
 <!-- =====================================================
-  ALUNOTEC | MAPA DE EDIÇÃO — FREQUÊNCIA
-  Estrutura: filtros de turma/data/turno, chamada, resumo, calendário,
-  justificativas/anexos e notificações.
-  Integração: frequencia.js lê os IDs e grava os registros locais;
-  frequencia.css controla a apresentação e o layout responsivo.
-  Preserve os IDs dos controles ao alterar os formulários e tabelas.
+     ALUNOTEC | MAPA DE EDIÇÃO — FREQUÊNCIA
+     Estrutura: filtros de turma/data/turno, chamada, resumo, calendário,
+     justificativas/anexos e notificações.
+     Integração: frequencia.js lê os IDs e grava os registros locais;
+     frequencia.css controla a apresentação e o layout responsivo.
+     Preserve os IDs dos controles ao alterar os formulários e tabelas.
 ===================================================== -->
 
 <html lang="pt-BR">
@@ -21,6 +21,10 @@
     <script src="../shared/profile.js" defer></script>
   </head>
   <body>
+    <!-- =====================================================
+         BIBLIOTECA DE ÍCONES
+         Símbolos SVG reutilizados na navegação e nos controles da chamada.
+    ===================================================== -->
     <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <symbol id="i-home" viewBox="0 0 24 24">
         <path d="m3 10 9-7 9 7M5 9v12h14V9M9 21v-7h6v7" />
@@ -106,6 +110,10 @@
     </svg>
 
     <div class="app-shell">
+      <!-- =====================================================
+          MENU LATERAL
+          Links das áreas do AlunoTec e botão de suporte.
+     ===================================================== -->
       <aside class="sidebar" id="frequencySidebar">
         <a class="brand" href="../admin/dashboard.html"
           ><img src="../assets/images/logo-alunotec1.png" alt="AlunoTec"
@@ -162,7 +170,15 @@
         </div>
       </aside>
 
+      <!-- =====================================================
+           ÁREA PRINCIPAL
+           Cabeçalho, resumo da frequência e controles para fazer a chamada.
+      ===================================================== -->
       <main class="main-area">
+        <!-- =====================================================
+             BARRA SUPERIOR
+             Ano letivo, notificações, conexão e perfil do usuário.
+        ===================================================== -->
         <header class="topbar">
           <button
             id="mobileMenuButton"
@@ -250,6 +266,10 @@
         </header>
 
         <div class="page-content">
+          <!-- =====================================================
+               APRESENTAÇÃO
+               Título e orientação da tela de frequência.
+          ===================================================== -->
           <section class="hero">
             <div class="hero-copy">
               <div class="hero-title-row">
@@ -271,6 +291,10 @@
             <div class="hero-photo" aria-hidden="true"></div>
           </section>
 
+          <!-- =====================================================
+               RESUMO
+               Totais calculados para a turma e a data selecionadas.
+          ===================================================== -->
           <section class="stats-grid" aria-label="Resumo da chamada">
             <article class="stat-card">
               <span class="stat-icon green"
@@ -314,6 +338,10 @@
             </article>
           </section>
 
+          <!-- =====================================================
+               CONTROLES E LISTA DA CHAMADA
+               Turma, data, turno, presença dos alunos e botão para salvar.
+          ===================================================== -->
           <section class="panel attendance-panel">
             <div class="panel-heading">
               <div class="heading-icon">
@@ -411,6 +439,11 @@
       </main>
     </div>
 
+    <!-- =====================================================
+         JANELAS DE APOIO À CHAMADA
+         Calendário, justificativas, anexos e avisos são controlados por
+         frequencia.js; preserve os IDs ao editar estes formulários.
+    ===================================================== -->
     <dialog id="calendarDialog" class="dialog calendar-dialog">
       <div class="dialog-card">
         <button
@@ -442,6 +475,10 @@
       </div>
     </dialog>
 
+    <!-- =====================================================
+         FORMULÁRIO DE JUSTIFICATIVA
+         Registra o motivo da ausência, os dias cobertos e o arquivo anexado.
+    ===================================================== -->
     <dialog id="justificationDialog" class="dialog">
       <form method="dialog" class="dialog-card">
         <button class="dialog-close" value="cancel" aria-label="Fechar">
@@ -492,6 +529,10 @@
       </form>
     </dialog>
 
+    <!-- =====================================================
+         VISUALIZAÇÃO DO ANEXO
+         Mostra a justificativa anexada e oferece download ou fechamento.
+    ===================================================== -->
     <dialog id="attachmentDialog" class="dialog attachment-dialog">
       <section class="dialog-card attachment-card">
         <button
@@ -526,6 +567,10 @@
       </section>
     </dialog>
 
+    <!-- =====================================================
+         CENTRAL DE NOTIFICAÇÕES
+         Exibe alertas da frequência e o controle para limpar a lista.
+    ===================================================== -->
     <dialog id="notificationDialog" class="dialog notification-dialog">
       <div class="dialog-card">
         <button
@@ -557,6 +602,10 @@
         </div>
       </div>
     </dialog>
+    <!-- =====================================================
+         MENSAGEM TEMPORÁRIA
+         frequencia.js usa este elemento para confirmar ações e exibir avisos.
+    ===================================================== -->
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
   </body>
 </html>

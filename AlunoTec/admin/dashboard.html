@@ -1,12 +1,12 @@
 <!doctype html>
 <!-- =====================================================
-  ALUNOTEC | MAPA DE EDIÇÃO — PAINEL ADMINISTRATIVO
-  Estrutura: navegação lateral, cabeçalho/perfil, filtros, indicadores,
-  gráficos, atividades recentes e atalhos para as demais áreas.
-  Integração: dashboard.js busca elementos pelos IDs; dashboard.css
-  define o visual. As classes e IDs conectam estas três partes.
-  Edite cada cartão dentro da seção correspondente, sem renomear IDs
-  consumidos pelo JavaScript sem atualizar também o script.
+     ALUNOTEC | MAPA DE EDIÇÃO — PAINEL ADMINISTRATIVO
+     Estrutura: navegação lateral, cabeçalho/perfil, filtros, indicadores,
+     gráficos, atividades recentes e atalhos para as demais áreas.
+     Integração: dashboard.js busca elementos pelos IDs; dashboard.css
+     define o visual. As classes e IDs conectam estas três partes.
+     Edite cada cartão dentro da seção correspondente, sem renomear IDs
+     consumidos pelo JavaScript sem atualizar também o script.
 ===================================================== -->
 
 <html lang="pt-BR">
@@ -31,7 +31,8 @@
   <body>
     <!-- =====================================================
          BIBLIOTECA DE ÍCONES
-    ====================================================== -->
+         Símbolos SVG reutilizados pelos menus, cartões e botões do painel.
+    ===================================================== -->
 
     <svg
       class="svg-library"
@@ -158,12 +159,14 @@
 
     <!-- =====================================================
          APLICAÇÃO
-    ====================================================== -->
+         Container que agrupa o menu lateral e todo o conteúdo do painel.
+    ===================================================== -->
 
     <div class="app">
-      <!-- =================================================
-             SIDEBAR
-        ================================================== -->
+      <!-- =====================================================
+           SIDEBAR
+           Navegação fixa para as áreas principais do AlunoTec.
+      ===================================================== -->
 
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
@@ -183,9 +186,10 @@
           ></button>
         </div>
 
-        <!-- =================================================
-                 MENU PRINCIPAL
-            ================================================== -->
+        <!-- =====================================================
+             MENU PRINCIPAL
+             Links para as páginas de frequência, alunos, turmas e gestão.
+        ===================================================== -->
 
         <nav class="sidebar-nav">
           <a href="dashboard.html" class="nav-link active">
@@ -212,7 +216,10 @@
             <span>Alunos</span>
           </a>
 
-          <!-- TURMAS VINCULADO -->
+          <!-- =====================================================
+               LINK DE TURMAS
+               Abre a área de cadastro e gerenciamento das turmas.
+          ===================================================== -->
 
           <a href="../turmas/index.html" class="nav-link">
             <svg>
@@ -261,9 +268,10 @@
           </a>
         </nav>
 
-        <!-- =================================================
-                 SIDEBAR INFERIOR
-            ================================================== -->
+        <!-- =====================================================
+             SIDEBAR INFERIOR
+             Acesso ao suporte e informações de rodapé do sistema.
+        ===================================================== -->
 
         <div class="sidebar-bottom">
           <button class="support-card" type="button">
@@ -286,14 +294,16 @@
         </div>
       </aside>
 
-      <!-- =================================================
-             PRINCIPAL
-        ================================================== -->
+      <!-- =====================================================
+           PRINCIPAL
+           Coluna que reúne o cabeçalho e os painéis do dashboard.
+      ===================================================== -->
 
       <main class="main">
-        <!-- =================================================
-                 TOPBAR
-            ================================================== -->
+        <!-- =====================================================
+             TOPBAR
+             Controles globais de ano, conexão, notificações e perfil.
+        ===================================================== -->
 
         <header class="topbar">
           <div class="topbar-left">
@@ -308,7 +318,10 @@
               </svg>
             </button>
 
-            <!-- ANO LETIVO -->
+            <!-- =====================================================
+                 SELETOR DE ANO LETIVO
+                 O dashboard.js preenche e controla estas opções.
+            ===================================================== -->
 
             <div class="custom-select year-custom-select" id="yearDropdown">
               <button
@@ -362,9 +375,10 @@
             </div>
           </div>
 
-          <!-- =================================================
-                     TOPO DIREITO
-                ================================================== -->
+          <!-- =====================================================
+               TOPO DIREITO
+               Notificações de turma, conexão e acesso ao perfil.
+          ===================================================== -->
 
           <div class="topbar-right">
             <button
@@ -403,7 +417,10 @@
               </span>
             </button>
 
-            <!-- PERFIL -->
+            <!-- =====================================================
+                 MENU DE PERFIL
+                 Identificação do usuário, troca de conta e saída do sistema.
+            ===================================================== -->
 
             <div class="profile">
               <button
@@ -460,14 +477,16 @@
           </div>
         </header>
 
-        <!-- =================================================
-                 CONTEÚDO
-            ================================================== -->
+        <!-- =====================================================
+             CONTEÚDO
+             Banner e painéis com os dados resumidos da escola.
+        ===================================================== -->
 
         <div class="content">
-          <!-- =================================================
-                     BANNER
-                ================================================== -->
+          <!-- =====================================================
+               BANNER
+               Mensagem de boas-vindas e contexto da tela inicial.
+          ===================================================== -->
 
           <section class="hero">
             <div class="hero-copy">
@@ -495,9 +514,10 @@
             <div class="hero-photo" aria-hidden="true"></div>
           </section>
 
-          <!-- =================================================
-                     RESUMO
-                ================================================== -->
+          <!-- =====================================================
+               RESUMO
+               Indicadores de alunos e frequência para o período atual.
+          ===================================================== -->
 
           <section class="summary-section">
             <div class="section-heading">
@@ -522,9 +542,10 @@
               </a>
             </div>
 
-            <!-- =================================================
-                         CARDS
-                    ================================================== -->
+            <!-- =====================================================
+                 CARDS
+                 Totais e percentuais vinculados aos indicadores acima.
+            ===================================================== -->
 
             <div class="stats-grid">
               <article class="stat-card stat-total">
@@ -601,14 +622,16 @@
             </div>
           </section>
 
-          <!-- =================================================
-                     PAINÉIS
-                ================================================== -->
+          <!-- =====================================================
+               PAINÉIS
+               Área de frequência, situação das turmas e atalhos rápidos.
+          ===================================================== -->
 
           <section class="dashboard-grid">
-            <!-- =================================================
-                         FREQUÊNCIA DE HOJE
-                    ================================================== -->
+            <!-- =====================================================
+                 FREQUÊNCIA DE HOJE
+                 Filtro por turma e resumo das chamadas do dia.
+            ===================================================== -->
 
             <article class="panel attendance-panel">
               <header class="panel-header">
@@ -719,9 +742,10 @@
               </div>
             </article>
 
-            <!-- =================================================
-                         SITUAÇÃO DAS TURMAS
-                    ================================================== -->
+            <!-- =====================================================
+                 SITUAÇÃO DAS TURMAS
+                 Distribuição das turmas conforme o andamento da chamada.
+            ===================================================== -->
 
             <article class="panel classes-panel">
               <header class="panel-header">
@@ -824,9 +848,10 @@
               </div>
             </article>
 
-            <!-- =================================================
-                         ATALHOS RÁPIDOS
-                    ================================================== -->
+            <!-- =====================================================
+                 ATALHOS RÁPIDOS
+                 Links diretos para tarefas frequentes do usuário.
+            ===================================================== -->
 
             <article class="panel shortcuts-panel">
               <header class="panel-header">
@@ -834,7 +859,10 @@
               </header>
 
               <div class="shortcuts">
-                <!-- FAZER CHAMADA -->
+                <!-- =====================================================
+                     ATALHO DE FREQUÊNCIA
+                     Abre a tela para registrar a chamada dos alunos.
+                ===================================================== -->
 
                 <a href="../frequencia/frequencia.html" class="shortcut green">
                   <svg>
@@ -846,7 +874,10 @@
                   <span>›</span>
                 </a>
 
-                <!-- GERENCIAR TURMAS -->
+                <!-- =====================================================
+                     ATALHO DE TURMAS
+                     Abre o cadastro e a lista de turmas.
+                ===================================================== -->
 
                 <a href="../turmas/index.html" class="shortcut blue">
                   <svg>
@@ -858,10 +889,10 @@
                   <span>›</span>
                 </a>
 
-                <!-- =================================================
-                                 STATUS ALUNO
-                                 ALTERADO DE "CADASTRAR ALUNO"
-                            ================================================== -->
+                <!-- =====================================================
+                     STATUS ALUNO
+                     Link para consultar e atualizar a situação dos estudantes.
+                ===================================================== -->
 
                 <a href="../aluno/aluno.html" class="shortcut emerald">
                   <svg>
@@ -873,7 +904,10 @@
                   <span>›</span>
                 </a>
 
-                <!-- RELATÓRIOS -->
+                <!-- =====================================================
+                     ATALHO DE RELATÓRIOS
+                     Abre os resumos e as exportações de frequência.
+                ===================================================== -->
 
                 <a href="../relat/relat.html" class="shortcut purple">
                   <svg>
@@ -888,14 +922,16 @@
             </article>
           </section>
 
-          <!-- =================================================
-                     PARTE INFERIOR
-                ================================================== -->
+          <!-- =====================================================
+               PARTE INFERIOR
+               Últimas chamadas e alterações registradas nas turmas.
+          ===================================================== -->
 
           <section class="bottom-grid">
-            <!-- =================================================
-                         ÚLTIMAS CHAMADAS
-                    ================================================== -->
+            <!-- =====================================================
+                 ÚLTIMAS CHAMADAS
+                 Tabela de chamadas recentes, preenchida por dashboard.js.
+            ===================================================== -->
 
             <article class="panel recent-panel">
               <header class="panel-header">
@@ -977,7 +1013,8 @@
 
     <!-- =====================================================
          OVERLAY MOBILE
-    ====================================================== -->
+         Fundo que fecha o menu lateral quando o painel está em tela estreita.
+    ===================================================== -->
 
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
   </body>

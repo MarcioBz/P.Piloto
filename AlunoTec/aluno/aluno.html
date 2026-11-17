@@ -1,11 +1,11 @@
 <!doctype html>
 <!-- =====================================================
-  ALUNOTEC | MAPA DE EDIÇÃO — ALUNOS
-  Estrutura: navegação, resumo, filtros, lista de estudantes e janelas
-  de detalhes/remanejamento. Perfil e navegação compartilhada vêm de
-  ../shared/profile.* e dos estilos desta página.
-  Integração: aluno.js controla filtros, renderização e ações; preserve
-  os IDs consultados pelo script ao editar campos e botões.
+     ALUNOTEC | MAPA DE EDIÇÃO — ALUNOS
+     Estrutura: navegação, resumo, filtros, lista de estudantes e janelas
+     de detalhes/remanejamento. Perfil e navegação compartilhada vêm de
+     ../shared/profile.* e dos estilos desta página.
+     Integração: aluno.js controla filtros, renderização e ações; preserve
+     os IDs consultados pelo script ao editar campos e botões.
 ===================================================== -->
 
 <html lang="pt-BR">
@@ -21,6 +21,10 @@
     <script src="../shared/profile.js" defer></script>
   </head>
   <body>
+    <!-- =====================================================
+         BIBLIOTECA DE ÍCONES
+         Símbolos SVG reutilizados nos links, botões e cartões desta página.
+    ===================================================== -->
     <svg
       class="svg-library"
       xmlns="http://www.w3.org/2000/svg"
@@ -110,11 +114,19 @@
       </symbol>
     </svg>
 
+    <!-- =====================================================
+         MENU LATERAL
+         Navegação das áreas do sistema; os links levam às outras páginas.
+    ===================================================== -->
     <aside class="sidebar" id="studentsSidebar">
       <a class="brand" href="../admin/dashboard.html" aria-label="AlunoTec">
         <img src="../assets/images/logo-alunotec1.png" alt="AlunoTec" />
       </a>
 
+      <!-- =====================================================
+           LINKS PRINCIPAIS
+           Atalhos para início, frequência, turmas e relatórios.
+      ===================================================== -->
       <nav class="main-nav">
         <a class="nav-link" href="../admin/dashboard.html"
           ><svg><use href="#i-home"></use></svg><span>Início</span></a
@@ -166,7 +178,15 @@
       </div>
     </aside>
 
+    <!-- =====================================================
+         ÁREA PRINCIPAL
+         Reúne o cabeçalho da tela, os indicadores e a lista de alunos.
+    ===================================================== -->
     <main class="main">
+      <!-- =====================================================
+           BARRA SUPERIOR
+           Ano letivo, notificações, conexão e perfil do usuário.
+      ===================================================== -->
       <header class="topbar">
         <button
           id="studentsMenuButton"
@@ -247,7 +267,15 @@
         </div>
       </header>
 
+      <!-- =====================================================
+           CONTEÚDO DE ALUNOS
+           Banner, resumo numérico e controles da lista ficam nesta área.
+      ===================================================== -->
       <section class="content">
+        <!-- =====================================================
+             APRESENTAÇÃO
+             Título da página e orientação para consulta dos alunos.
+        ===================================================== -->
         <section class="hero">
           <div class="hero-copy">
             <div class="hero-title">
@@ -271,6 +299,10 @@
           <div class="hero-photo"></div>
         </section>
 
+        <!-- =====================================================
+             RESUMO
+             Totais de alunos ativos, inativos e remanejados.
+        ===================================================== -->
         <section class="summary-grid">
           <article class="summary-card">
             <span class="summary-icon green"
@@ -313,6 +345,10 @@
           </article>
         </section>
 
+        <!-- =====================================================
+             LISTA E FILTROS
+             Pesquisa, turma, ano, situação, abas e tabela controlados por aluno.js.
+        ===================================================== -->
         <section class="student-panel">
           <div class="panel-heading">
             <div class="panel-title">
@@ -393,10 +429,18 @@
       </section>
     </main>
 
+    <!-- =====================================================
+         JANELAS DE DETALHES E AÇÕES
+         aluno.js preenche os detalhes, remanejamentos e notificações.
+    ===================================================== -->
     <dialog class="dialog" id="appDialog">
       <div class="dialog-box" id="dialogBox"></div>
     </dialog>
 
+    <!-- =====================================================
+         CENTRAL DE NOTIFICAÇÕES
+         Lista de atividades e botão para limpar os avisos exibidos.
+    ===================================================== -->
     <dialog class="notification-dialog" id="notificationDialog">
       <section class="notification-box">
         <header class="notification-heading">
@@ -429,6 +473,10 @@
       </section>
     </dialog>
 
+    <!-- =====================================================
+         MENSAGEM TEMPORÁRIA
+         aluno.js usa este elemento para confirmar ações e exibir avisos.
+    ===================================================== -->
     <div class="toast" id="toast" role="status"></div>
   </body>
 </html>

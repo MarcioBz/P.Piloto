@@ -1,10 +1,10 @@
 <!doctype html>
 <!-- =====================================================
-  ALUNOTEC | MAPA DE EDIÇÃO — RELATÓRIOS
-  Estrutura: filtros de ano/mês, estado vazio, tabela e exportação.
-  Visual compartilhado: ../shared/management.css.
-  Comportamento: relat.js filtra as chamadas e gera o CSV; preserve os
-  IDs dos filtros e da tabela para manter esses controles conectados.
+     ALUNOTEC | MAPA DE EDIÇÃO — RELATÓRIOS
+     Estrutura: filtros de ano/mês, estado vazio, tabela e exportação.
+     Visual compartilhado: ../shared/management.css.
+     Comportamento: relat.js filtra as chamadas e gera o CSV; preserve os
+     IDs dos filtros e da tabela para manter esses controles conectados.
 ===================================================== -->
 
 <html lang="pt-BR">
@@ -18,6 +18,10 @@
     <script src="relat.js" defer></script>
   </head>
   <body>
+    <!-- =====================================================
+         NAVEGAÇÃO ADMINISTRATIVA
+         Links compartilhados para as páginas principais do sistema.
+    ===================================================== -->
     <header class="management-header">
       <div class="management-header-inner">
         <a class="management-brand" href="../admin/dashboard.html">AlunoTec</a>
@@ -31,6 +35,10 @@
         </nav>
       </div>
     </header>
+    <!-- =====================================================
+         RELATÓRIO DE FREQUÊNCIA
+         Filtros, indicadores e tabela são atualizados por relat.js.
+    ===================================================== -->
     <main class="management-main">
       <div class="management-heading">
         <p>Acompanhamento escolar</p>
@@ -40,6 +48,10 @@
           filtrado.
         </div>
       </div>
+      <!-- =====================================================
+           FILTROS E EXPORTAÇÃO
+           Escolha o ano/mês e exporte o conjunto filtrado em CSV.
+      ===================================================== -->
       <section class="management-card" aria-label="Filtros do relatório">
         <div class="management-form-grid">
           <label class="management-field" for="reportYear"
@@ -61,6 +73,10 @@
           </button>
         </div>
       </section>
+      <!-- =====================================================
+           RESUMO
+           Totais recalculados para o ano e mês selecionados.
+      ===================================================== -->
       <div class="management-summary" aria-live="polite">
         <div class="management-stat">
           <span>Chamadas</span><strong id="callCount">0</strong>
@@ -75,6 +91,10 @@
           <span>Faltas</span><strong id="absenceCount">0</strong>
         </div>
       </div>
+      <!-- =====================================================
+           RESULTADOS POR TURMA
+           A tabela e as mensagens vazia/status são preenchidas por relat.js.
+      ===================================================== -->
       <section class="management-card">
         <h2>Resumo por turma</h2>
         <div class="management-table-wrap">
@@ -102,6 +122,10 @@
           aria-live="polite"
         ></p>
       </section>
+      <!-- =====================================================
+           AVISO SOBRE A ORIGEM DOS DADOS
+           Informa que o relatório considera os registros deste navegador.
+      ===================================================== -->
       <p class="management-note">
         O relatório considera os dados locais de frequência armazenados neste
         navegador. Para obter dados de outros dispositivos, configure e valide a

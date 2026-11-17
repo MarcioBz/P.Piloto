@@ -1,10 +1,10 @@
 <!doctype html>
 <!-- =====================================================
-  ALUNOTEC | MAPA DE EDIÇÃO — CONFIGURAÇÕES
-  Estrutura: formulário de ano letivo e ações de cópia/backup.
-  Visual compartilhado: ../shared/management.css.
-  Comportamento: config.js preenche o ano e executa as ações; os IDs
-  do formulário/status são a ligação entre HTML e JavaScript.
+     ALUNOTEC | MAPA DE EDIÇÃO — CONFIGURAÇÕES
+     Estrutura: formulário de ano letivo e ações de cópia/backup.
+     Visual compartilhado: ../shared/management.css.
+     Comportamento: config.js preenche o ano e executa as ações; os IDs
+     do formulário/status são a ligação entre HTML e JavaScript.
 ===================================================== -->
 
 <html lang="pt-BR">
@@ -18,6 +18,10 @@
     <script src="config.js" defer></script>
   </head>
   <body>
+    <!-- =====================================================
+         NAVEGAÇÃO ADMINISTRATIVA
+         Links compartilhados para as páginas principais do sistema.
+    ===================================================== -->
     <header class="management-header">
       <div class="management-header-inner">
         <a class="management-brand" href="../admin/dashboard.html">AlunoTec</a>
@@ -31,6 +35,10 @@
         </nav>
       </div>
     </header>
+    <!-- =====================================================
+         CONTEÚDO DA PÁGINA
+         Título e cartões de configuração ligados ao arquivo config.js.
+    ===================================================== -->
     <main class="management-main">
       <div class="management-heading">
         <p>Administração</p>
@@ -40,6 +48,10 @@
           AlunoTec.
         </div>
       </div>
+      <!-- =====================================================
+           ANO LETIVO ATIVO
+           O formulário e os IDs de status são preenchidos por config.js.
+      ===================================================== -->
       <section class="management-card" aria-labelledby="yearTitle">
         <h2 id="yearTitle">Ano letivo ativo</h2>
         <form id="yearForm">
@@ -60,6 +72,10 @@
           ></p>
         </form>
       </section>
+      <!-- =====================================================
+           CÓPIA DE SEGURANÇA
+           O botão exporta os dados locais; o status confirma a ação.
+      ===================================================== -->
       <section class="management-card" aria-labelledby="backupTitle">
         <h2 id="backupTitle">Cópia de segurança</h2>
         <p class="management-note">
