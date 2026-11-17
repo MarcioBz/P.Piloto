@@ -6,6 +6,11 @@
    As regras responsivas ficam no fim do arquivo.
 ========================================================== */
 
+/* ==========================================================
+   BASE VISUAL COMPARTILHADA
+   Define tipografia, cores e fundo usados nas páginas administrativas.
+========================================================== */
+
 :root {
   color-scheme: light;
   font-family: Inter, "Segoe UI", Arial, sans-serif;
@@ -13,7 +18,10 @@
   background: #f3f6f8;
   font-synthesis: none;
 }
-/* BASE: regra global de dimensionamento e estrutura da página. */
+/* ==========================================================
+   BASE
+   regra global de dimensionamento e estrutura da página.
+========================================================== */
 * {
   box-sizing: border-box;
 }
@@ -24,7 +32,10 @@ body {
 a {
   color: inherit;
 }
-/* NAVEGAÇÃO COMPARTILHADA: cabeçalho, marca e links das três telas administrativas. */
+/* ==========================================================
+   NAVEGAÇÃO COMPARTILHADA
+   Controla a barra superior, a marca e os links usados em Configurações, Instituição e Relatórios.
+========================================================== */
 .management-header {
   background: #073a54;
   color: #fff;
@@ -63,7 +74,10 @@ a {
   background: rgba(255, 255, 255, 0.15);
   color: #fff;
 }
-/* CONTEÚDO E FORMULÁRIOS: cartões, campos, botões e mensagens de status. */
+/* ==========================================================
+   CONTEÚDO E FORMULÁRIOS
+   Define largura da página, títulos, cartões, grades de campos, botões e mensagens de retorno.
+========================================================== */
 .management-main {
   width: min(1180px, calc(100% - 32px));
   margin: 32px auto 64px;
@@ -183,7 +197,10 @@ a {
   font-size: 14px;
   line-height: 1.6;
 }
-/* RESUMOS E TABELAS: componentes específicos usados nos relatórios. */
+/* ==========================================================
+   RESUMOS E TABELAS
+   Estiliza os indicadores e a tabela de dados usada principalmente na página de Relatórios.
+========================================================== */
 .management-summary {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -236,7 +253,10 @@ a {
   color: #5b717d;
   text-align: center;
 }
-/* RESPONSIVIDADE: reduz colunas e reorganiza conteúdo em telas estreitas. */
+/* ==========================================================
+   RESPONSIVIDADE
+   Reorganiza cabeçalho, navegação, indicadores e formulários em telas estreitas.
+========================================================== */
 @media (max-width: 760px) {
   .management-header-inner {
     align-items: flex-start;
@@ -258,6 +278,11 @@ a {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+/* ==========================================================
+   FORMULÁRIOS EM CELULARES
+   Transforma campos de duas colunas em uma coluna para facilitar o preenchimento no celular.
+========================================================== */
+
 @media (max-width: 520px) {
   .management-form-grid {
     grid-template-columns: 1fr;

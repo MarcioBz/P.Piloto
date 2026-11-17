@@ -5,7 +5,10 @@
    páginas que importam este arquivo.
 ========================================================== */
 
-/* AlunoTec — identidade compartilhada de navegação, topbar e banner */
+/* ==========================================================
+   AlunoTec — identidade compartilhada de navegação, topbar e banner
+   Reúne cores e dimensões comuns antes das regras de cada componente.
+========================================================== */
 :root {
   --at-sidebar: #073a54;
   --at-sidebar-deep: #07364f;
@@ -25,7 +28,10 @@ body {
   min-width: 320px;
 }
 
-/* Sidebar — mesma largura, cor, tipografia e estados em todas as áreas */
+/* ==========================================================
+   Sidebar — mesma largura, cor, tipografia e estados em todas as áreas
+   Padroniza marca, links, estados selecionados e suporte da navegação lateral.
+========================================================== */
 .sidebar {
   width: var(--at-sidebar-width) !important;
   background: linear-gradient(
@@ -147,7 +153,10 @@ body {
   line-height: 1.7;
 }
 
-/* Topbar — altura, fundo, borda e alinhamento consistentes */
+/* ==========================================================
+   Topbar — altura, fundo, borda e alinhamento consistentes
+   Uniformiza barra superior, grupos de ações e botões de menu nas páginas compartilhadas.
+========================================================== */
 .main > .topbar,
 .main-area > .topbar {
   min-height: var(--at-topbar-height);
@@ -208,7 +217,10 @@ body {
   display: none;
 }
 
-/* Conteúdo sempre ocupa o espaço disponível sem estourar a viewport */
+/* ==========================================================
+   Conteúdo sempre ocupa o espaço disponível sem estourar a viewport
+   Evita que o conteúdo ultrapasse a área útil e mantém mídia flexível.
+========================================================== */
 .main-area,
 .main {
   min-width: 0;
@@ -231,7 +243,10 @@ canvas {
   max-width: 100%;
 }
 
-/* Banner padrão: mesmo verde, recorte e fotografia usados em Frequência */
+/* ==========================================================
+   Banner padrão: mesmo verde, recorte e fotografia usados em Frequência
+   Alinha fundo, imagem, texto e citação dos banners das diferentes páginas.
+========================================================== */
 .hero {
   position: relative;
   isolation: isolate;
@@ -297,7 +312,10 @@ canvas {
   color: #fff;
 }
 
-/* Tabelas, cartões e grades: permitir adaptação em telas menores */
+/* ==========================================================
+   Tabelas, cartões e grades: permitir adaptação em telas menores
+   Limita a largura de tabelas e campos e evita que cartões comprimam o layout.
+========================================================== */
 .table-responsive,
 .table-wrap,
 .table-container {
@@ -317,6 +335,11 @@ textarea {
   max-width: 100%;
 }
 
+/* ==========================================================
+   TABLET: MENU E BANNER
+   Ajusta medidas intermediárias sem ocultar a navegação lateral.
+========================================================== */
+
 @media (max-width: 1000px) {
   :root {
     --at-sidebar-width: 245px;
@@ -333,6 +356,11 @@ textarea {
     width: 48% !important;
   }
 }
+
+/* ==========================================================
+   CELULAR: NAVEGAÇÃO RECOLHÍVEL
+   Transforma a barra lateral em painel deslizante e reduz o banner e os controles.
+========================================================== */
 
 @media (max-width: 850px) {
   .main,
@@ -352,7 +380,10 @@ textarea {
     transform: translateX(-105%);
     transition: transform 0.25s ease;
   }
-  /* Drawer móvel mantém a navegação completa, como no Dashboard. */
+  /* ==========================================================
+   Drawer móvel mantém a navegação completa, como no Dashboard.
+   Mostra textos e divisores no menu aberto em celular, preservando os atalhos da navegação.
+========================================================== */
   .sidebar .nav-item,
   .sidebar .nav-link {
     justify-content: flex-start;
@@ -401,6 +432,11 @@ textarea {
     opacity: 0.55;
   }
 }
+
+/* ==========================================================
+   CELULAR: CONTEÚDO COMPACTO
+   Reduz espaços, remove informações secundárias do topo e reorganiza cartões e banner.
+========================================================== */
 
 @media (max-width: 600px) {
   .sidebar {
@@ -459,6 +495,11 @@ textarea {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
+
+/* ==========================================================
+   CELULAR ESTREITO: AÇÕES E CARTÕES
+   Reduz botões e coloca os cartões em uma coluna em aparelhos estreitos.
+========================================================== */
 
 @media (max-width: 380px) {
   .main > .topbar,

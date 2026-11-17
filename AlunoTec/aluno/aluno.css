@@ -8,6 +8,11 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 
+/* ==========================================================
+   TOKENS E BASE GLOBAL
+   Define cores reutilizadas, dimensionamento, tipografia, controles nativos, foco visível, ícones e texto acessível.
+========================================================== */
+
 :root {
   --green: #32712e;
   --green-dark: #255b22;
@@ -61,6 +66,11 @@ svg {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+/* ==========================================================
+   ÍCONES E ACESSIBILIDADE
+   Reúne os recursos visuais reutilizáveis e estilos auxiliares para leitores de tela.
+========================================================== */
+
 .svg-library {
   position: absolute;
   width: 0;
@@ -68,7 +78,10 @@ svg {
   overflow: hidden;
 }
 
-/* NAVEGAÇÃO: menu lateral, marca e links da área de Alunos. */
+/* ==========================================================
+   NAVEGAÇÃO
+   menu lateral, marca e links da área de Alunos.
+========================================================== */
 .sidebar {
   position: fixed;
   inset: 0 auto 0 0;
@@ -205,7 +218,10 @@ svg {
   line-height: 1.5;
 }
 
-/* ESTRUTURA DA PÁGINA: conteúdo principal e barra superior. */
+/* ==========================================================
+   ESTRUTURA DA PÁGINA
+   conteúdo principal e barra superior.
+========================================================== */
 .main {
   width: calc(100% - var(--sidebar-width));
   min-height: 100vh;
@@ -409,12 +425,22 @@ svg {
   color: #d64848;
 }
 
+/* ==========================================================
+   CONTEÚDO PRINCIPAL
+   Organiza a área de trabalho e o espaço ocupado pelo conteúdo depois da navegação lateral.
+========================================================== */
+
 .content {
   width: 100%;
   max-width: 1600px;
   margin: 0 auto;
   padding: 12px 34px 40px;
 }
+/* ==========================================================
+   BANNER DA PÁGINA
+   Controla o título, a imagem, a citação e a composição visual do destaque de Alunos.
+========================================================== */
+
 .hero {
   position: relative;
   display: grid;
@@ -497,6 +523,11 @@ svg {
   background-size: cover;
 }
 
+/* ==========================================================
+   CARTÕES DE RESUMO
+   Apresenta os indicadores numéricos e suas cores no início da página.
+========================================================== */
+
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -564,7 +595,10 @@ svg {
   color: #1684ed;
 }
 
-/* ESTUDANTES: painel, cartões e controles de pesquisa/filtro. */
+/* ==========================================================
+   ESTUDANTES
+   Reúne o painel da lista, título, pesquisa e filtros usados para localizar estudantes.
+========================================================== */
 .student-panel {
   padding: 18px 20px 20px;
   border: 1px solid var(--border);
@@ -647,6 +681,11 @@ svg {
   background: transparent;
   font-size: 11px;
 }
+
+/* ==========================================================
+   FILTROS E SELETORES PERSONALIZADOS
+   Controla aparência, abertura, opções e seleção dos filtros de busca e do ano letivo.
+========================================================== */
 
 .custom-select {
   position: relative;
@@ -783,6 +822,11 @@ svg {
   background: #e8f7f0;
 }
 
+/* ==========================================================
+   ABAS DE CATEGORIA
+   Define as guias usadas para alternar entre grupos ou estados da lista de estudantes.
+========================================================== */
+
 .tabs {
   display: flex;
   flex-wrap: wrap;
@@ -819,7 +863,10 @@ svg {
   color: var(--green-dark);
 }
 
-/* TABELA: rolagem e apresentação das linhas de estudantes. */
+/* ==========================================================
+   TABELA
+   Controla rolagem, cabeçalho, células, identificação, situação, ações e estado vazio da lista.
+========================================================== */
 .table-wrap {
   width: 100%;
   overflow-x: auto;
@@ -1153,7 +1200,10 @@ tbody tr:hover {
   transform: translateY(0);
 }
 
-/* RESPONSIVIDADE PRINCIPAL: adapta navegação e conteúdo a telas menores. */
+/* ==========================================================
+   RESPONSIVIDADE PRINCIPAL
+   Adapta a navegação, os cartões, os filtros e a tabela aos principais tamanhos de tela.
+========================================================== */
 @media (max-width: 1200px) {
   :root {
     --sidebar-width: 225px;
@@ -1273,12 +1323,18 @@ tbody tr:hover {
   }
 }
 
-/* Reserva espaço para a barra e evita deslocamentos no layout */
+/* ==========================================================
+   Reserva espaço para a barra e evita deslocamentos no layout
+   Mantém a rolagem vertical disponível para evitar deslocamentos quando a página passa a ter mais conteúdo.
+========================================================== */
 html {
   overflow-y: scroll;
 }
 
-/* Ajustes responsivos de Alunos */
+/* ==========================================================
+   Ajustes responsivos de Alunos
+   Complementa os breakpoints com largura mínima, rolagem da tabela e navegação horizontal por abas.
+========================================================== */
 .students-menu-button {
   display: none;
 }
@@ -1453,6 +1509,11 @@ html {
   min-width: 850px;
 }
 
+/* ==========================================================
+   DIÁLOGOS, FORMULÁRIOS E AVISOS
+   Reúne janelas de detalhes e edição, formulários, confirmações, notificações e mensagens temporárias.
+========================================================== */
+
 .dialog,
 .notification-dialog {
   width: calc(100% - 24px);
@@ -1475,7 +1536,10 @@ html {
   flex: 1 1 140px;
 }
 
-/* Menu compacto igual ao de Frequência */
+/* ==========================================================
+   Menu compacto igual ao de Frequência
+   Ajusta marca, ícones e suporte para a navegação lateral compacta em tablets.
+========================================================== */
 @media (min-width: 601px) and (max-width: 850px) {
   :root {
     --sidebar-width: 74px;
@@ -1559,7 +1623,10 @@ html {
   }
 }
 
-/* Organização do banner de Alunos */
+/* ==========================================================
+   Organização do banner de Alunos
+   Refina a posição do texto e da citação do destaque nas larguras intermediárias.
+========================================================== */
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(180px, 1fr);
@@ -1589,6 +1656,11 @@ html {
   line-height: 1.5;
 }
 
+/* ==========================================================
+   BANNER EM TELAS INTERMEDIÁRIAS
+   Empilha a composição do destaque quando a largura já não comporta texto e citação lado a lado.
+========================================================== */
+
 @media (max-width: 900px) {
   .hero {
     grid-template-columns: 1fr;
@@ -1597,7 +1669,10 @@ html {
   }
 }
 
-/* Espaço entre os itens do cabeçalho */
+/* ==========================================================
+   Espaço entre os itens do cabeçalho
+   Controla a distância entre os controles da barra superior.
+========================================================== */
 .topbar-right {
   gap: 24px;
 }

@@ -7,9 +7,13 @@
 
 /* ==========================================================
    PERFIL COMPARTILHADO — botões, avatares, edição e envio de foto.
+   Este arquivo atende mais de uma página; alterações afetam o menu e o diálogo de perfil em todas elas.
 ========================================================== */
 
-/* Botão de edição no menu */
+/* ==========================================================
+   Botão de edição no menu
+   Define alinhamento, ícone, área clicável e foco do comando para editar o perfil.
+========================================================== */
 .at-edit-profile {
   display: flex;
   align-items: center;
@@ -37,7 +41,10 @@
   stroke-width: 1.6;
 }
 
-/* Fotos nos avatares */
+/* ==========================================================
+   Fotos nos avatares
+   Faz a imagem preencher os avatares do cabeçalho, dos menus e da prévia sem distorção.
+========================================================== */
 #profileButton .avatar,
 #profileButton .profile-avatar,
 #profileDropdown .avatar,
@@ -61,7 +68,10 @@
   object-fit: cover;
 }
 
-/* Janela de edição */
+/* ==========================================================
+   Janela de edição
+   Controla o diálogo, o formulário, a prévia da foto, os campos, os botões e as mensagens de erro.
+========================================================== */
 .at-profile-dialog {
   box-sizing: border-box;
   width: min(420px, calc(100% - 32px));
@@ -168,7 +178,10 @@
   font-size: 14px;
 }
 
-/* Espaço entre a foto e o nome no menu */
+/* ==========================================================
+   Espaço entre a foto e o nome no menu
+   Alinha a identidade da conta e o ícone de troca dentro do menu de perfil.
+========================================================== */
 .dropdown-profile,
 .profile-menu-heading,
 .profile-menu-user,
@@ -184,7 +197,10 @@
   flex-shrink: 0;
 }
 
-/* Perfil no cabeçalho de todas as abas */
+/* ==========================================================
+   Perfil no cabeçalho de todas as abas
+   Padroniza o botão de conta no topo das páginas que compartilham o menu.
+========================================================== */
 #profileButton {
   display: flex;
   align-items: center;
@@ -193,7 +209,10 @@
   padding: 6px 10px;
 }
 
-/* Foto */
+/* ==========================================================
+   Foto
+   Define o tamanho, o recorte circular e o alinhamento do avatar no cabeçalho.
+========================================================== */
 #profileButton .avatar,
 #profileButton .profile-avatar {
   display: grid;
@@ -204,7 +223,10 @@
   border-radius: 50%;
 }
 
-/* Nome ao lado da foto */
+/* ==========================================================
+   Nome ao lado da foto
+   Organiza o nome da conta ao lado do avatar no botão do perfil.
+========================================================== */
 #profileButton > span:not(.avatar):not(.profile-avatar) {
   display: flex !important;
   flex-direction: column;
@@ -218,12 +240,18 @@
   line-height: 1.3;
 }
 
-/* Esconde o cargo apenas no cabeçalho */
+/* ==========================================================
+   Esconde o cargo apenas no cabeçalho
+   Oculta a informação secundária para preservar espaço no cabeçalho.
+========================================================== */
 #profileButton small {
   display: none;
 }
 
-/* Ícone do menu */
+/* ==========================================================
+   Ícone do menu
+   Dimensiona e alinha o indicador de abertura do menu de perfil.
+========================================================== */
 #profileButton > svg {
   width: 20px;
   height: 20px;
@@ -232,7 +260,10 @@
   color: #698477;
 }
 
-/* ===== BOTÃO DE ENVIO DE ARQUIVOS ===== */
+/* ==========================================================
+   BOTÃO DE ENVIO DE ARQUIVOS
+   Define a área do seletor de imagem usada para atualizar a foto do perfil.
+========================================================== */
 
 input[type="file"] {
   width: 100%;
@@ -254,7 +285,10 @@ input[type="file"] {
   transition: all 0.25s ease;
 }
 
-/* BOTÃO ESCOLHER ARQUIVO */
+/* ==========================================================
+   BOTÃO ESCOLHER ARQUIVO
+   Estiliza o botão nativo que abre a seleção de uma imagem.
+========================================================== */
 
 input[type="file"]::file-selector-button {
   min-height: 36px;
@@ -281,7 +315,10 @@ input[type="file"]::file-selector-button {
     box-shadow 0.25s ease;
 }
 
-/* EFEITO AO PASSAR O MOUSE */
+/* ==========================================================
+   EFEITO AO PASSAR O MOUSE
+   Aplica o estado visual do seletor quando o ponteiro está sobre o botão.
+========================================================== */
 
 input[type="file"]::file-selector-button:hover {
   background: linear-gradient(135deg, #286f3b, #1d592e);
@@ -289,14 +326,20 @@ input[type="file"]::file-selector-button:hover {
   transform: translateY(-1px);
 }
 
-/* EFEITO AO CLICAR */
+/* ==========================================================
+   EFEITO AO CLICAR
+   Dá retorno visual breve quando o botão de seleção é pressionado.
+========================================================== */
 
 input[type="file"]::file-selector-button:active {
   transform: scale(0.97);
   box-shadow: none;
 }
 
-/* DESTAQUE AO SELECIONAR O CAMPO */
+/* ==========================================================
+   DESTAQUE AO SELECIONAR O CAMPO
+   Mostra interação e foco no seletor de arquivo sem esconder o contorno acessível.
+========================================================== */
 
 input[type="file"]:hover {
   background: #f1f8f2;
@@ -308,7 +351,10 @@ input[type="file"]:focus-visible {
   border-color: #39854a;
 }
 
-/* ESTADO DESABILITADO */
+/* ==========================================================
+   ESTADO DESABILITADO
+   Indica visualmente quando a escolha do arquivo não pode ser usada.
+========================================================== */
 
 input[type="file"]:disabled {
   opacity: 0.55;

@@ -6,6 +6,11 @@
    a classe no HTML antes de criar uma regra nova para o mesmo elemento.
 ========================================================== */
 
+/* ==========================================================
+   TOKENS E BASE GLOBAL
+   Define cores, tipografia, dimensionamento global, controles, foco e recursos de ícones da chamada.
+========================================================== */
+
 :root {
   --g950: #12391d;
   --g900: #174523;
@@ -56,7 +61,10 @@ svg {
 .app-shell {
   min-height: 100vh;
 }
-/* NAVEGAÇÃO: menu lateral e marca da área de Frequência. */
+/* ==========================================================
+   NAVEGAÇÃO
+   menu lateral e marca da área de Frequência.
+========================================================== */
 .sidebar {
   position: fixed;
   inset: 0 auto 0 0;
@@ -167,7 +175,10 @@ svg {
   color: #8fa494;
   margin: 18px 7px 0;
 }
-/* ESTRUTURA DA PÁGINA: área principal e cabeçalho. */
+/* ==========================================================
+   ESTRUTURA DA PÁGINA
+   área principal e cabeçalho.
+========================================================== */
 .main-area {
   margin-left: 245px;
   min-height: 100vh;
@@ -402,7 +413,10 @@ svg {
   border-bottom: 0;
   color: #d34b50;
 }
-/* CONTEÚDO DA CHAMADA: filtros, cartões e áreas da página. */
+/* ==========================================================
+   CONTEÚDO DA CHAMADA
+   filtros, cartões e áreas da página.
+========================================================== */
 .page-content {
   padding: 20px 32px 40px;
   max-width: 1800px;
@@ -496,6 +510,11 @@ svg {
     url("../assets/images/dashboard-sala.png") center/cover no-repeat;
   opacity: 0.92;
 }
+/* ==========================================================
+   CARTÕES DE RESUMO
+   Organiza os indicadores de presença, ausência e justificativas exibidos acima da chamada.
+========================================================== */
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -555,7 +574,10 @@ svg {
   border-radius: 15px;
   box-shadow: var(--shadow);
 }
-/* LISTA E TABELA: painel de chamada e controles de presença. */
+/* ==========================================================
+   LISTA E TABELA
+   Reúne o painel da chamada, o cabeçalho, os filtros de turma/data e os controles de registro.
+========================================================== */
 .attendance-panel {
   padding: 18px 20px 14px;
 }
@@ -613,6 +635,11 @@ svg {
   color: #64756a;
   font-weight: 650;
 }
+/* ==========================================================
+   FILTROS E CONTROLES DA CHAMADA
+   Reúne seletor de turma, data, botões de ação e seus estados de interação.
+========================================================== */
+
 .custom-select {
   position: relative;
   width: 100%;
@@ -744,7 +771,10 @@ svg {
   border: 1px solid #cbdccc;
   color: var(--g800);
 }
-/* TABELA: largura, rolagem e alinhamento dos registros. */
+/* ==========================================================
+   TABELA
+   Controla a rolagem, as colunas de estudantes, os estados de presença, anexos e ações por linha.
+========================================================== */
 .table-wrap {
   overflow: auto;
   border: 1px solid var(--line);
@@ -903,6 +933,11 @@ td {
 .dot.justified {
   background: var(--blue);
 }
+/* ==========================================================
+   DIÁLOGOS DE REGISTRO E ANEXOS
+   Define a janela de registro, confirmação e visualização dos arquivos enviados.
+========================================================== */
+
 .dialog {
   border: 0;
   border-radius: 18px;
@@ -982,6 +1017,11 @@ td {
   font-size: 11px !important;
   overflow-wrap: anywhere;
 }
+/* ==========================================================
+   CENTRAL DE NOTIFICAÇÕES
+   Organiza avisos, prioridades, datas e ações de leitura dentro da janela de notificações.
+========================================================== */
+
 .notification-dialog {
   width: min(560px, calc(100% - 28px));
 }
@@ -1050,6 +1090,11 @@ td {
   color: #87948a;
   font-size: 12px;
 }
+/* ==========================================================
+   CALENDÁRIO DE REGISTROS
+   Controla navegação entre meses, dias marcados, seleção e legenda do calendário.
+========================================================== */
+
 .calendar-dialog {
   width: min(360px, calc(100% - 28px));
 }
@@ -1155,7 +1200,10 @@ td {
   opacity: 1;
   transform: translateY(0);
 }
-/* RESPONSIVIDADE PRINCIPAL: adapta a tela a tablets e celulares. */
+/* ==========================================================
+   RESPONSIVIDADE PRINCIPAL
+   Reorganiza menu, cabeçalho, indicadores, formulário e tabela nas larguras definidas.
+========================================================== */
 @media (max-width: 1300px) {
   .stats-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1337,7 +1385,10 @@ td {
   }
 }
 
-/* Ajustes de consistência com o cabeçalho do Dashboard. */
+/* ==========================================================
+   Ajustes de consistência com o cabeçalho do Dashboard.
+   Padroniza seletor de ano, conexão, perfil e estados de foco com o cabeçalho do Dashboard.
+========================================================== */
 .year-picker-wrap {
   z-index: 8;
   width: 182px;
@@ -1463,7 +1514,10 @@ td {
   }
 }
 
-/* Alinhamento do cabeçalho e do banner com o Dashboard. */
+/* ==========================================================
+   Alinhamento do cabeçalho e do banner com o Dashboard.
+   Ajusta o texto do estado de conexão e a composição do banner para manter alinhamento.
+========================================================== */
 .hero {
   height: 210px;
   min-height: 210px;
@@ -1490,6 +1544,11 @@ td {
     min-height: 170px;
   }
 }
+/* ==========================================================
+   ANEXOS NA TABELA
+   Alinha o nome do arquivo e o comando para abrir sua visualização.
+========================================================== */
+
 .attachment-cell {
   display: flex;
   align-items: center;
@@ -1544,6 +1603,11 @@ td {
     min-width: 160px;
   }
 }
+/* ==========================================================
+   CAMPOS DA JUSTIFICATIVA
+   Organiza o campo de dias da justificativa, seu estado de foco e o texto auxiliar.
+========================================================== */
+
 .certificate-days-field {
   display: grid;
   grid-template-columns: 1fr 92px;
@@ -1574,6 +1638,11 @@ td {
   font-weight: 400;
   line-height: 1.45;
 }
+/* ==========================================================
+   ESTADOS DO CALENDÁRIO
+   Diferencia dias com registros parciais e mantém coerentes a legenda e a data atual.
+========================================================== */
+
 .calendar-day.partial:not(.today) {
   background: #ffdf70;
   color: #573f00;
@@ -1591,7 +1660,10 @@ td {
   background: #1683e8;
 }
 
-/* Menu lateral e barra superior no mesmo padrão do Dashboard atualizado. */
+/* ==========================================================
+   Menu lateral e barra superior no mesmo padrão do Dashboard atualizado.
+   Consolida as dimensões e os estados finais do menu lateral e da barra superior.
+========================================================== */
 :root {
   --sidebar-width: 245px;
 }
@@ -1869,7 +1941,10 @@ td {
   }
 }
 
-/* Ajustes finais para igualar banner e controles superiores ao Dashboard. */
+/* ==========================================================
+   Ajustes finais para igualar banner e controles superiores ao Dashboard.
+   Refina espaçamentos, contraste, foco e dimensões dos controles superiores e do banner.
+========================================================== */
 .page-content {
   width: 100%;
   max-width: none;
@@ -1956,7 +2031,10 @@ td {
   }
 }
 
-/* Reserva espaço para a barra e evita deslocamentos no layout */
+/* ==========================================================
+   Reserva espaço para a barra e evita deslocamentos no layout
+   Mantém a rolagem vertical disponível para evitar deslocamentos quando a página passa a ter mais conteúdo.
+========================================================== */
 html {
   overflow-y: scroll;
 }
@@ -1979,7 +2057,15 @@ TESTE DO SINAL VERMELHO
   background: #dc2626;
 }
 
-/* Responsividade da página Frequência */
+/* ==========================================================
+   Responsividade da página Frequência
+   Agrupa os limites mínimos e os controles necessários antes dos ajustes para cada tamanho de tela.
+========================================================== */
+/* ==========================================================
+   NAVEGAÇÃO RESPONSIVA
+   Define os controles móveis e os limites mínimos da página antes dos ajustes por breakpoint.
+========================================================== */
+
 .mobile-menu-button {
   display: none;
 }
@@ -2193,7 +2279,10 @@ TESTE DO SINAL VERMELHO
   }
 }
 
-/* Corrige logo e suporte no menu compacto */
+/* ==========================================================
+   Corrige logo e suporte no menu compacto
+   Centraliza a marca e o cartão de suporte quando a navegação lateral usa largura compacta.
+========================================================== */
 @media (min-width: 601px) and (max-width: 850px) {
   .sidebar {
     align-items: center;

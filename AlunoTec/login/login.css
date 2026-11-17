@@ -6,6 +6,11 @@
    login.js, como mensagens, carregamento e visibilidade do modal.
 ========================================================== */
 
+/* ==========================================================
+   TOKENS E BASE GLOBAL
+   Centraliza cores, tipografia e regras globais de dimensionamento e foco da página de entrada.
+========================================================== */
+
 :root {
   --navy: #082b3d;
   --green: #009c58;
@@ -51,6 +56,11 @@ input:focus-visible {
   outline-offset: 4px;
 }
 
+/* ==========================================================
+   ÍCONES E TEXTO ACESSÍVEL
+   Oculta a biblioteca SVG reutilizável e define estilos para ícones e rótulos acessíveis.
+========================================================== */
+
 .svg-library {
   position: absolute;
   width: 0;
@@ -81,6 +91,11 @@ input:focus-visible {
   border: 0;
 }
 
+/* ==========================================================
+   ESTRUTURA DA PÁGINA DE ENTRADA
+   Divide a tela entre apresentação institucional e área de autenticação.
+========================================================== */
+
 .login-page {
   min-height: 100vh;
   min-height: 100svh;
@@ -91,6 +106,11 @@ input:focus-visible {
     url("assets/fundo-escolar.jpg") center / cover no-repeat,
     #dceee4;
 }
+
+/* ==========================================================
+   PAINEL DE APRESENTAÇÃO
+   Controla fundo, camadas decorativas, marca, texto e benefícios apresentados ao visitante.
+========================================================== */
 
 .presentation {
   position: relative;
@@ -182,6 +202,11 @@ input:focus-visible {
   color: #526b80;
 }
 
+/* ==========================================================
+   BENEFÍCIOS DO SISTEMA
+   Organiza os itens ilustrados que resumem os recursos do AlunoTec.
+========================================================== */
+
 .benefits {
   list-style: none;
   display: grid;
@@ -232,6 +257,11 @@ input:focus-visible {
   width: 45px;
   flex-shrink: 0;
 }
+
+/* ==========================================================
+   ÁREA DO CARTÃO DE ACESSO
+   Posiciona e dimensiona o painel onde ficam a identificação e os campos de entrada.
+========================================================== */
 
 .login-section {
   position: relative;
@@ -285,6 +315,11 @@ input:focus-visible {
   transform: rotate(15deg);
 }
 
+/* ==========================================================
+   IDENTIFICAÇÃO DO ACESSO
+   Reúne título, marca e mensagem de orientação no topo do cartão.
+========================================================== */
+
 .login-header {
   text-align: center;
 }
@@ -318,6 +353,11 @@ input:focus-visible {
   font-size: clamp(15px, 1.15vw, 20px);
 }
 
+/* ==========================================================
+   ESTADO DA CONEXÃO
+   Apresenta o estado online ou offline com indicador de cor e texto.
+========================================================== */
+
 .connection-status {
   display: flex;
   align-items: center;
@@ -346,6 +386,11 @@ input:focus-visible {
   border-radius: 50%;
   background: currentColor;
 }
+
+/* ==========================================================
+   CAMPOS DE ACESSO
+   Controla os campos de identificação e senha, seus ícones, foco e botão de visibilidade.
+========================================================== */
 
 .field {
   margin-bottom: 22px;
@@ -407,6 +452,11 @@ input:focus-visible {
   background: #eaf5ef;
 }
 
+/* ==========================================================
+   OPÇÕES DE ENTRADA
+   Alinha a opção de lembrar acesso e o comando para recuperar a senha.
+========================================================== */
+
 .login-options {
   display: flex;
   align-items: center;
@@ -441,6 +491,11 @@ input:focus-visible {
   text-align: right;
 }
 
+/* ==========================================================
+   BOTÕES DE AUTENTICAÇÃO
+   Padroniza dimensões e alinhamento dos botões de entrada principal e institucional.
+========================================================== */
+
 .primary-button,
 .institutional-button {
   display: flex;
@@ -474,6 +529,11 @@ input:focus-visible {
   height: 30px;
 }
 
+/* ==========================================================
+   SEPARADOR DE MÉTODOS
+   Distingue visualmente o acesso principal de outras formas de autenticação.
+========================================================== */
+
 .divider {
   display: flex;
   align-items: center;
@@ -502,6 +562,11 @@ input:focus-visible {
   background: #eefaf3;
 }
 
+/* ==========================================================
+   MENSAGENS DE RETORNO
+   Controla o espaço e a leitura das mensagens de sucesso, aviso ou falha.
+========================================================== */
+
 .message {
   padding: 12px;
   margin: 0 0 16px;
@@ -529,6 +594,11 @@ input:focus-visible {
   color: var(--green);
 }
 
+/* ==========================================================
+   TELAS GRANDES
+   Aproveita a área ampla sem deixar o cartão e o texto perderem proporção.
+========================================================== */
+
 @media (min-width: 1600px) {
   .login-card {
     padding-top: 62px;
@@ -543,6 +613,11 @@ input:focus-visible {
     margin-top: 62px;
   }
 }
+
+/* ==========================================================
+   TABLETS E JANELAS MÉDIAS
+   Reduz a largura dos painéis e reorganiza a apresentação antes do layout móvel.
+========================================================== */
 
 @media (max-width: 1100px) {
   .login-page {
@@ -574,6 +649,11 @@ input:focus-visible {
     font-size: 12px;
   }
 }
+
+/* ==========================================================
+   CELULARES E TABLETS ESTREITOS
+   Empilha as áreas principais e adapta o conteúdo para rolagem vertical.
+========================================================== */
 
 @media (max-width: 760px) {
   .login-page {
@@ -647,6 +727,11 @@ input:focus-visible {
   }
 }
 
+/* ==========================================================
+   CELULARES ESTREITOS
+   Reduz os espaços e a grade de benefícios para telas com pouca largura.
+========================================================== */
+
 @media (max-width: 380px) {
   .login-card {
     padding: 28px 18px;
@@ -672,14 +757,20 @@ input:focus-visible {
   }
 }
 
+/* ==========================================================
+   ACESSIBILIDADE: MOVIMENTO REDUZIDO
+   Desativa transições não essenciais quando o sistema solicita menos animações.
+========================================================== */
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
   }
 }
-/* =========================================================
+/* ==========================================================
    CONTA CONVIDADO
-========================================================= */
+   Estiliza a indicação e o acesso de demonstração para a conta convidada.
+========================================================== */
 
 .guest-button {
   margin-top: 12px;
@@ -696,25 +787,28 @@ input:focus-visible {
   cursor: not-allowed;
   transform: none;
 }
-/* =========================================================
+/* ==========================================================
    BOTÃO CONVIDADO
-========================================================= */
+   Define o botão de entrada convidada, seus estados e a convivência com o botão institucional.
+========================================================== */
 
 .guest-button {
   margin-top: 12px;
 }
 
-/* =========================================================
+/* ==========================================================
    MODAL INSTITUCIONAL — ALUNOTEC
-========================================================= */
+   Agrupa os estilos da janela para entrada institucional e o estado que bloqueia o fundo.
+========================================================== */
 
 body.modal-open {
   overflow: hidden;
 }
 
-/* =========================================================
+/* ==========================================================
    ESTRUTURA DO MODAL
-========================================================= */
+   Define o posicionamento, as dimensões e a animação de abertura da janela institucional.
+========================================================== */
 
 .access-modal {
   position: fixed;
@@ -740,9 +834,10 @@ body.modal-open {
   opacity: 1;
 }
 
-/* =========================================================
+/* ==========================================================
    FUNDO ESCURECIDO
-========================================================= */
+   Controla a camada que cobre a página e direciona o foco visual para a janela.
+========================================================== */
 
 .access-modal-overlay {
   position: absolute;
@@ -758,9 +853,10 @@ body.modal-open {
   -webkit-backdrop-filter: blur(9px);
 }
 
-/* =========================================================
+/* ==========================================================
    CARD
-========================================================= */
+   Define o painel principal do modal, seu conteúdo, dimensões e elementos decorativos.
+========================================================== */
 
 .access-modal-card {
   position: relative;
@@ -787,7 +883,10 @@ body.modal-open {
   transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* DETALHE DECORATIVO */
+/* ==========================================================
+   DETALHE DECORATIVO
+   Desenha as formas decorativas do cartão sem interferir nos controles do formulário.
+========================================================== */
 
 .access-modal-card::before {
   content: "";
@@ -831,9 +930,10 @@ body.modal-open {
   transform: translateY(0) scale(1);
 }
 
-/* =========================================================
+/* ==========================================================
    BOTÃO FECHAR
-========================================================= */
+   Posiciona o controle de fechamento e define seus estados de interação.
+========================================================== */
 
 .access-modal-close {
   position: absolute;
@@ -882,9 +982,10 @@ body.modal-open {
   height: 18px;
 }
 
-/* =========================================================
+/* ==========================================================
    ÍCONE INSTITUCIONAL
-========================================================= */
+   Apresenta o símbolo da instituição dentro do cabeçalho do modal.
+========================================================== */
 
 .access-modal-icon {
   position: relative;
@@ -916,9 +1017,10 @@ body.modal-open {
   stroke-width: 1.8;
 }
 
-/* =========================================================
+/* ==========================================================
    CABEÇALHO
-========================================================= */
+   Organiza título, identificação institucional e texto introdutório do modal.
+========================================================== */
 
 .access-modal-header {
   position: relative;
@@ -976,9 +1078,10 @@ body.modal-open {
   line-height: 1.55;
 }
 
-/* =========================================================
+/* ==========================================================
    FORMULÁRIO
-========================================================= */
+   Controla espaçamento e organização dos campos do formulário institucional.
+========================================================== */
 
 #institutionalForm {
   position: relative;
@@ -1000,9 +1103,10 @@ body.modal-open {
   font-weight: 700;
 }
 
-/* =========================================================
+/* ==========================================================
    CAMPOS INEP / SENHA
-========================================================= */
+   Define dimensões, ícones, bordas e estados de foco dos campos de identificação e senha.
+========================================================== */
 
 .access-modal .input-container {
   position: relative;
@@ -1086,9 +1190,10 @@ body.modal-open {
   font-weight: 400;
 }
 
-/* =========================================================
+/* ==========================================================
    OLHO DA SENHA
-========================================================= */
+   Controla o botão que alterna a visibilidade da senha e seus estados visuais.
+========================================================== */
 
 .access-modal .toggle-password {
   position: absolute;
@@ -1128,9 +1233,10 @@ body.modal-open {
   height: 20px;
 }
 
-/* =========================================================
+/* ==========================================================
    BOTÃO ENTRAR
-========================================================= */
+   Define o botão de envio institucional, incluindo hover, clique e ícone.
+========================================================== */
 
 .institutional-submit {
   min-height: 58px;
@@ -1167,9 +1273,10 @@ body.modal-open {
   transform: translateX(4px);
 }
 
-/* =========================================================
+/* ==========================================================
    AVISO INFERIOR
-========================================================= */
+   Apresenta o texto e o ícone de orientação abaixo do formulário.
+========================================================== */
 
 .institutional-info {
   position: relative;
@@ -1215,9 +1322,10 @@ body.modal-open {
   font-weight: 700;
 }
 
-/* =========================================================
+/* ==========================================================
    ERRO
-========================================================= */
+   Define como mensagens de erro aparecem dentro do modal institucional.
+========================================================== */
 
 .access-modal .message {
   margin: -3px 0 13px;
@@ -1234,9 +1342,10 @@ body.modal-open {
   line-height: 1.4;
 }
 
-/* =========================================================
+/* ==========================================================
    RESPONSIVIDADE
-========================================================= */
+   Reduz espaçamentos e reorganiza o modal institucional em celulares.
+========================================================== */
 
 @media (max-width: 520px) {
   .access-modal {
@@ -1293,7 +1402,10 @@ body.modal-open {
   }
 }
 
-/* TELAS MUITO PEQUENAS */
+/* ==========================================================
+   TELAS MUITO PEQUENAS
+   Ajusta dimensões e espaços do modal em aparelhos com largura muito reduzida.
+========================================================== */
 
 @media (max-width: 360px) {
   .access-modal {
