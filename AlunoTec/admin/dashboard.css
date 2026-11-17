@@ -3190,3 +3190,392 @@ body {
 html {
   overflow-y: scroll;
 }
+
+/* ==========================================================
+   AJUSTE VISUAL DA BARRA SUPERIOR — DASHBOARD
+   Sobrescreve somente os estilos do cabeçalho.
+========================================================== */
+
+.main > .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 950;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 78px;
+  padding: 12px clamp(16px, 2.4vw, 32px);
+  border-bottom: 1px solid #e7eeea;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 5px 22px rgba(8, 47, 73, 0.045);
+  backdrop-filter: blur(18px);
+}
+
+.main > .topbar .topbar-left,
+.main > .topbar .topbar-right {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.main > .topbar .topbar-left {
+  gap: 16px;
+}
+
+.main > .topbar .topbar-right {
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.main > .topbar .menu-button {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border: 1px solid #e5ece7;
+  border-radius: 13px;
+  background: #f7faf8;
+  color: #16452d;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.main > .topbar .menu-button:hover {
+  border-color: #b9ddc7;
+  background: #edf7f0;
+  transform: translateY(-1px);
+}
+
+.main > .topbar .year-custom-select {
+  width: 168px;
+  min-width: 168px;
+}
+
+.main > .topbar .custom-select-trigger {
+  min-height: 48px;
+  padding: 7px 12px;
+  border: 1px solid #e1eae3;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(20, 65, 40, 0.035);
+}
+
+.main > .topbar .custom-select-trigger:hover,
+.main > .topbar .custom-select-trigger[aria-expanded="true"] {
+  border-color: #83c49a;
+  background: #fbfefc;
+  box-shadow: 0 0 0 3px rgba(0, 166, 99, 0.08);
+}
+
+.main > .topbar .custom-select-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  border-radius: 10px;
+  background: #eaf7ef;
+  color: #16834c;
+}
+
+.main > .topbar .activity-bell {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border: 1px solid #e5ece7;
+  border-radius: 13px;
+  background: #fff;
+  color: #16834c;
+  box-shadow: 0 2px 8px rgba(20, 65, 40, 0.035);
+}
+
+.main > .topbar .activity-bell:hover {
+  border-color: #b9ddc7;
+  background: #f1faf4;
+}
+
+.main > .topbar .connection {
+  min-width: 184px;
+  min-height: 48px;
+  padding: 7px 13px;
+  border: 1px solid #dcefe2;
+  border-radius: 13px;
+  background: #f0faf3;
+}
+
+.main > .topbar .profile {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.main > .topbar #profileButton {
+  min-height: 50px;
+  gap: 11px;
+  padding: 5px 10px 5px 6px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.main > .topbar #profileButton:hover,
+.main > .topbar #profileButton[aria-expanded="true"] {
+  border-color: #e4eee7;
+  background: #f7faf8;
+}
+
+.main > .topbar #profileButton .avatar,
+.main > .topbar #profileButton .profile-avatar {
+  width: 42px;
+  height: 42px;
+  flex-basis: 42px;
+}
+
+.main > .topbar #profileButton .profile-text {
+  min-width: 0;
+}
+
+.main > .topbar #profileButton .profile-text strong {
+  max-width: 180px;
+  overflow: hidden;
+  color: #173d2a;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.main > .topbar #profileButton .profile-menu-icon {
+  color: #718779;
+}
+
+@media (max-width: 900px) {
+  .main > .topbar {
+    min-height: 70px;
+    gap: 12px;
+    padding: 10px 16px;
+  }
+
+  .main > .topbar .topbar-left {
+    gap: 10px;
+  }
+
+  .main > .topbar .topbar-right {
+    gap: 8px;
+  }
+
+  .main > .topbar .year-custom-select {
+    width: 145px;
+    min-width: 145px;
+  }
+
+  .main > .topbar .connection {
+    min-width: 0;
+    padding: 7px 9px;
+  }
+
+  .main > .topbar #profileButton .profile-text strong {
+    max-width: 130px;
+  }
+}
+
+@media (max-width: 640px) {
+  .main > .topbar {
+    min-height: 64px;
+    padding: 9px 12px;
+    gap: 8px;
+  }
+
+  .main > .topbar .topbar-left {
+    gap: 8px;
+  }
+
+  .main > .topbar .topbar-right {
+    gap: 7px;
+  }
+
+  .main > .topbar .menu-button {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+  }
+
+  .main > .topbar .year-custom-select {
+    width: 112px;
+    min-width: 112px;
+  }
+
+  .main > .topbar .custom-select-trigger {
+    min-height: 42px;
+    padding: 5px 7px;
+    gap: 6px;
+  }
+
+  .main > .topbar .custom-select-icon {
+    width: 28px;
+    height: 28px;
+    flex-basis: 28px;
+  }
+
+  .main > .topbar .custom-select-content small {
+    font-size: 10px;
+  }
+
+  .main > .topbar .custom-select-content strong {
+    font-size: 13px;
+  }
+
+  .main > .topbar .activity-bell {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+  }
+
+  .main > .topbar .connection {
+    display: none;
+  }
+
+  .main > .topbar #profileButton {
+    min-height: 40px;
+    gap: 0;
+    padding: 3px;
+  }
+
+  .main > .topbar #profileButton .avatar,
+  .main > .topbar #profileButton .profile-avatar {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+
+  .main > .topbar #profileButton .profile-text,
+  .main > .topbar #profileButton .profile-menu-icon {
+    display: none !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .main > .topbar {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .main > .topbar .year-custom-select {
+    width: 102px;
+    min-width: 102px;
+  }
+
+  .main > .topbar .topbar-right {
+    gap: 5px;
+  }
+}
+
+/* MENU DO PERFIL — ORGANIZADO CONFORME REFERÊNCIA */
+.profile-dropdown {
+  box-sizing: border-box;
+  width: 270px;
+  max-width: calc(100vw - 24px);
+  padding: 13px 13px 12px;
+  border: 1px solid #dce7dc;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(24, 55, 31, 0.15);
+}
+
+.dropdown-profile {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: 1px 2px 12px;
+}
+
+.dropdown-profile .avatar {
+  width: 39px;
+  height: 39px;
+  flex: 0 0 39px;
+  margin-right: 13px;
+}
+
+.dropdown-profile div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+.dropdown-profile strong {
+  color: #263d31;
+  font-size: 12px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.dropdown-profile small {
+  margin: 0;
+  color: #718797;
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.dropdown-divider {
+  height: 1px;
+  margin: 3px 0 5px;
+  background: #dce7dc;
+}
+
+.profile-dropdown > button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 43px;
+  padding: 0 8px;
+  gap: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #536b60;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease;
+}
+
+.profile-dropdown > button:hover {
+  color: #23783c;
+  background: #f0f7f1;
+}
+
+.profile-dropdown > button svg {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+  margin: 0 13px 0 1px;
+}
+
+.profile-dropdown > button span {
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.profile-dropdown > button.logout,
+.profile-dropdown > button.logout:hover {
+  color: #e54848;
+}
+
+.profile-dropdown > button.logout:hover {
+  background: #fff3f3;
+}
+
+@media (max-width: 520px) {
+  .profile-dropdown {
+    position: fixed;
+    top: 70px;
+    right: 10px;
+    width: min(270px, calc(100vw - 20px));
+    max-height: calc(100vh - 85px);
+    overflow-y: auto;
+  }
+}

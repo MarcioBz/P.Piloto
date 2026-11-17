@@ -225,3 +225,90 @@ FERRAMENTA DO BIXO RUIM!!! A IA VAI DOMINAR O MUNDO
   color: #698477;
 }
 
+/* ===== BOTÃO DE ENVIO DE ARQUIVOS ===== */
+
+input[type="file"] {
+  width: 100%;
+  min-height: 52px;
+  padding: 7px;
+  display: flex;
+  align-items: center;
+
+  color: #647568;
+  background: #f8fbf8;
+
+  border: 1px dashed #b9d3bd;
+  border-radius: 12px;
+
+  font-family: inherit;
+  font-size: 13px;
+
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+/* BOTÃO ESCOLHER ARQUIVO */
+
+input[type="file"]::file-selector-button {
+  min-height: 36px;
+  margin-right: 13px;
+  padding: 0 18px;
+
+  color: #ffffff;
+  background: linear-gradient(135deg, #328348, #246b36);
+
+  border: none;
+  border-radius: 9px;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(39, 112, 55, 0.16);
+
+  transition:
+    background 0.25s ease,
+    transform 0.2s ease,
+    box-shadow 0.25s ease;
+}
+
+/* EFEITO AO PASSAR O MOUSE */
+
+input[type="file"]::file-selector-button:hover {
+  background: linear-gradient(135deg, #286f3b, #1d592e);
+  box-shadow: 0 5px 12px rgba(39, 112, 55, 0.23);
+  transform: translateY(-1px);
+}
+
+/* EFEITO AO CLICAR */
+
+input[type="file"]::file-selector-button:active {
+  transform: scale(0.97);
+  box-shadow: none;
+}
+
+/* DESTAQUE AO SELECIONAR O CAMPO */
+
+input[type="file"]:hover {
+  background: #f1f8f2;
+  border-color: #39854a;
+}
+
+input[type="file"]:focus-visible {
+  outline: 3px solid rgba(45, 130, 61, 0.17);
+  border-color: #39854a;
+}
+
+/* ESTADO DESABILITADO */
+
+input[type="file"]:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+input[type="file"]:disabled::file-selector-button {
+  cursor: not-allowed;
+  box-shadow: none;
+}

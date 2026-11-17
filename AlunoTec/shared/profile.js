@@ -8,7 +8,7 @@ FERRAMENTA DO BIXO RUIM!!! A IA VAI DOMINAR O MUNDO
   const storageKey = "alunotec.profile.v1";
 
   const menu = document.querySelector(
-    "#profileDropdown, #profileMenu, #accountMenu"
+    "#profileDropdown, #profileMenu, #accountMenu",
   );
 
   const trigger = document.getElementById("profileButton");
@@ -25,8 +25,7 @@ FERRAMENTA DO BIXO RUIM!!! A IA VAI DOMINAR O MUNDO
     ...menu.querySelectorAll(".avatar, .profile-avatar"),
   ];
 
-  const defaultName =
-    names[0]?.textContent.trim() || "Administrador";
+  const defaultName = names[0]?.textContent.trim() || "Administrador";
 
   let profile = {
     name: defaultName,
@@ -176,11 +175,7 @@ FERRAMENTA DO BIXO RUIM!!! A IA VAI DOMINAR O MUNDO
   let photoRequest = 0;
 
   function previewPhoto() {
-    paintAvatar(
-      preview,
-      nameInput.value || profile.name,
-      draftPhoto
-    );
+    paintAvatar(preview, nameInput.value || profile.name, draftPhoto);
   }
 
   edit.addEventListener("click", (event) => {
@@ -200,17 +195,15 @@ FERRAMENTA DO BIXO RUIM!!! A IA VAI DOMINAR O MUNDO
 
   nameInput.addEventListener("input", previewPhoto);
 
-  dialog
-    .querySelector(".at-photo-remove")
-    .addEventListener("click", () => {
-      photoRequest++;
-      save.disabled = false;
-      draftPhoto = "";
-      photoInput.value = "";
-      error.textContent = "";
+  dialog.querySelector(".at-photo-remove").addEventListener("click", () => {
+    photoRequest++;
+    save.disabled = false;
+    draftPhoto = "";
+    photoInput.value = "";
+    error.textContent = "";
 
-      previewPhoto();
-    });
+    previewPhoto();
+  });
 
   photoInput.addEventListener("change", async () => {
     const request = ++photoRequest;
@@ -220,18 +213,10 @@ FERRAMENTA DO BIXO RUIM!!! A IA VAI DOMINAR O MUNDO
 
     error.textContent = "";
 
-    const acceptedTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/webp",
-    ];
+    const acceptedTypes = ["image/jpeg", "image/png", "image/webp"];
 
-    if (
-      !acceptedTypes.includes(file.type) ||
-      file.size > 5 * 1024 * 1024
-    ) {
-      error.textContent =
-        "Escolha uma imagem JPG, PNG ou WebP de até 5 MB.";
+    if (!acceptedTypes.includes(file.type) || file.size > 5 * 1024 * 1024) {
+      error.textContent = "Escolha uma imagem JPG, PNG ou WebP de até 5 MB.";
 
       photoInput.value = "";
       return;
@@ -264,7 +249,7 @@ FERRAMENTA DO BIXO RUIM!!! A IA VAI DOMINAR O MUNDO
         0,
         0,
         256,
-        256
+        256,
       );
 
       if (request === photoRequest) {
@@ -273,8 +258,7 @@ FERRAMENTA DO BIXO RUIM!!! A IA VAI DOMINAR O MUNDO
       }
     } catch {
       if (request === photoRequest) {
-        error.textContent =
-          "Não foi possível abrir essa imagem.";
+        error.textContent = "Não foi possível abrir essa imagem.";
       }
     } finally {
       URL.revokeObjectURL(url);
@@ -293,9 +277,7 @@ FERRAMENTA DO BIXO RUIM!!! A IA VAI DOMINAR O MUNDO
     edit.focus();
   }
 
-  dialog
-    .querySelector(".at-profile-cancel")
-    .addEventListener("click", close);
+  dialog.querySelector(".at-profile-cancel").addEventListener("click", close);
 
   dialog.addEventListener("cancel", (event) => {
     event.preventDefault();
@@ -319,10 +301,7 @@ FERRAMENTA DO BIXO RUIM!!! A IA VAI DOMINAR O MUNDO
     };
 
     try {
-      localStorage.setItem(
-        storageKey,
-        JSON.stringify(updated)
-      );
+      localStorage.setItem(storageKey, JSON.stringify(updated));
     } catch {
       error.textContent =
         "Não foi possível salvar. Verifique o armazenamento do navegador.";
@@ -369,6 +348,6 @@ document.querySelectorAll("button").forEach((button) => {
         <path d="M4 7h15m-4-4 4 4-4 4" />
         <path d="M20 17H5m4-4-4 4 4 4" />
       </svg>
-    `
+    `,
   );
 });
