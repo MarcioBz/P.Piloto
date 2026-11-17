@@ -223,42 +223,7 @@
       .join("");
   }
 
-  function populateYears() {
-    classes = loadClasses();
-    const years = [
-      ...new Set(
-        classes.map((c) => String(c.year || new Date().getFullYear())),
-      ),
-    ].sort();
-    let selected = localStorage.getItem(KEYS.year);
-    if (!years.includes(selected))
-      selected = years.at(-1) || String(new Date().getFullYear());
-    localStorage.setItem(KEYS.year, selected);
-    $("selectedYear").textContent = selected;
-    $("footerYear").textContent = selected;
-    $("yearMenu").innerHTML = (years.length ? years : [selected])
-      .map(
-        (year) =>
-          `<button class="year-option ${year === selected ? "selected" : ""}" type="button" data-year="${esc(year)}">${esc(year)}</button>`,
-      )
-      .join("");
 
-    const previous = $("classSelect").value;
-    const options = classes
-      .filter((c) => String(c.year || "") === selected)
-      .sort((a, b) => collator.compare(a.name || "", b.name || ""));
-    $("classSelect").innerHTML =
-      `<option value="">Selecione uma turma</option>` +
-      options
-        .map(
-          (c) =>
-            `<option value="${esc(c.id)}">${esc(c.name)} · ${esc(c.grade || "")}</option>`,
-        )
-        .join("");
-    if (options.some((c) => c.id === previous))
-      $("classSelect").value = previous;
-    refreshCustomSelect($("classSelect"));
-  }
 
   function selectedClass() {
     return classes.find((c) => c.id === $("classSelect").value);
@@ -450,72 +415,9 @@
     return statuses;
   }
 
-  function drawCalendar() {
-    const monthDate = calendarMonth;
-    const year = monthDate.getFullYear();
-    const month = monthDate.getMonth();
-    $("calendarMonth").textContent = new Intl.DateTimeFormat("pt-BR", {
-      month: "long",
-      year: "numeric",
-    }).format(monthDate);
 
-    const offset = (new Date(year, month, 1).getDay() + 6) % 7;
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const previousDays = new Date(year, month, 0).getDate();
-    const selectedDate = $("attendanceDate").value;
-    const todayDate = today();
-    const dateStatuses = registeredDates();
-    const weekdays = ["S", "T", "Q", "Q", "S", "S", "D"];
-    let html = weekdays
-      .map((day) => `<span class="calendar-weekday">${day}</span>`)
-      .join("");
 
-    for (let i = 0; i < 42; i++) {
-      let day,
-        date,
-        outside = false;
-      if (i < offset) {
-        day = previousDays - offset + i + 1;
-        date = isoDate(new Date(year, month - 1, day));
-        outside = true;
-      } else if (i >= offset + daysInMonth) {
-        day = i - offset - daysInMonth + 1;
-        date = isoDate(new Date(year, month + 1, day));
-        outside = true;
-      } else {
-        day = i - offset + 1;
-        date = isoDate(new Date(year, month, day));
-      }
 
-      const dayClasses = [
-        "calendar-day",
-        outside ? "outside" : "",
-        dateStatuses.get(date) === "complete"
-          ? "registered"
-          : dateStatuses.get(date) === "partial"
-            ? "partial"
-            : "",
-        date === todayDate ? "today" : "",
-        date === selectedDate ? "selected" : "",
-      ]
-        .filter(Boolean)
-        .join(" ");
-      html += `<button type="button" class="${dayClasses}" data-date="${date}" aria-label="${dateBR(date)}">${day}</button>`;
-    }
-    $("calendarGrid").innerHTML = html;
-  }
-
-  function addActivity(message) {
-    const activities = read(KEYS.activities, []);
-    activities.unshift({
-      id: uid(),
-      message,
-      date: new Date().toISOString(),
-      read: false,
-      source: "frequencia",
-    });
-    write(KEYS.activities, activities.slice(0, 100));
-  }
 
   function weekStart(value) {
     const date = new Date(`${value}T12:00:00`);
@@ -576,74 +478,11 @@
   return alerts;
 }
 
-  function refreshAlerts() {
-    const previous = new Map(
-      read(KEYS.alerts, []).map((alert) => [alert.signature, alert]),
-    );
-    const dismissed = new Set(read(KEYS.dismissedAlerts, []));
-    const active = calculateAlerts()
-      .filter((alert) => !dismissed.has(alert.signature))
-      .map(
-        (alert) =>
-          previous.has(alert.signature)
-  ? { ...previous.get(alert.signature), ...alert }
-  : {
-            id: uid(),
-            ...alert,
-            read: false,
-            active: true,
-            createdAt: new Date().toISOString(),
-          },
-      );
-    write(KEYS.alerts, active);
-    updateBell();
-  }
 
-  function updateBell() {
-    const unread = read(KEYS.alerts, []).filter(
-      (alert) => alert.active !== false && !alert.read,
-    );
-    $("bellCount").hidden = !unread.length;
-    $("bellCount").textContent = unread.length > 99 ? "99+" : unread.length;
-    $("notificationBell").classList.toggle("urgent", unread.length > 0);
-  }
 
-  function openNotifications() {
-    refreshAlerts();
-    const alerts = read(KEYS.alerts, [])
-      .filter((alert) => alert.active !== false)
-      .sort((a, b) => b.date.localeCompare(a.date));
-    const activities = read(KEYS.activities, []).slice(0, 20);
-    let html = `<div class="notice-section-title">Alertas de frequência</div>`;
-    html += alerts.length
-      ? alerts
-          .map(
-            (alert) =>
-              `<article class="notice-item urgent"><span class="notice-dot"></span><div><p>${esc(alert.message)}</p><time>${dateBR(alert.date)}</time></div></article>`,
-          )
-          .join("")
-      : `<div class="notice-empty">Nenhum alerta importante de frequência.</div>`;
-    html += `<div class="notice-section-title">Alterações recentes</div>`;
-    html += activities.length
-      ? activities
-          .map(
-            (item) =>
-              `<article class="notice-item"><span class="notice-dot" style="background:#328344"></span><div><p>${esc(item.message || "Atualização recente.")}</p><time>${new Date(item.date).toLocaleString("pt-BR")}</time></div></article>`,
-          )
-          .join("")
-      : `<div class="notice-empty">Nenhuma alteração recente.</div>`;
-    $("notificationList").innerHTML = html;
-    write(
-      KEYS.alerts,
-      read(KEYS.alerts, []).map((alert) => ({ ...alert, read: true })),
-    );
-    write(
-      KEYS.activities,
-      activities.map((item) => ({ ...item, read: true })),
-    );
-    updateBell();
-    $("notificationDialog").showModal();
-  }
+
+
+
 
   function clearNotifications() {
     const alerts = read(KEYS.alerts, []);
@@ -661,34 +500,9 @@
     toast("Notificações limpas.");
   }
 
-  function resetForFilterChange() {
-    editingRows.clear();
-    dirtyRows.clear();
-    draft = {};
-    render();
-  }
 
-  function storeAttachment(id, file) {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open("alunotec-anexos-frequencia", 1);
-      request.onupgradeneeded = () =>
-        request.result.createObjectStore("atestados");
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => {
-        const db = request.result;
-        const tx = db.transaction("atestados", "readwrite");
-        tx.objectStore("atestados").put(file, id);
-        tx.oncomplete = () => {
-          db.close();
-          resolve();
-        };
-        tx.onerror = () => {
-          db.close();
-          reject(tx.error);
-        };
-      };
-    });
-  }
+
+
 
   function retrieveAttachment(id) {
     return new Promise((resolve, reject) => {
@@ -818,150 +632,11 @@
     return filled;
   }
 
-  async function saveJustification() {
-    const studentId = $("justificationDialog").dataset.studentId;
-    const days = Number($("certificateDays").value);
-    if (!Number.isInteger(days) || days < 1 || days > 365) {
-      return toast("Informe uma quantidade de dias entre 1 e 365.");
-    }
-    const startDate = $("attendanceDate").value || today();
-    const file = $("certificateFile").files?.[0];
-    let attachment = null;
 
-    if (file) {
-      const fileId = uid();
-      try {
-        await storeAttachment(fileId, file);
-        attachment = {
-          id: fileId,
-          name: file.name,
-          type: file.type,
-          size: file.size,
-        };
-      } catch {
-        return toast("Não foi possível guardar o anexo neste dispositivo.");
-      }
-    }
 
-    draft[studentId] = {
-      ...(draft[studentId] || {}),
-      status: "justificado",
-      attachment,
-      certificateStartDate: startDate,
-      certificateDays: days,
-      updatedAt: new Date().toISOString(),
-    };
-    if (editingRows.has(studentId)) dirtyRows.add(studentId);
-    const filled = fillFutureCertificateDays(
-      studentId,
-      startDate,
-      days,
-      attachment,
-    );
-    if (filled)
-      addActivity(
-        `Atestado de ${days} dia(s) registrado para ${draft[studentId].studentName || "aluno"}; ${filled} dia(s) futuro(s) preenchido(s).`,
-      );
-    $("justificationDialog").close();
-    render();
-    toast(
-      filled
-        ? `Justificativa aplicada. ${filled} dia(s) futuro(s) preenchido(s) como justificado.`
-        : file
-          ? "Falta justificada com atestado."
-          : "Falta justificada sem anexo.",
-    );
-  }
 
-  function saveStudentEdit(studentId) {
-    const classItem = selectedClass();
-    if (!classItem) return;
-    const key = callId(
-      classItem.id,
-      $("attendanceDate").value,
-      $("shiftSelect").value,
-    );
-    const data = calls();
-    const call = data[key];
-    if (!call?.students?.[studentId]) return;
 
-    call.students[studentId] = {
-      ...call.students[studentId],
-      ...draft[studentId],
-      updatedAt: new Date().toISOString(),
-    };
-    call.updatedAt = new Date().toISOString();
-    data[key] = call;
-    write(KEYS.attendance, data);
-    addActivity(
-      `Frequência de ${call.students[studentId].studentName || "aluno"} corrigida em ${classItem.name}, ${dateBR(call.date)}.`,
-    );
-    editingRows.delete(studentId);
-    dirtyRows.delete(studentId);
-    draft = {};
-    refreshAlerts();
-    render();
-    toast("Alteração da frequência salva.");
-    window.dispatchEvent(
-      new CustomEvent("alunotec:frequency-updated", {
-        detail: { date: call.date, classId: classItem.id },
-      }),
-    );
-  }
 
-  function saveCall() {
-    const classItem = selectedClass();
-    if (!classItem) return toast("Selecione uma turma.");
-    if (!roster.length) return toast("Não há alunos para registrar.");
-    if (roster.some((student) => !draft[student.id]?.status))
-      return toast("Marque a frequência de todos os alunos antes de salvar.");
-
-    const data = calls();
-    const key = callId(
-      classItem.id,
-      $("attendanceDate").value,
-      $("shiftSelect").value,
-    );
-    data[key] = {
-      id: key,
-      year: localStorage.getItem(KEYS.year),
-      classId: classItem.id,
-      className: classItem.name,
-      date: $("attendanceDate").value,
-      shift: $("shiftSelect").value || "Todos",
-      updatedAt: new Date().toISOString(),
-      students: Object.fromEntries(
-        roster.map((student) => [
-          student.id,
-          {
-            ...draft[student.id],
-            studentId: student.id,
-            studentName: student.name,
-            originClassId: student.originClassId,
-            originClassName: student.originClassName,
-            currentClassId: classItem.id,
-            currentClassName: classItem.name,
-          },
-        ]),
-      ),
-    };
-    write(KEYS.attendance, data);
-    editingRows.clear();
-    dirtyRows.clear();
-    draft = {};
-    addActivity(
-      `Chamada registrada em ${classItem.name}, ${dateBR($("attendanceDate").value)}.`,
-    );
-    refreshAlerts();
-    render();
-    $("savedStatus").hidden = false;
-    toast("Chamada salva neste dispositivo.");
-    window.dispatchEvent(
-      new CustomEvent("alunotec:frequency-updated", {
-        detail: { date: $("attendanceDate").value, classId: classItem.id },
-      }),
-    );
-  }
 
   function populateYears() {
     classes = loadClasses();
@@ -1000,36 +675,7 @@
     refreshCustomSelect($("classSelect"));
   }
 
-  async function checkConnection() {
-    const title = $("connectionTitle"),
-      text = $("connectionText"),
-      status = $("connectionStatus");
-    status.classList.add("checking");
-    if (!navigator.onLine) {
-      title.textContent = "Offline";
-      text.textContent = "Dados salvos neste dispositivo";
-      status.classList.remove("checking");
-      status.classList.add("offline");
-      return;
-    }
-    title.textContent = "Verificando";
-    text.textContent = "Acesso à internet…";
-    try {
-      await fetch("https://www.gstatic.com/generate_204", {
-        mode: "no-cors",
-        cache: "no-store",
-        signal: AbortSignal.timeout(4500),
-      });
-      title.textContent = "Online";
-      text.textContent = "Salvo neste dispositivo • Supabase pendente";
-      status.classList.remove("offline", "checking");
-    } catch {
-      title.textContent = "Offline";
-      text.textContent = "Dados salvos neste dispositivo";
-      status.classList.remove("checking");
-      status.classList.add("offline");
-    }
-  }
+
 
   function drawCalendar() {
     const year = calendarMonth.getFullYear();
@@ -1084,214 +730,9 @@
     $("calendarGrid").innerHTML = html;
   }
 
-  function initialize() {
-    $("attendanceDate").value = today();
-    $("dateDisplay").textContent = dateBR(today());
-    populateYears();
-    setupCustomSelect($("classSelect"));
-    setupCustomSelect($("shiftSelect"));
 
-    $("yearPickerButton").addEventListener("click", () => {
-      const menu = $("yearMenu");
-      menu.hidden = !menu.hidden;
-      $("yearPickerButton").setAttribute("aria-expanded", String(!menu.hidden));
-    });
-    $("yearMenu").addEventListener("click", (event) => {
-      const option = event.target.closest("[data-year]");
-      if (!option) return;
-      localStorage.setItem(KEYS.year, option.dataset.year);
-      $("yearMenu").hidden = true;
-      $("yearPickerButton").setAttribute("aria-expanded", "false");
-      resetForFilterChange();
-      populateYears();
-      render();
-    });
 
-    document.addEventListener("click", (event) => {
-      if (!event.target.closest(".year-picker-wrap")) {
-        $("yearMenu").hidden = true;
-        $("yearPickerButton").setAttribute("aria-expanded", "false");
-      }
-      if (!event.target.closest(".profile-wrap")) {
-        $("profileMenu").hidden = true;
-        $("profileButton").setAttribute("aria-expanded", "false");
-      }
-      document.querySelectorAll(".custom-select.open").forEach((wrap) => {
-        if (!wrap.contains(event.target)) {
-          wrap.classList.remove("open");
-          wrap.querySelector(".custom-select-menu").hidden = true;
-          wrap
-            .querySelector(".custom-select-trigger")
-            .setAttribute("aria-expanded", "false");
-        }
-      });
-    });
 
-    $("classSelect").addEventListener("change", resetForFilterChange);
-    $("shiftSelect").addEventListener("change", resetForFilterChange);
-
-    $("datePickerButton").addEventListener("click", () => {
-      const current = $("attendanceDate").value
-        ? new Date(`${$("attendanceDate").value}T12:00:00`)
-        : new Date();
-      calendarMonth = new Date(current.getFullYear(), current.getMonth(), 1);
-      drawCalendar();
-      $("calendarDialog").showModal();
-    });
-    $("calendarGrid").addEventListener("click", (event) => {
-      const button = event.target.closest("[data-date]");
-      if (!button) return;
-      $("attendanceDate").value = button.dataset.date;
-      $("dateDisplay").textContent = dateBR(button.dataset.date);
-      $("calendarDialog").close();
-      resetForFilterChange();
-    });
-    $("calendarPrev").addEventListener("click", () => {
-      calendarMonth.setMonth(calendarMonth.getMonth() - 1);
-      drawCalendar();
-    });
-    $("calendarNext").addEventListener("click", () => {
-      calendarMonth.setMonth(calendarMonth.getMonth() + 1);
-      drawCalendar();
-    });
-    $("calendarToday").addEventListener("click", () => {
-      $("attendanceDate").value = today();
-      $("dateDisplay").textContent = dateBR(today());
-      $("calendarDialog").close();
-      resetForFilterChange();
-    });
-    $("calendarClear").addEventListener("click", () => {
-      $("attendanceDate").value = "";
-      $("dateDisplay").textContent = "Selecione a data";
-      $("calendarDialog").close();
-      resetForFilterChange();
-    });
-
-    $("studentsTable").addEventListener("click", (event) => {
-      const rowAction = event.target.closest("[data-row-action]");
-      if (rowAction) {
-        const id = rowAction.dataset.student;
-        if (rowAction.dataset.rowAction === "edit") {
-          editingRows.add(id);
-          render();
-        } else if (rowAction.dataset.rowAction === "save") {
-          saveStudentEdit(id);
-        } else if (rowAction.dataset.rowAction === "cancel") {
-          const classItem = selectedClass();
-          const key = callId(
-            classItem.id,
-            $("attendanceDate").value,
-            $("shiftSelect").value,
-          );
-          const saved = calls()[key]?.students?.[id];
-          if (saved) draft[id] = { ...saved };
-          editingRows.delete(id);
-          dirtyRows.delete(id);
-          render();
-        }
-        return;
-      }
-
-      const button = event.target.closest(".status-button");
-      if (!button || button.disabled) return;
-      const id = button.dataset.student;
-      if (button.dataset.status === "justificado") {
-        $("certificateFile").value = "";
-        $("certificateDays").value = "1";
-        $("selectedFileName").textContent = "Nenhum arquivo selecionado";
-        $("justificationDialog").dataset.studentId = id;
-        $("justificationDialog").showModal();
-        return;
-      }
-      draft[id] = {
-        ...(draft[id] || {}),
-        status: button.dataset.status,
-        attachment: null,
-        updatedAt: new Date().toISOString(),
-      };
-      if (editingRows.has(id)) dirtyRows.add(id);
-      render();
-    });
-
-    $("markAllButton").addEventListener("click", () => {
-      const remaining = roster.filter((student) => !draft[student.id]?.status);
-      if (!remaining.length) return toast("Todos os alunos já estão marcados.");
-      remaining.forEach((student) => {
-        draft[student.id] = {
-          ...(draft[student.id] || {}),
-          status: "presente",
-          attachment: null,
-        };
-      });
-      render();
-      toast(
-        `${remaining.length} aluno(s) restante(s) marcado(s) como presente(s).`,
-      );
-    });
-
-    $("saveButton").addEventListener("click", saveCall);
-    $("certificateFile").addEventListener("change", (event) => {
-      $("selectedFileName").textContent =
-        event.target.files?.[0]?.name || "Nenhum arquivo selecionado";
-    });
-    $("saveJustificationButton").addEventListener("click", saveJustification);
-
-    $("notificationBell").addEventListener("click", openNotifications);
-    $("closeNotificationDialog").addEventListener("click", () =>
-      $("notificationDialog").close(),
-    );
-    $("clearNotificationsButton").addEventListener("click", clearNotifications);
-    document
-      .querySelectorAll("[data-close-dialog]")
-      .forEach((button) =>
-        button.addEventListener("click", () =>
-          $(button.dataset.closeDialog).close(),
-        ),
-      );
-
-    $("profileButton").addEventListener("click", () => {
-      const menu = $("profileMenu");
-      menu.hidden = !menu.hidden;
-      $("profileButton").setAttribute("aria-expanded", String(!menu.hidden));
-    });
-    $("switchAccountButton").addEventListener("click", () => {
-      window.location.href = "../index.html";
-    });
-    $("logoutButton").addEventListener("click", () => {
-      try {
-        sessionStorage.removeItem("alunotecSession");
-      } catch {}
-      window.location.href = "../index.html";
-    });
-
-    window.addEventListener("online", checkConnection);
-    window.addEventListener("offline", checkConnection);
-    window.addEventListener("storage", (event) => {
-      if (
-        [KEYS.classes, KEYS.remaps, KEYS.attendance, KEYS.activities].includes(
-          event.key,
-        )
-      ) {
-        editingRows.clear();
-        dirtyRows.clear();
-        draft = {};
-        populateYears();
-        render();
-        refreshAlerts();
-      }
-    });
-
-    refreshAlerts();
-    render();
-    checkConnection();
-  }
-
-  function resetForFilterChange() {
-    editingRows.clear();
-    dirtyRows.clear();
-    draft = {};
-    render();
-  }
 
   function saveStudentEdit(studentId) {
     const classItem = selectedClass();
