@@ -836,3 +836,46 @@
   render();
   updateBell();
 })();
+
+document.addEventListener("DOMContentLoaded", () => {
+  const button = document.getElementById("studentsMenuButton");
+  const sidebar = document.getElementById("studentsSidebar");
+
+  if (!button || !sidebar) return;
+
+  function setMenu(open) {
+    document.body.classList.toggle("students-menu-open", open);
+    button.setAttribute("aria-expanded", String(open));
+    button.setAttribute(
+      "aria-label",
+      open ? "Fechar menu" : "Abrir menu"
+    );
+  }
+
+  button.addEventListener("click", () => {
+    setMenu(!document.body.classList.contains("students-menu-open"));
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!sidebar.contains(event.target) &&
+        !button.contains(event.target)) {
+      setMenu(false);
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" &&
+        document.body.classList.contains("students-menu-open")) {
+      setMenu(false);
+      button.focus();
+    }
+  });
+
+  sidebar.addEventListener("click", (event) => {
+    if (event.target.closest("a")) setMenu(false);
+  });
+
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 600) setMenu(false);
+  });
+});
