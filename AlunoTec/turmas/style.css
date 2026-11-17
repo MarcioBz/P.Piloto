@@ -516,6 +516,166 @@ svg {
    TOPBAR
 ========================================================= */
 
+/*==============
+CALENDARIO
+==================*/
+
+.topbar > .custom-select.year-custom-select {
+  flex: 0 0 228px;
+  width: 228px;
+  min-width: 0;
+}
+
+.topbar > .custom-select.year-custom-select .custom-select-trigger {
+  width: 100%;
+}
+
+.topbar-spacer {
+  flex: 1;
+}
+
+/* Seletor de ano letivo */
+#yearDropdown {
+  width: 228px;
+  flex: 0 0 220px;
+}
+
+#yearDropdown {
+  zoom: 0.83;
+}
+
+#yearDropdown .custom-select-trigger {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 66px;
+  padding: 12px 15px;
+  background: #fff;
+  border: 1px solid #48914e;
+  border-radius: 16px;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+#yearDropdown .custom-select-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #eaf7f0;
+  color: #18531b;
+}
+
+#yearDropdown .custom-select-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  transform: none !important;
+}
+
+#yearDropdown .custom-select-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+#yearDropdown .custom-select-content small {
+  color: #557b5e;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+#yearDropdown .custom-select-content strong {
+  color: #295d46;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* Impede que regras antigas girem todos os ícones */
+#yearDropdown .custom-select-trigger svg {
+  transform: none !important;
+}
+
+#yearDropdown .custom-select-trigger > .custom-select-chevron {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: #498c5b;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  transition: transform 0.2s;
+}
+
+/* Apenas a seta gira */
+#yearDropdown .custom-select-trigger[aria-expanded="true"]
+  > .custom-select-chevron {
+  transform: rotate(180deg) !important;
+}
+
+#yearDropdown .custom-select-trigger[aria-expanded="true"] {
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 3px rgb(46 125 50 / 10%);
+}
+
+#yearDropdown {
+  position: relative;
+}
+
+#yearDropdown .custom-select-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  background: #fff;
+  border: 1px solid #d5e2d6;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px #00000014;
+  z-index: 1000;
+}
+
+#yearDropdown.open .custom-select-menu {
+  display: block;
+}
+
+#yearDropdown .custom-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #29485d;
+  cursor: pointer;
+}
+
+#yearDropdown .custom-option.selected {
+  background: #eaf7f0;
+  color: #246527;
+}
+
+#yearDropdown .custom-select-chevron {
+  transition: transform 0.2s;
+}
+
+#yearDropdown.open .custom-select-trigger > .custom-select-chevron {
+  transform: rotate(180deg) !important;
+}
+
+/*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/ 
+
 .topbar {
     position: sticky;
 
@@ -4198,4 +4358,74 @@ button:disabled {
     .hero-quote {
         display: none;
     }
+}
+
+/* Reserva espaço para a barra e evita deslocamentos no layout */
+html {
+  overflow-y: scroll;
+}
+
+/*============================================================
+CODIGO PARA CORRIGIR A ESCRITA BUGADA QUE O MARCIO COLOCOU!!!
+=================================================================*/
+.hero {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 32px;
+  height: auto;
+  min-height: 260px;
+}
+
+.hero .hero-content {
+  position: relative;
+  flex: 1 1 420px;
+  min-width: 0;
+  max-width: none;
+  z-index: 2;
+}
+
+.hero .hero-quote {
+  display: block;
+  position: relative;
+  inset: auto;
+  transform: none;
+  flex: 0 1 280px;
+  width: auto;
+  margin: 0;
+  color: #fff;
+  opacity: 1;
+  visibility: visible;
+  z-index: 2;
+}
+
+.hero .hero-quote p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.hero {
+  position: relative;
+  isolation: isolate;
+}
+
+.hero .hero-image {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.hero .hero-content,
+.hero .hero-quote {
+  position: relative;
+  z-index: 2;
+}
+
+@media (min-width: 1100px) {
+  .hero .hero-quote {
+    transform: translateX(-350px);
+  }
 }

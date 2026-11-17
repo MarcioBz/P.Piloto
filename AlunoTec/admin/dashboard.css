@@ -3185,3 +3185,8 @@ body {
     margin-left: 0;
   }
 }
+
+/* Reserva espaço para a barra e evita deslocamentos no layout */
+html {
+  overflow-y: scroll;
+}

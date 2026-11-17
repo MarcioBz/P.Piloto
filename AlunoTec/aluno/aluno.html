@@ -8,6 +8,8 @@
     <link rel="icon" type="image/png" href="../assets/icons/icone.png" />
     <link rel="stylesheet" href="aluno.css" />
     <script src="aluno.js" defer></script>
+    <link rel="stylesheet" href="../shared/profile.css">
+<script src="../shared/profile.js" defer></script>
   </head>
   <body>
     <svg
@@ -36,8 +38,17 @@
       <symbol id="i-chart" viewBox="0 0 24 24">
         <path d="M4 20v-6h3v6M10.5 20V9h3v11M17 20V3h3v17" />
       </symbol>
-      <symbol id="i-school" viewBox="0 0 24 24">
-        <path d="m3 10 9-7 9 7M5 9v12h14V9M9 21v-7h6v7M2 21h20" />
+      <symbol id="i-capelo" viewBox="0 0 24 24">
+  <path d="m2 8 10-5 10 5-10 5Z"/>
+  <path d="M6 10v6c3 3 9 3 12 0v-6"/>
+  <path d="M22 8v7"/>
+</symbol>
+       <symbol id="i-building" viewBox="0 0 24 24">
+        <path d="m3 9 9-6 9 6" />
+        <path d="M5 9v12h14V9" />
+        <path d="M9 21v-6h6v6" />
+        <path d="M8 12h.01M12 12h.01M16 12h.01" />
+        <path d="M2 21h20" />
       </symbol>
       <symbol id="i-bell" viewBox="0 0 24 24">
         <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" />
@@ -81,9 +92,14 @@
       <symbol id="i-menu" viewBox="0 0 24 24">
         <path d="M4 6h16M4 12h16M4 18h16" />
       </symbol>
+
+      <symbol id="i-settings" viewBox="0 0 24 24">
+  <path d="M9.2 3h5.6l.5 2.4 1.6.9 2.3-.8 2.8 4.8-1.8 1.6v1.8l1.8 1.6-2.8 4.8-2.3-.8-1.6.9-.5 2.4H9.2l-.5-2.4-1.6-.9-2.3.8L2 15.3l1.8-1.6v-1.8L2 10.3l2.8-4.8 2.3.8 1.6-.9L9.2 3Z"/>
+  <circle cx="12" cy="12.8" r="3"/>
+</symbol>
     </svg>
 
-    <aside class="sidebar">
+    <aside class="sidebar" id="studentsSidebar">
       <a class="brand" href="../admin/dashboard.html" aria-label="AlunoTec">
         <img src="../assets/images/logo-alunotec1.png" alt="AlunoTec" />
       </a>
@@ -92,7 +108,7 @@
         <a class="nav-link" href="../admin/dashboard.html"
           ><svg><use href="#i-home"></use></svg><span>Início</span></a
         >
-        <a class="nav-link" href="#"
+        <a class="nav-link" href="../frequencia/frequencia.html"
           ><svg><use href="#i-calendar"></use></svg><span>Frequência</span></a
         >
         <a class="nav-link active" href="aluno.html"
@@ -104,14 +120,27 @@
         <a class="nav-link" href="#"
           ><svg><use href="#i-chart"></use></svg><span>Relatórios</span></a
         >
+
+<div class="nav-divider"></div>
+<p class="nav-caption">PROFESSORES</p>
+
+<a href="../eletivas/eletivas.html" class="nav-link">
+  <svg aria-hidden="true">
+    <use href="#i-capelo"></use>
+  </svg>
+  <span>Eletivas</span>
+</a>
         <div class="nav-divider"></div>
         <p class="nav-caption">ADMINISTRAÇÃO</p>
         <a class="nav-link" href="#"
-          ><svg><use href="#i-school"></use></svg><span>Instituição</span></a
+          ><svg><use href="#i-building"></use></svg><span>Instituição</span></a
         >
-        <a class="nav-link" href="#"
-          ><svg><use href="#i-calendar"></use></svg><span>Ano letivo</span></a
-        >
+        <a href="../config/config.html" class="nav-link">
+  <svg aria-hidden="true">
+    <use href="#i-settings"></use>
+  </svg>
+  <span>Configurações</span>
+</a>
       </nav>
 
       <div class="sidebar-bottom">
@@ -128,6 +157,18 @@
 
     <main class="main">
       <header class="topbar">
+        <button
+  id="studentsMenuButton"
+  class="students-menu-button"
+  type="button"
+  aria-label="Abrir menu"
+  aria-expanded="false"
+  aria-controls="studentsSidebar"
+>
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M4 6h16M4 12h16M4 18h16"></path>
+  </svg>
+</button>
         <div class="year-picker">
           <svg><use href="#i-calendar"></use></svg>
           <span class="year-label">

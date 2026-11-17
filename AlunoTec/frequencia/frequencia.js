@@ -523,61 +523,58 @@
     return isoDate(date);
   }
 
-  function calculateAlerts() {
-    const grouped = new Map();
-    Object.values(calls())
-      .filter((call) => String(call.year) === localStorage.getItem(KEYS.year))
-      .sort((a, b) => String(a.date).localeCompare(String(b.date)))
-      .forEach((call) =>
-        Object.entries(call.students || {}).forEach(([id, record]) => {
-          if (!grouped.has(id)) grouped.set(id, []);
-          grouped.get(id).push({
-            date: call.date,
-            status: record.status,
-            name: record.studentName,
-            className: record.currentClassName || call.className,
-          });
-        }),
-      );
+ function calculateAlerts() {
+  const grouped = new Map();
+  const currentWeek = weekStart(today());
+  const selectedYear = localStorage.getItem(KEYS.year);
 
-    const alerts = [];
-    grouped.forEach((entries, studentId) => {
-      entries.sort((a, b) => a.date.localeCompare(b.date));
-      for (let i = 1; i < entries.length; i++) {
-        if (
-          entries[i - 1].status === "ausente" &&
-          entries[i].status === "ausente"
-        ) {
-          const last = entries[i];
-          alerts.push({
-            signature: `${studentId}|consecutivas|${last.date}`,
-            message: `${last.name || "Aluno"} teve duas faltas consecutivas sem justificativa em ${last.className || "sua turma"}.`,
-            date: last.date,
-          });
-        }
+  Object.values(calls()).forEach((call) => {
+    if (String(call.year) !== selectedYear) return;
+    if (!call.date || call.date > today()) return;
+    if (weekStart(call.date) !== currentWeek) return;
+
+    Object.entries(call.students || {}).forEach(([id, record]) => {
+      if (record.status !== "ausente") return;
+
+      if (!grouped.has(id)) {
+        grouped.set(id, {
+          dates: new Set(),
+          name: "Aluno",
+          className: "sua turma",
+          lastDate: "",
+        });
       }
 
-      const weeks = new Map();
-      entries
-        .filter((item) => item.status === "ausente")
-        .forEach((item) => {
-          const start = weekStart(item.date);
-          if (!weeks.has(start)) weeks.set(start, []);
-          weeks.get(start).push(item);
-        });
-      weeks.forEach((weekEntries, start) => {
-        if (weekEntries.length >= 3) {
-          const last = weekEntries.at(-1);
-          alerts.push({
-            signature: `${studentId}|semanal|${start}`,
-            message: `${last.name || "Aluno"} teve ${weekEntries.length} faltas sem justificativa na semana em ${last.className || "sua turma"}.`,
-            date: last.date,
-          });
-        }
-      });
+      const student = grouped.get(id);
+
+      // Várias chamadas no mesmo dia contam apenas uma vez.
+      student.dates.add(call.date);
+
+      if (call.date >= student.lastDate) {
+        student.lastDate = call.date;
+        student.name = record.studentName || "Aluno";
+        student.className =
+          record.currentClassName || call.className || "sua turma";
+      }
     });
-    return alerts;
-  }
+  });
+
+  const alerts = [];
+
+  grouped.forEach((student, studentId) => {
+    if (student.dates.size < 3) return;
+
+    alerts.push({
+      signature: `${studentId}|semanal|${currentWeek}`,
+      message:
+        `${student.name} teve ${student.dates.size} dias com falta ` +
+        `sem justificativa nesta semana em ${student.className}.`,
+      date: student.lastDate,
+    });
+  });
+
+  return alerts;
+}
 
   function refreshAlerts() {
     const previous = new Map(
@@ -588,7 +585,9 @@
       .filter((alert) => !dismissed.has(alert.signature))
       .map(
         (alert) =>
-          previous.get(alert.signature) || {
+          previous.has(alert.signature)
+  ? { ...previous.get(alert.signature), ...alert }
+  : {
             id: uid(),
             ...alert,
             read: false,
@@ -1417,62 +1416,6 @@
     updateBell();
   }
 
-  function calculateAlerts() {
-    const grouped = new Map();
-    Object.values(calls())
-      .filter((call) => String(call.year) === localStorage.getItem(KEYS.year))
-      .sort((a, b) => String(a.date).localeCompare(String(b.date)))
-      .forEach((call) =>
-        Object.entries(call.students || {}).forEach(([id, record]) => {
-          if (!grouped.has(id)) grouped.set(id, []);
-          grouped.get(id).push({
-            date: call.date,
-            status: record.status,
-            name: record.studentName,
-            className: record.currentClassName || call.className,
-          });
-        }),
-      );
-
-    const alerts = [];
-    grouped.forEach((entries, studentId) => {
-      entries.sort((a, b) => a.date.localeCompare(b.date));
-      for (let i = 1; i < entries.length; i++) {
-        if (
-          entries[i - 1].status === "ausente" &&
-          entries[i].status === "ausente"
-        ) {
-          const last = entries[i];
-          alerts.push({
-            signature: `${studentId}|consecutivas|${last.date}`,
-            message: `${last.name || "Aluno"} teve duas faltas consecutivas sem justificativa em ${last.className || "sua turma"}.`,
-            date: last.date,
-          });
-        }
-      }
-      const weeks = new Map();
-      entries
-        .filter((item) => item.status === "ausente")
-        .forEach((item) => {
-          const date = new Date(`${item.date}T12:00:00`);
-          date.setDate(date.getDate() - ((date.getDay() + 6) % 7));
-          const start = isoDate(date);
-          if (!weeks.has(start)) weeks.set(start, []);
-          weeks.get(start).push(item);
-        });
-      weeks.forEach((items, start) => {
-        if (items.length >= 3) {
-          const last = items.at(-1);
-          alerts.push({
-            signature: `${studentId}|semanal|${start}`,
-            message: `${last.name || "Aluno"} teve ${items.length} faltas sem justificativa na semana em ${last.className || "sua turma"}.`,
-            date: last.date,
-          });
-        }
-      });
-    });
-    return alerts;
-  }
 
   function updateBell() {
     const unread = read(KEYS.alerts, []).filter(
@@ -1883,3 +1826,41 @@
 
   document.addEventListener("DOMContentLoaded", initialize);
 })();
+
+document.addEventListener("DOMContentLoaded", () => {
+  const button = document.getElementById("mobileMenuButton");
+  const sidebar = document.getElementById("frequencySidebar");
+
+  if (!button || !sidebar) return;
+
+  function setMenu(open) {
+    document.body.classList.toggle("frequency-menu-open", open);
+    button.setAttribute("aria-expanded", String(open));
+    button.setAttribute(
+      "aria-label",
+      open ? "Fechar menu" : "Abrir menu"
+    );
+  }
+
+  button.addEventListener("click", () => {
+    setMenu(!document.body.classList.contains("frequency-menu-open"));
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!sidebar.contains(event.target) &&
+        !button.contains(event.target)) {
+      setMenu(false);
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      setMenu(false);
+      button.focus();
+    }
+  });
+
+  sidebar.addEventListener("click", (event) => {
+    if (event.target.closest("a")) setMenu(false);
+  });
+});
