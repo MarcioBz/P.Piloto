@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#073a54" />
+    <title>AlunoTec | Configurações</title>
+    <link rel="icon" type="image/png" href="../assets/icons/icone.png" />
+    <link rel="stylesheet" href="../shared/management.css" />
+    <script src="config.js" defer></script>
+  </head>
+  <body>
+    <header class="management-header">
+      <div class="management-header-inner">
+        <a class="management-brand" href="../admin/dashboard.html">AlunoTec</a>
+        <nav class="management-nav" aria-label="Navegação principal">
+          <a href="../admin/dashboard.html">Início</a>
+          <a href="../turmas/index.html">Turmas</a>
+          <a href="../frequencia/frequencia.html">Frequência</a>
+          <a href="../relat/relat.html">Relatórios</a>
+          <a href="../inst/inst.html">Instituição</a>
+          <a href="config.html" aria-current="page">Configurações</a>
+        </nav>
+      </div>
+    </header>
+    <main class="management-main">
+      <div class="management-heading">
+        <p>Administração</p>
+        <h1>Configurações</h1>
+        <div class="lead">Defina o ano letivo ativo e exporte uma cópia local dos dados do AlunoTec.</div>
+      </div>
+      <section class="management-card" aria-labelledby="yearTitle">
+        <h2 id="yearTitle">Ano letivo ativo</h2>
+        <form id="yearForm">
+          <label class="management-field" for="schoolYear">Ano letivo
+            <select id="schoolYear" name="schoolYear" required></select>
+          </label>
+          <div class="management-actions"><button class="management-button" type="submit">Salvar ano letivo</button></div>
+          <p class="management-status" id="yearStatus" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+      <section class="management-card" aria-labelledby="backupTitle">
+        <h2 id="backupTitle">Cópia de segurança</h2>
+        <p class="management-note">Baixe os dados escolares salvos neste navegador em um arquivo JSON. A cópia inclui turmas, frequências, remanejamentos, notificações, alertas e o ano letivo. Ela não inclui tokens de acesso.</p>
+        <div class="management-actions"><button class="management-button secondary" id="exportBackup" type="button">Baixar cópia de segurança</button></div>
+        <p class="management-status" id="backupStatus" role="status" aria-live="polite"></p>
+      </section>
+    </main>
+  </body>
+</html>

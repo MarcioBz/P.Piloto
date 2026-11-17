@@ -1,0 +1,54 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  color: #172b37;
+  background: #f3f6f8;
+  font-synthesis: none;
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; }
+a { color: inherit; }
+.management-header { background: #073a54; color: #fff; }
+.management-header-inner { width: min(1180px, calc(100% - 32px)); margin: auto; min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.management-brand { font-size: 20px; font-weight: 800; text-decoration: none; letter-spacing: .2px; white-space: nowrap; }
+.management-nav { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.management-nav a { padding: 10px 12px; border-radius: 8px; text-decoration: none; color: #d7e6ed; font-size: 14px; }
+.management-nav a:hover, .management-nav a[aria-current="page"] { background: rgba(255,255,255,.15); color: #fff; }
+.management-main { width: min(1180px, calc(100% - 32px)); margin: 32px auto 64px; }
+.management-heading { margin-bottom: 24px; }
+.management-heading p { margin: 0 0 6px; color: #537080; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.management-heading h1 { margin: 0; color: #12394c; font-size: clamp(27px, 4vw, 36px); }
+.management-heading .lead { margin-top: 9px; color: #536a76; text-transform: none; letter-spacing: 0; font-size: 16px; font-weight: 400; }
+.management-card { padding: clamp(18px, 3vw, 28px); border: 1px solid #dfe8ed; border-radius: 16px; background: #fff; box-shadow: 0 8px 26px rgba(13,52,71,.045); }
+.management-card + .management-card { margin-top: 18px; }
+.management-card h2 { margin: 0 0 18px; font-size: 19px; color: #173f53; }
+.management-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.management-field { display: grid; gap: 7px; color: #294956; font-size: 14px; font-weight: 650; }
+.management-field input, .management-field select { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid #cbd9df; border-radius: 9px; background: #fff; color: #172b37; font: inherit; font-weight: 400; }
+.management-field input:focus, .management-field select:focus { outline: 3px solid #a8d5e7; border-color: #267997; }
+.management-span-2 { grid-column: 1 / -1; }
+.management-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+.management-button { min-height: 42px; padding: 10px 16px; border: 0; border-radius: 9px; background: #087747; color: #fff; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+.management-button:hover { background: #06653c; }
+.management-button.secondary { background: #e9f1f4; color: #16445a; }
+.management-button.secondary:hover { background: #dce9ee; }
+.management-status { min-height: 22px; margin: 12px 0 0; color: #17633f; font-size: 14px; }
+.management-note { color: #5a707c; font-size: 14px; line-height: 1.6; }
+.management-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 18px 0; }
+.management-stat { padding: 17px; border: 1px solid #dfe8ed; border-radius: 13px; background: #fff; }
+.management-stat span { display: block; color: #5c7480; font-size: 13px; }
+.management-stat strong { display: block; margin-top: 8px; color: #123e53; font-size: 27px; }
+.management-table-wrap { overflow-x: auto; }
+.management-table { width: 100%; border-collapse: collapse; text-align: left; }
+.management-table th, .management-table td { padding: 12px 10px; border-bottom: 1px solid #e6edf0; vertical-align: top; }
+.management-table th { color: #536c78; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+.management-table td { color: #203a46; font-size: 14px; }
+.management-empty { padding: 24px 8px; color: #5b717d; text-align: center; }
+@media (max-width: 760px) {
+  .management-header-inner { align-items: flex-start; flex-direction: column; padding: 15px 0; gap: 9px; }
+  .management-nav { gap: 2px; }
+  .management-nav a { padding: 8px 9px; font-size: 13px; }
+  .management-main { margin-top: 22px; }
+  .management-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) { .management-form-grid { grid-template-columns: 1fr; } .management-span-2 { grid-column: auto; } }

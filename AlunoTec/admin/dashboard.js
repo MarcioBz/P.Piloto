@@ -13,7 +13,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const LOGIN_PAGE = "../index.html";
 
-  const CURRENT_YEAR = 2026;
 
   /* ======================================================
        ELEMENTOS
@@ -218,118 +217,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (event.key === "alunotec_turmas_v2") {
       renderSchoolYearOptions();
+      populateDashboardClassOptions();
+      updateDashboard();
+    }
+    if (event.key === "alunotec_frequencia_v1") {
+      populateDashboardClassOptions();
+      updateDashboard();
+    }
+    if (event.key === "alunotecSchoolYear") {
+      renderSchoolYearOptions(event.newValue);
+      populateDashboardClassOptions();
       updateDashboard();
     }
   });
 
-  /* ======================================================
-       DADOS DEMONSTRATIVOS DAS TURMAS
+  
 
-       Posteriormente estes dados poderão vir do banco
-       de dados do AlunoTec.
-    ====================================================== */
 
-  const dashboardData = {
-    turma01: {
-      name: "Turma 01",
-      total: 30,
-      present: 28,
-      absent: 2,
-      justified: 0,
-      status: "completed",
-      shift: "Manhã",
-    },
-
-    turma02: {
-      name: "Turma 02",
-      total: 30,
-      present: 26,
-      absent: 4,
-      justified: 0,
-      status: "completed",
-      shift: "Manhã",
-    },
-
-    turma03: {
-      name: "Turma 03",
-      total: 30,
-      present: 24,
-      absent: 6,
-      justified: 0,
-      status: "pending",
-      shift: "Tarde",
-    },
-
-    turma04: {
-      name: "Turma 04",
-      total: 30,
-      present: 27,
-      absent: 3,
-      justified: 0,
-      status: "completed",
-      shift: "Tarde",
-    },
-
-    turma05: {
-      name: "Turma 05",
-      total: 30,
-      present: 29,
-      absent: 1,
-      justified: 0,
-      status: "completed",
-      shift: "Integral",
-    },
-
-    turma06: {
-      name: "Turma 06",
-      total: 30,
-      present: 28,
-      absent: 2,
-      justified: 0,
-      status: "completed",
-      shift: "Integral",
-    },
-
-    turma07: {
-      name: "Turma 07",
-      total: 30,
-      present: 27,
-      absent: 3,
-      justified: 0,
-      status: "completed",
-      shift: "Manhã",
-    },
-
-    turma08: {
-      name: "Turma 08",
-      total: 30,
-      present: 26,
-      absent: 4,
-      justified: 0,
-      status: "completed",
-      shift: "Manhã",
-    },
-
-    turma09: {
-      name: "Turma 09",
-      total: 30,
-      present: 0,
-      absent: 0,
-      justified: 0,
-      status: "not-started",
-      shift: "Tarde",
-    },
-
-    turma10: {
-      name: "Turma 10",
-      total: 30,
-      present: 0,
-      absent: 0,
-      justified: 0,
-      status: "not-started",
-      shift: "Tarde",
-    },
-  };
 
   /* ======================================================
        FUNÇÕES AUXILIARES
@@ -337,6 +241,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function formatNumber(value) {
     return new Intl.NumberFormat("pt-BR").format(value);
+  }
+
+  function escapeDashboardHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    })[character]);
   }
 
   function calculatePercent(value, total) {
@@ -599,8 +509,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const trigger = dropdown.querySelector(".custom-select-trigger");
 
-    const options = dropdown.querySelectorAll(".custom-option");
-
     if (!trigger) {
       return;
     }
@@ -625,8 +533,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    options.forEach((option) => {
-      option.addEventListener("click", (event) => {
+    dropdown.addEventListener("click", (event) => {
+        const option = event.target.closest(".custom-option");
+        if (!option || !dropdown.contains(option)) return;
+        const options = dropdown.querySelectorAll(".custom-option");
         event.stopPropagation();
 
         const value = option.dataset.value;
@@ -702,7 +612,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (typeof onChange === "function") {
           onChange(value, text);
         }
-      });
     });
   }
 
@@ -730,6 +639,7 @@ document.addEventListener("DOMContentLoaded", () => {
      * específicos do ano selecionado.
      */
 
+    populateDashboardClassOptions();
     updateDashboard();
   }
 
@@ -738,7 +648,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const saved = JSON.parse(
         localStorage.getItem("alunotec_turmas_v2") || "null",
       );
-      const years = new Set();
+      const years = new Set([String(new Date().getFullYear())]);
+      const selected = localStorage.getItem("alunotecSchoolYear");
+      if (/^\d{4}$/.test(selected || "")) years.add(selected);
       ["base", "electives"].forEach((type) => {
         (Array.isArray(saved?.[type]) ? saved[type] : []).forEach((item) => {
           const year = String(item?.year || "").trim();
@@ -759,7 +671,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!dropdown || !menu) return;
 
     let years = getRegisteredSchoolYears();
-    if (!years.length) years = [String(CURRENT_YEAR)];
+    if (!years.length) years = [String(new Date().getFullYear())];
     let savedYear = preferredYear;
     if (!savedYear) {
       try {
@@ -901,17 +813,79 @@ document.addEventListener("DOMContentLoaded", () => {
     ====================================================== */
 
   function getAllClasses() {
-    return Object.values(dashboardData);
+    let savedClasses = {};
+    let attendance = {};
+    try {
+      savedClasses = JSON.parse(localStorage.getItem("alunotec_turmas_v2") || "{}");
+      attendance = JSON.parse(localStorage.getItem("alunotec_frequencia_v1") || "{}");
+    } catch (error) {
+      console.warn("Não foi possível ler os dados locais do painel.", error);
+    }
+    const year = localStorage.getItem("alunotecSchoolYear") || String(new Date().getFullYear());
+    const calls = Object.values(attendance && typeof attendance === "object" ? attendance : {})
+      .filter((call) => call && String(call.year || call.date?.slice?.(0, 4)) === year);
+    const classes = Array.isArray(savedClasses?.base) ? savedClasses.base : [];
+    const now = new Date();
+    const today = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, "0"), String(now.getDate()).padStart(2, "0")].join("-");
+    return classes.filter((item) => item && item.id != null && String(item.year || year) === year).map((item) => {
+      const records = calls.filter((call) => String(call.classId) === String(item.id));
+      const latest = records.slice().sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")))[0];
+      const studentRecords = Object.values(latest?.students || {})
+        .filter((record) => record && typeof record === "object" && record.status);
+      const present = studentRecords.filter((record) => record.status === "presente").length;
+      const absent = studentRecords.filter((record) => record.status === "ausente").length;
+      const justified = studentRecords.filter((record) => record.status === "justificado").length;
+      return {
+        id: String(item.id), name: String(item.name || "Turma sem nome"),
+        total: studentRecords.length, present, absent, justified,
+        status: latest?.date === today ? "completed" : records.length ? "pending" : "not-started",
+        shift: latest?.shift || item.shift || "Não informado", date: latest?.date || "",
+      };
+    });
+  }
+
+  function populateDashboardClassOptions() {
+    const classes = getAllClasses();
+    [
+      { id: "attendanceDropdown", filter: "attendanceFilter", labelId: "selectedAttendanceClass", inputId: "attendanceClassSelect" },
+      { id: "statusDropdown", filter: "statusFilter", labelId: "selectedStatusClass", inputId: "statusClassSelect" },
+    ].forEach((config) => {
+      const menu = document.querySelector(`#${config.id} .custom-select-menu`);
+      if (!menu) return;
+      const state = config.filter === "attendanceFilter" ? attendanceFilter : statusFilter;
+      const selected = classes.some((item) => item.id === state) ? state : "all";
+      if (config.filter === "attendanceFilter") attendanceFilter = selected;
+      else statusFilter = selected;
+      const options = [{ id: "all", name: "Todas as turmas" }, ...classes.map((item) => ({ id: item.id, name: item.name }))];
+      menu.replaceChildren();
+      options.forEach((item) => {
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = `custom-option${item.id === selected ? " selected" : ""}`;
+        option.dataset.value = item.id;
+        option.setAttribute("role", "option");
+        option.setAttribute("aria-selected", String(item.id === selected));
+        const label = document.createElement("span");
+        label.textContent = item.name;
+        option.append(label);
+        if (item.id === selected) {
+          const check = document.createElement("span");
+          check.className = "option-check";
+          check.textContent = "✓";
+          option.append(check);
+        }
+        menu.append(option);
+      });
+      const current = options.find((item) => item.id === selected);
+      const display = document.getElementById(config.labelId);
+      const input = document.getElementById(config.inputId);
+      if (display) display.textContent = current.name;
+      if (input) input.value = selected;
+    });
   }
 
   function getAttendanceData(filter) {
-    if (filter !== "all" && dashboardData[filter]) {
-      return {
-        ...dashboardData[filter],
-      };
-    }
-
-    const classes = getAllClasses();
+    const classes = getAllClasses().filter((item) => filter === "all" || item.id === filter);
 
     return classes.reduce(
       (total, current) => {
@@ -1024,11 +998,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateClassesPanel() {
     let classes;
 
-    if (statusFilter !== "all" && dashboardData[statusFilter]) {
-      classes = [dashboardData[statusFilter]];
-    } else {
-      classes = getAllClasses();
-    }
+    classes = getAllClasses().filter((item) => statusFilter === "all" || item.id === statusFilter);
 
     const total = classes.length;
 
@@ -1111,7 +1081,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const classes = getAllClasses()
-      .filter((item) => item.status !== "not-started")
+      .filter((item) => item.date)
+      .sort((a, b) => String(b.date).localeCompare(String(a.date)))
       .slice(0, 4);
 
     if (!classes.length) {
@@ -1126,8 +1097,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const date = new Date().toLocaleDateString("pt-BR");
-
     body.innerHTML = classes
       .map((item) => {
         const status = getStatusLabel(item.status);
@@ -1136,15 +1105,15 @@ document.addEventListener("DOMContentLoaded", () => {
                     <tr>
 
                         <td>
-                            ${item.name}
+                            ${escapeDashboardHTML(item.name)}
                         </td>
 
                         <td>
-                            ${item.shift}
+                            ${escapeDashboardHTML(item.shift)}
                         </td>
 
                         <td>
-                            ${date}
+                            ${new Date(`${item.date}T12:00:00`).toLocaleDateString("pt-BR")}
                         </td>
 
                         <td>
@@ -1259,6 +1228,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateRecentCalls();
   }
 
+  populateDashboardClassOptions();
   updateDashboard();
 
   /* ======================================================

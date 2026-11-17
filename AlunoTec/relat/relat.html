@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#073a54" />
+    <title>AlunoTec | Relatórios de frequência</title>
+    <link rel="icon" type="image/png" href="../assets/icons/icone.png" />
+    <link rel="stylesheet" href="../shared/management.css" />
+    <script src="relat.js" defer></script>
+  </head>
+  <body>
+    <header class="management-header">
+      <div class="management-header-inner">
+        <a class="management-brand" href="../admin/dashboard.html">AlunoTec</a>
+        <nav class="management-nav" aria-label="Navegação principal">
+          <a href="../admin/dashboard.html">Início</a>
+          <a href="../turmas/index.html">Turmas</a>
+          <a href="../frequencia/frequencia.html">Frequência</a>
+          <a href="relat.html" aria-current="page">Relatórios</a>
+          <a href="../inst/inst.html">Instituição</a>
+          <a href="../config/config.html">Configurações</a>
+        </nav>
+      </div>
+    </header>
+    <main class="management-main">
+      <div class="management-heading">
+        <p>Acompanhamento escolar</p>
+        <h1>Relatórios de frequência</h1>
+        <div class="lead">Consulte as chamadas registradas neste navegador e exporte o resumo filtrado.</div>
+      </div>
+      <section class="management-card" aria-label="Filtros do relatório">
+        <div class="management-form-grid">
+          <label class="management-field" for="reportYear">Ano letivo<select id="reportYear"></select></label>
+          <label class="management-field" for="reportMonth">Mês<select id="reportMonth"><option value="all">Todos os meses</option></select></label>
+        </div>
+        <div class="management-actions"><button class="management-button secondary" id="exportReport" type="button">Exportar CSV</button></div>
+      </section>
+      <div class="management-summary" aria-live="polite">
+        <div class="management-stat"><span>Chamadas</span><strong id="callCount">0</strong></div>
+        <div class="management-stat"><span>Registros de alunos</span><strong id="studentCount">0</strong></div>
+        <div class="management-stat"><span>Presenças</span><strong id="presentCount">0</strong></div>
+        <div class="management-stat"><span>Faltas</span><strong id="absenceCount">0</strong></div>
+      </div>
+      <section class="management-card">
+        <h2>Resumo por turma</h2>
+        <div class="management-table-wrap">
+          <table class="management-table">
+            <thead><tr><th>Turma</th><th>Chamadas</th><th>Alunos registrados</th><th>Presenças</th><th>Faltas</th><th>Justificadas</th></tr></thead>
+            <tbody id="reportRows"></tbody>
+          </table>
+        </div>
+        <p class="management-empty" id="emptyMessage" hidden>Nenhuma chamada foi encontrada para os filtros escolhidos.</p>
+        <p class="management-status" id="reportStatus" role="status" aria-live="polite"></p>
+      </section>
+      <p class="management-note">O relatório considera os dados locais de frequência armazenados neste navegador. Para obter dados de outros dispositivos, configure e valide a sincronização do servidor.</p>
+    </main>
+  </body>
+</html>

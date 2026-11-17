@@ -640,14 +640,18 @@
 
   function populateYears() {
     classes = loadClasses();
+    let selected = localStorage.getItem(KEYS.year);
     const years = [
       ...new Set(
-        classes.map((c) => String(c.year || new Date().getFullYear())),
+        [
+          String(new Date().getFullYear()),
+          ...(selected ? [String(selected)] : []),
+          ...classes.map((c) => String(c.year || new Date().getFullYear())),
+        ],
       ),
-    ].sort();
-    let selected = localStorage.getItem(KEYS.year);
+    ].sort((a, b) => Number(b) - Number(a));
     if (!years.includes(selected))
-      selected = years.at(-1) || String(new Date().getFullYear());
+      selected = years[0] || String(new Date().getFullYear());
     localStorage.setItem(KEYS.year, selected);
     $("selectedYear").textContent = selected;
     $("footerYear").textContent = selected;

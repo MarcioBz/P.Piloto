@@ -104,7 +104,6 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("online",checkInternetConnection);
     window.addEventListener("offline",()=>{internetReachable=false;updateConnectionStatus();});
     checkInternetConnection();
-    if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost"))navigator.serviceWorker.register("./service-worker.js").catch(error=>console.warn("Cache offline indisponível.",error));
 
     function generateId(prefix = "id") {
         return `${prefix}_${Date.now()}_${Math.random()
