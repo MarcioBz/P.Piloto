@@ -7,15 +7,16 @@
    Use Ctrl+F pelo título da seção ou nome da função para editar uma ação.
 ========================================================= */
 
-/* =========================================================
+/* ==========================================================
    ALUNOTEC - TURMAS
-   script.js
-   ========================================================= */
+   Controla armazenamento, turmas, estudantes, eletivas, calendários, filtros e ações da tela.
+========================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
-  /* =====================================================
+  /* ==========================================================
        CONFIGURAÇÕES
-    ===================================================== */
+       Define chaves, referências de elementos e opções usadas em toda a área de turmas.
+    ========================================================== */
 
   const STORAGE_KEY = "alunotec_turmas_v2";
   const PENDING_SYNC_KEY = "alunotec_turmas_pending_sync_v1";
@@ -85,9 +86,10 @@ document.addEventListener("DOMContentLoaded", () => {
     },
   };
 
-  /* =====================================================
+  /* ==========================================================
        HELPERS
-    ===================================================== */
+       Reúne formatação, validação e funções auxiliares compartilhadas pelas operações da tela.
+    ========================================================== */
 
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -250,21 +252,19 @@ document.addEventListener("DOMContentLoaded", () => {
     return item.students.filter((student) => student.status !== "Inativo");
   }
 
-  /* =====================================================
+  /* ==========================================================
        LOCAL STORAGE
-    ===================================================== */
+       Lê e grava turmas, estudantes e eletivas no armazenamento local, aplicando a estrutura de dados atual.
+    ========================================================== */
 
   function loadData() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
 
-      /*
-       * IMPORTANTE:
-       * Não existem mais turmas/eletivas padrão.
-       *
-       * Se não existir armazenamento do AlunoTec v2,
-       * o sistema começa vazio.
-       */
+      /* ==========================================================
+               IMPORTANTE:
+               A lista começa vazia quando ainda não existe armazenamento do AlunoTec; exemplos padrão não são criados.
+            ========================================================== */
 
       if (!saved) {
         state.data = {
@@ -686,9 +686,10 @@ document.addEventListener("DOMContentLoaded", () => {
       queueMicrotask(syncWithSupabase);
   }
 
-  /* =====================================================
+  /* ==========================================================
        ELEMENTOS PRINCIPAIS
-    ===================================================== */
+       Guarda referências aos componentes da página para reutilizá-las nas ações seguintes.
+    ========================================================== */
 
   const classesView = byId("managementView");
   const classDetailsView = byId("classDetailsView");
@@ -725,9 +726,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const gradeFilterContainer = byId("gradeFilterContainer");
 
-  /* =====================================================
+  /* ==========================================================
        MODAL TURMA / ELETIVA
-    ===================================================== */
+       Declara os elementos e os estados usados para cadastrar ou editar turmas e eletivas.
+    ========================================================== */
 
   const modalOverlay = byId("modalOverlay");
   const modalClose = byId("modalClose");
@@ -742,9 +744,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const baseEditId = byId("baseEditId");
   const electiveEditId = byId("electiveEditId");
 
-  /* =====================================================
+  /* ==========================================================
        BASE COMUM - CAMPOS
-    ===================================================== */
+       Mapeia campos que existem tanto no formulário de turma regular quanto no de eletiva.
+    ========================================================== */
 
   const className = byId("className");
   const classGrade = byId("classGrade");
@@ -755,9 +758,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const classDate = byId("classDate");
   const classDateLabel = byId("classDateLabel");
 
-  /* =====================================================
+  /* ==========================================================
        ELETIVA - CAMPOS
-    ===================================================== */
+       Mapeia campos exclusivos do formulário de eletivas.
+    ========================================================== */
 
   const electiveName = byId("electiveName");
   const electiveShift = byId("electiveShift");
@@ -767,9 +771,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const electiveDate = byId("electiveDate");
   const electiveDateLabel = byId("electiveDateLabel");
 
-  /* =====================================================
+  /* ==========================================================
        DETALHES DA TURMA
-    ===================================================== */
+       Prepara os elementos da tela com informações completas de uma turma selecionada.
+    ========================================================== */
 
   const backToClasses = byId("backToClasses");
 
@@ -791,9 +796,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const studentSearch = byId("studentSearch");
 
-  /* =====================================================
+  /* ==========================================================
        MODAL ALUNO
-    ===================================================== */
+       Declara os campos e controles usados para cadastrar ou editar estudantes.
+    ========================================================== */
 
   const studentModalOverlay = byId("studentModalOverlay");
 
@@ -809,9 +815,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const addStudentButton = byId("addStudentButton");
 
-  /* =====================================================
+  /* ==========================================================
        TRANSFERÊNCIA
-    ===================================================== */
+       Prepara os dados necessários para transferir estudantes entre turmas.
+    ========================================================== */
 
   const transferModalOverlay = byId("transferModalOverlay");
 
@@ -829,9 +836,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const transferStudentText = byId("transferStudentText");
 
-  /* =====================================================
+  /* ==========================================================
        IMPORTAÇÃO / EXPORTAÇÃO
-    ===================================================== */
+       Agrupa configurações e elementos usados para importar ou exportar dados em arquivo.
+    ========================================================== */
 
   const importStudentsButton = byId("importStudentsButton");
 
@@ -839,9 +847,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const studentImportInput = byId("studentImportInput");
 
-  /* =====================================================
+  /* ==========================================================
        TOAST
-    ===================================================== */
+       Apresenta mensagens breves de confirmação ou erro após uma ação.
+    ========================================================== */
 
   const toast = byId("toast");
 
@@ -917,9 +926,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* =====================================================
+  /* ==========================================================
        SELECT PERSONALIZADO
-    ===================================================== */
+       Sincroniza os seletores visuais com seus campos nativos e opções de escolha.
+    ========================================================== */
 
   function setCustomSelectValue(selectId, value, fallback = "Selecione") {
     const container = byId(selectId);
@@ -1019,9 +1029,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* =====================================================
+  /* ==========================================================
        FILTRO DE ANOS
-    ===================================================== */
+       Preenche e aplica o filtro de ano letivo aos registros da página.
+    ========================================================== */
 
   function updateYearFilter() {
     if (!filterYearOptions) return;
@@ -1077,9 +1088,10 @@ document.addEventListener("DOMContentLoaded", () => {
     setCustomSelectValue("filterYearSelect", selected, "Todos");
   }
 
-  /* =====================================================
+  /* ==========================================================
        CONTADORES
-    ===================================================== */
+       Calcula totais que aparecem nos cartões e nas guias da tela.
+    ========================================================== */
 
   function updateSummary() {
     const baseStudents = state.data.base.reduce(
@@ -1117,9 +1129,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  /* =====================================================
+  /* ==========================================================
        FILTROS
-    ===================================================== */
+       Aplica pesquisa e filtros de turma ou estudante sem alterar os dados armazenados.
+    ========================================================== */
 
   function getFilteredItems(type) {
     const source = type === "base" ? state.data.base : state.data.electives;
@@ -1169,9 +1182,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* =====================================================
+  /* ==========================================================
        ÍCONES DE AÇÕES
-    ===================================================== */
+       Define os símbolos usados nos comandos de editar, abrir, transferir e remover.
+    ========================================================== */
 
   function actionButtons(type, id) {
     return `
@@ -1223,9 +1237,10 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
   }
 
-  /* =====================================================
+  /* ==========================================================
        BASE COMUM
-    ===================================================== */
+       Implementa as operações compartilhadas de criação e atualização de turmas regulares.
+    ========================================================== */
 
   function renderBaseTable() {
     if (!baseTableBody) return;
@@ -1314,9 +1329,10 @@ document.addEventListener("DOMContentLoaded", () => {
       .join("");
   }
 
-  /* =====================================================
+  /* ==========================================================
        ELETIVAS
-    ===================================================== */
+       Implementa as operações e regras específicas de cadastro e edição das eletivas.
+    ========================================================== */
 
   function renderElectivesTable() {
     if (!electivesTableBody) return;
@@ -1405,9 +1421,10 @@ document.addEventListener("DOMContentLoaded", () => {
       .join("");
   }
 
-  /* =====================================================
+  /* ==========================================================
        RENDER GERAL
-    ===================================================== */
+       Atualiza tabelas, indicadores e detalhes depois de mudanças nos dados.
+    ========================================================== */
 
   function renderTables() {
     updateSummary();
@@ -1421,9 +1438,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  /* =====================================================
+  /* ==========================================================
        ABAS
-    ===================================================== */
+       Alterna entre as visões de turmas regulares e eletivas e atualiza os itens exibidos.
+    ========================================================== */
 
   function changeTab(tab) {
     state.activeTab = tab;
@@ -1461,9 +1479,10 @@ document.addEventListener("DOMContentLoaded", () => {
     button.addEventListener("click", () => changeTab(button.dataset.tab));
   });
 
-  /* =====================================================
+  /* ==========================================================
        ABRIR MODAL NOVO
-    ===================================================== */
+       Limpa e abre o formulário para criar uma nova turma ou eletiva.
+    ========================================================== */
 
   function resetBaseForm() {
     baseForm?.reset();
@@ -1573,9 +1592,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   newButton?.addEventListener("click", () => openCreateModal(state.activeTab));
 
-  /* =====================================================
+  /* ==========================================================
        EDITAR BASE COMUM
-    ===================================================== */
+       Preenche o formulário com os dados da turma regular selecionada.
+    ========================================================== */
 
   function editBase(id) {
     const item = state.data.base.find((classItem) => classItem.id === id);
@@ -1623,9 +1643,10 @@ document.addEventListener("DOMContentLoaded", () => {
     modalOverlay.classList.add("open");
   }
 
-  /* =====================================================
+  /* ==========================================================
        EDITAR ELETIVA
-    ===================================================== */
+       Preenche o formulário com os dados da eletiva selecionada.
+    ========================================================== */
 
   function editElective(id) {
     const item = state.data.electives.find((elective) => elective.id === id);
@@ -1675,9 +1696,10 @@ document.addEventListener("DOMContentLoaded", () => {
     modalOverlay.classList.add("open");
   }
 
-  /* =====================================================
+  /* ==========================================================
        CADASTRAR / SALVAR BASE
-    ===================================================== */
+       Valida e persiste a criação ou edição de uma turma regular.
+    ========================================================== */
 
   baseForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -1768,9 +1790,10 @@ document.addEventListener("DOMContentLoaded", () => {
     renderTables();
   });
 
-  /* =====================================================
+  /* ==========================================================
        CADASTRAR / SALVAR ELETIVA
-    ===================================================== */
+       Valida e persiste a criação ou edição de uma eletiva.
+    ========================================================== */
 
   electiveForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -1853,9 +1876,10 @@ document.addEventListener("DOMContentLoaded", () => {
     renderTables();
   });
 
-  /* =====================================================
+  /* ==========================================================
        EXCLUIR TURMA / ELETIVA
-    ===================================================== */
+       Confirma e remove o registro selecionado, preservando as regras de vínculo dos estudantes.
+    ========================================================== */
 
   async function deleteItem(type, id) {
     const collection = type === "base" ? state.data.base : state.data.electives;
@@ -1907,9 +1931,10 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast(type === "base" ? "Turma excluída." : "Eletiva excluída.");
   }
 
-  /* =====================================================
+  /* ==========================================================
        AÇÕES DAS TABELAS
-    ===================================================== */
+       Conecta comandos exibidos em cada linha das listas de turmas e eletivas.
+    ========================================================== */
 
   function handleTableAction(event) {
     const button = event.target.closest("[data-action], tr[data-class-id]");
@@ -1947,9 +1972,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   electivesTableBody?.addEventListener("click", handleTableAction);
 
-  /* =====================================================
+  /* ==========================================================
        MODAL PRINCIPAL
-    ===================================================== */
+       Controla abertura, fechamento, validação e envio dos formulários principais.
+    ========================================================== */
 
   function closeMainModal() {
     modalOverlay?.classList.remove("open");
@@ -1969,9 +1995,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  /* =====================================================
+  /* ==========================================================
        LOCALIZAR TURMA ABERTA
-    ===================================================== */
+       Encontra a turma selecionada no armazenamento para montar sua área de detalhes.
+    ========================================================== */
 
   function getOpenedClass() {
     if (!state.openedClassId || !state.openedClassType) {
@@ -1984,9 +2011,10 @@ document.addEventListener("DOMContentLoaded", () => {
     return collection.find((item) => item.id === state.openedClassId) || null;
   }
 
-  /* =====================================================
+  /* ==========================================================
        VISUALIZAR TURMA
-    ===================================================== */
+       Abre a visualização de uma turma a partir da linha ou do nome selecionado.
+    ========================================================== */
 
   function openClassDetails(type, id) {
     const url = new URL(location.href);
@@ -2032,9 +2060,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   backToClasses?.addEventListener("click", showClassesView);
 
-  /* =====================================================
+  /* ==========================================================
        DETALHES DA TURMA
-    ===================================================== */
+       Prepara os elementos da tela com informações completas de uma turma selecionada.
+    ========================================================== */
 
   function renderOpenedClass() {
     const item = getOpenedClass();
@@ -2077,9 +2106,10 @@ document.addEventListener("DOMContentLoaded", () => {
     renderStudents();
   }
 
-  /* =====================================================
+  /* ==========================================================
        ALUNOS
-    ===================================================== */
+       Renderiza a relação de estudantes e suas informações na tela de detalhes da turma.
+    ========================================================== */
 
   function renderStudents() {
     const item = getOpenedClass();
@@ -2279,9 +2309,10 @@ document.addEventListener("DOMContentLoaded", () => {
       .join("");
   }
 
-  /* =====================================================
+  /* ==========================================================
        MODAL ALUNO
-    ===================================================== */
+       Declara os campos e controles usados para cadastrar ou editar estudantes.
+    ========================================================== */
 
   function openStudentModal(studentId = null) {
     const item = getOpenedClass();
@@ -2411,9 +2442,10 @@ document.addEventListener("DOMContentLoaded", () => {
     updateSummary();
   });
 
-  /* =====================================================
+  /* ==========================================================
        AÇÕES DO ALUNO
-    ===================================================== */
+       Conecta edição, exclusão, transferência e demais comandos de cada estudante.
+    ========================================================== */
 
   studentsTableBody?.addEventListener("click", (event) => {
     const statusTrigger = event.target.closest(".student-status-trigger");
@@ -2524,9 +2556,10 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast("Aluno removido da turma.");
   }
 
-  /* =====================================================
+  /* ==========================================================
        TRANSFERÊNCIA
-    ===================================================== */
+       Prepara os dados necessários para transferir estudantes entre turmas.
+    ========================================================== */
 
   function openTransferModal(studentId) {
     const source = getOpenedClass();
@@ -2640,9 +2673,10 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast(`Aluno transferido para ${destination.name}.`);
   });
 
-  /* =====================================================
+  /* ==========================================================
        COPIAR ALUNO PARA ELETIVA
-    ===================================================== */
+       Inclui o estudante em uma eletiva sem removê-lo da turma regular.
+    ========================================================== */
 
   async function chooseElective(electives) {
     return new Promise((resolve) => {
@@ -2717,17 +2751,19 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast(`${student.name} foi adicionado à eletiva ${elective.name}.`);
   }
 
-  /* =====================================================
+  /* ==========================================================
        PESQUISA
-    ===================================================== */
+       Filtra a lista de estudantes pelo texto digitado no campo de busca.
+    ========================================================== */
 
   searchInput?.addEventListener("input", renderTables);
 
   studentSearch?.addEventListener("input", renderStudents);
 
-  /* =====================================================
+  /* ==========================================================
        IMPORTAR ALUNOS CSV
-    ===================================================== */
+       Lê o arquivo CSV, valida as colunas e adiciona os estudantes reconhecidos.
+    ========================================================== */
 
   importStudentsButton?.addEventListener("click", () => {
     studentImportInput?.click();
@@ -2802,9 +2838,10 @@ document.addEventListener("DOMContentLoaded", () => {
     reader.readAsText(file, "UTF-8");
   });
 
-  /* =====================================================
+  /* ==========================================================
        EXPORTAR CSV
-    ===================================================== */
+       Monta e baixa um arquivo CSV com os dados de estudantes escolhidos.
+    ========================================================== */
 
   exportStudentsButton?.addEventListener("click", () => {
     const item = getOpenedClass();
@@ -2860,9 +2897,10 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast("Lista de alunos exportada.");
   });
 
-  /* =====================================================
+  /* ==========================================================
        CALENDÁRIO
-    ===================================================== */
+       Controla navegação, seleção de datas e registros associados ao calendário da turma.
+    ========================================================== */
 
   const MONTHS = [
     "Janeiro",
@@ -3057,9 +3095,10 @@ document.addEventListener("DOMContentLoaded", () => {
     label: "electiveDateLabel",
   });
 
-  /* =====================================================
+  /* ==========================================================
        FECHAR DROPDOWNS
-    ===================================================== */
+       Fecha seletores personalizados abertos ao clicar fora ou iniciar outra ação.
+    ========================================================== */
 
   function closeAllDropdowns() {
     $$(".custom-select.open").forEach((item) => item.classList.remove("open"));
@@ -3075,9 +3114,10 @@ document.addEventListener("DOMContentLoaded", () => {
     $$(".date-picker.open").forEach((item) => item.classList.remove("open"));
   });
 
-  /* =====================================================
+  /* ==========================================================
        ANO LETIVO - APENAS NÚMEROS
-    ===================================================== */
+       Normaliza o campo de ano letivo para aceitar somente algarismos.
+    ========================================================== */
 
   [classYear, electiveYear].forEach((input) => {
     input?.addEventListener("input", () => {
@@ -3085,9 +3125,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  /* =====================================================
+  /* ==========================================================
        PERFIL
-    ===================================================== */
+       Conecta os controles de perfil e conta disponíveis no cabeçalho da área de turmas.
+    ========================================================== */
 
   const profileButton = byId("profileButton");
 
@@ -3105,9 +3146,10 @@ document.addEventListener("DOMContentLoaded", () => {
     profileMenu?.classList.remove("open");
   });
 
-  /* =====================================================
+  /* ==========================================================
        ESC
-    ===================================================== */
+       Fecha diálogos e menus compatíveis quando a tecla Escape é pressionada.
+    ========================================================== */
 
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") {
@@ -3135,9 +3177,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  /* =====================================================
+  /* ==========================================================
        INICIALIZAÇÃO
-    ===================================================== */
+       Carrega os dados existentes, monta a interface inicial e ativa os eventos da página.
+    ========================================================== */
 
   window.addEventListener("popstate", () => {
     const q = new URLSearchParams(location.search),
@@ -3157,10 +3200,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   initializeCustomSelects();
 
-  /*
-   * Nenhuma turma ou eletiva é criada aqui.
-   * Tudo é cadastrado pelo usuário.
-   */
+  /* ==========================================================
+       Nenhuma turma ou eletiva é criada aqui.
+       A página começa sem cadastros de exemplo; o usuário cria turmas e eletivas pela interface.
+    ========================================================== */
 
   changeTab("base");
 

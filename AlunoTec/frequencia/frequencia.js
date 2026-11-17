@@ -67,7 +67,10 @@
     `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
   const today = () => isoDate(new Date());
 
-  /* DATAS, AVISOS E DADOS LOCAIS: funções comuns usadas pelos blocos abaixo. */
+  /* ==========================================================
+     DATAS, AVISOS E DADOS LOCAIS
+     Centraliza formatação de datas, avisos e leitura dos registros salvos usados pela chamada.
+  ========================================================== */
   function dateBR(value) {
     if (!value) return "";
     const [year, month, day] = value.split("-");
@@ -178,7 +181,10 @@
     return String(destination);
   }
 
-  /* FILTROS: mantém os seletores personalizados sincronizados com os campos. */
+  /* ==========================================================
+     FILTROS
+     Sincroniza seletores personalizados com os campos nativos correspondentes.
+  ========================================================== */
   function setupCustomSelect(select) {
     if (select.dataset.customReady) return;
     select.dataset.customReady = "true";
@@ -234,7 +240,10 @@
       .join("");
   }
 
-  /* TURMA E LISTA: encontra a chamada e os estudantes válidos para a data. */
+  /* ==========================================================
+     TURMA E LISTA
+     Localiza a turma, a chamada do dia e os estudantes que devem aparecer na tabela.
+  ========================================================== */
   function selectedClass() {
     return classes.find((c) => c.id === $("classSelect").value);
   }
@@ -280,7 +289,10 @@
     return { absent, justified, total: absent + justified };
   }
 
-  /* CHAMADA: desenha a lista e os controles de presença/falta. */
+  /* ==========================================================
+     CHAMADA
+     Renderiza os estudantes e liga os controles para marcar presença, ausência ou justificativa.
+  ========================================================== */
   function render() {
     classes = loadClasses();
     const classItem = selectedClass();
@@ -368,7 +380,10 @@
     return `<button type="button" class="status-button ${current === status ? "selected" : ""}" data-status="${status}" data-student="${esc(studentId)}" ${locked}><svg><use href="#${icon}"></use></svg>${label}</button>`;
   }
 
-  /* RESUMO E ALERTAS: calcula estatísticas e datas que precisam de atenção. */
+  /* ==========================================================
+     RESUMO E ALERTAS
+     Calcula os indicadores e identifica datas ou registros que precisam de atenção.
+  ========================================================== */
   function updateStats() {
     const statuses = roster.map((student) => draft[student.id]?.status);
     const total = roster.length;
@@ -457,7 +472,7 @@
 
         const student = grouped.get(id);
 
-        // Várias chamadas no mesmo dia contam apenas uma vez.
+        // O conjunto de datas evita contar o mesmo estudante mais de uma vez no dia.
         student.dates.add(call.date);
 
         if (call.date >= student.lastDate) {
@@ -486,7 +501,10 @@
     return alerts;
   }
 
-  /* NOTIFICAÇÕES E ANEXOS: exibe avisos e recupera documentos anexados. */
+  /* ==========================================================
+     NOTIFICAÇÕES E ANEXOS
+     Apresenta avisos, prioridades e documentos associados às chamadas.
+  ========================================================== */
   function clearNotifications() {
     const alerts = read(KEYS.alerts, []);
     const dismissed = new Set(read(KEYS.dismissedAlerts, []));
@@ -568,7 +586,10 @@
     }
   }
 
-  /* CALENDÁRIO: seleciona ano/mês e permite navegar por datas futuras. */
+  /* ==========================================================
+     CALENDÁRIO
+     Seleciona o período, navega entre meses e apresenta os dias com registros.
+  ========================================================== */
   function fillFutureCertificateDays(
     studentId,
     startDate,
@@ -724,7 +745,10 @@
     $("calendarGrid").innerHTML = html;
   }
 
-  /* EDIÇÃO E GRAVAÇÃO: salva ajustes individuais e a chamada do dia. */
+  /* ==========================================================
+     EDIÇÃO E GRAVAÇÃO
+     Salva alterações por estudante e persiste a chamada do dia selecionado.
+  ========================================================== */
   function saveStudentEdit(studentId) {
     const classItem = selectedClass();
     if (!classItem) return;
@@ -815,7 +839,10 @@
     );
   }
 
-  /* HISTÓRICO, JUSTIFICATIVAS E CONEXÃO: mantém dados auxiliares da chamada. */
+  /* ==========================================================
+     HISTÓRICO, JUSTIFICATIVAS E CONEXÃO
+     Consulta registros anteriores, controla justificativas e reflete o estado da rede.
+  ========================================================== */
   function addActivity(message) {
     const activities = read(KEYS.activities, []);
     activities.unshift({
@@ -895,7 +922,10 @@
     $("notificationDialog").showModal();
   }
 
-  /* ARQUIVOS DE JUSTIFICATIVA: guarda e abre os anexos associados ao registro. */
+  /* ==========================================================
+     ARQUIVOS DE JUSTIFICATIVA
+     Armazena e abre anexos relacionados à justificativa de ausência.
+  ========================================================== */
   function storeAttachment(id, file) {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open("alunotec-anexos-frequencia", 1);
@@ -971,7 +1001,10 @@
     );
   }
 
-  /* CONEXÃO: verifica a disponibilidade da rede e atualiza o indicador. */
+  /* ==========================================================
+     CONEXÃO
+     Verifica eventos de rede e atualiza o indicador visível na página.
+  ========================================================== */
   async function checkConnection() {
     const title = $("connectionTitle"),
       text = $("connectionText"),
@@ -1003,7 +1036,10 @@
     }
   }
 
-  /* INICIALIZAÇÃO E EVENTOS: prepara campos e liga filtros, botões e menus. */
+  /* ==========================================================
+     INICIALIZAÇÃO E EVENTOS
+     Prepara campos, renderização inicial e ações dos filtros, botões e menus.
+  ========================================================== */
   function initialize() {
     $("attendanceDate").value = today();
     $("dateDisplay").textContent = dateBR(today());
@@ -1252,7 +1288,10 @@
     checkConnection();
   }
 
-  /* FILTRO FINAL: limpa seleções incompatíveis quando a turma/data muda. */
+  /* ==========================================================
+     FILTRO FINAL
+     Remove combinações inválidas quando o usuário muda a turma ou a data.
+  ========================================================== */
   function resetForFilterChange() {
     editingRows.clear();
     dirtyRows.clear();
@@ -1263,7 +1302,10 @@
   document.addEventListener("DOMContentLoaded", initialize);
 })();
 
-/* MENU RESPONSIVO: abre/fecha a navegação lateral em telas menores. */
+/* ==========================================================
+     MENU RESPONSIVO
+     Controla a abertura e o fechamento da navegação em telas menores.
+  ========================================================== */
 document.addEventListener("DOMContentLoaded", () => {
   const button = document.getElementById("mobileMenuButton");
   const sidebar = document.getElementById("frequencySidebar");

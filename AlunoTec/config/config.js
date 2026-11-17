@@ -8,7 +8,10 @@
 "use strict";
 
 (() => {
-  /* OPÇÕES DO ANO LETIVO: cria a lista e restaura o valor salvo. */
+  /* ==========================================================
+     OPÇÕES DO ANO LETIVO
+     Cria as opções do período escolar, restaura a seleção anterior e atualiza os controles de configuração.
+  ========================================================== */
   const yearForm = document.getElementById("yearForm");
   const yearSelect = document.getElementById("schoolYear");
   const yearStatus = document.getElementById("yearStatus");
@@ -28,14 +31,20 @@
     yearSelect.append(option);
   });
 
-  /* SALVAMENTO: mantém a escolha disponível para as outras páginas. */
+  /* ==========================================================
+     SALVAMENTO
+     Grava o ano letivo escolhido para que as outras páginas possam usar a mesma referência.
+  ========================================================== */
   yearForm.addEventListener("submit", (event) => {
     event.preventDefault();
     localStorage.setItem("alunotecSchoolYear", yearSelect.value);
     yearStatus.textContent = `Ano letivo ${yearSelect.value} salvo neste navegador.`;
   });
 
-  /* CÓPIA DE SEGURANÇA: reúne as chaves locais usadas pelo sistema. */
+  /* ==========================================================
+     CÓPIA DE SEGURANÇA
+     Exporta e restaura as chaves locais usadas pelo sistema, com validação antes de substituir os dados.
+  ========================================================== */
   document.getElementById("exportBackup").addEventListener("click", () => {
     const keys = [
       "alunotec_turmas_v2",

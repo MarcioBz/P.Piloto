@@ -7,6 +7,7 @@
 
 /* ==========================================================
    PERFIL COMPARTILHADO — leitura, prévia e salvamento dos dados.
+   Este módulo é carregado em mais de uma página; seletores alternativos mantêm o perfil compatível com os diferentes cabeçalhos.
 ========================================================== */
 
 (() => {
@@ -95,7 +96,7 @@
     });
   }
 
-  // Adiciona a engrenagem e a opção no menu existente.
+  // Insere o comando de edição no menu de perfil encontrado nesta página.
   const edit = document.createElement("button");
 
   edit.type = "button";
@@ -116,7 +117,7 @@
 
   menu.insertBefore(edit, menu.querySelector("button"));
 
-  // Cria a janela de edição.
+  // Monta o diálogo de edição com campos, prévia da foto e ações do perfil.
   const dialog = document.createElement("dialog");
 
   dialog.className = "at-profile-dialog";
@@ -321,7 +322,7 @@
     close();
   });
 
-  // Atualiza também outras páginas abertas no mesmo navegador.
+  // Propaga o perfil atualizado para outras abas do mesmo navegador.
   window.addEventListener("storage", (event) => {
     if (event.key === storageKey || event.key === null) {
       readProfile();
@@ -333,7 +334,7 @@
   render();
 })();
 
-// Padroniza o ícone de "Trocar de conta" em todas as páginas.
+// Substitui o ícone do comando "Trocar de conta" por um SVG compartilhado.
 document.querySelectorAll("button").forEach((button) => {
   if (button.textContent.trim() !== "Trocar de conta") return;
 

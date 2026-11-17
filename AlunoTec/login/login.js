@@ -8,33 +8,16 @@
 
 "use strict";
 
-/*
-===========================================================
-ALUNOTEC
-SISTEMA DE LOGIN
-===========================================================
-
-ACESSOS:
-
-ADMINISTRADOR
-- Login principal.
-
-AGENTE EDUCACIONAL
-- Conta institucional.
-- Login através de INEP + senha.
-
-CONVIDADO
-- Conta convidado.
-- Somente visualização.
-
-IMPORTANTE:
-As permissões e senhas devem ser validadas pelo backend.
-*/
+/* ==========================================================
+   ALUNOTEC | SISTEMA DE LOGIN
+   Agrupa a autenticação da página, os estados de formulário e a entrada institucional ou convidada.
+========================================================== */
 
 (() => {
-  /* =====================================================
+  /* ==========================================================
      LOGIN PRINCIPAL
-  ====================================================== */
+     Lê os campos de acesso comum e apresenta estados de envio, sucesso ou erro.
+  ========================================================== */
 
   const form = document.getElementById("loginForm");
 
@@ -64,9 +47,10 @@ As permissões e senhas devem ser validadas pelo backend.
 
   const forgotButton = document.getElementById("forgotPassword");
 
-  /* =====================================================
+  /* ==========================================================
      MODAL INSTITUCIONAL
-  ====================================================== */
+     Reúne os seletores e o estado compartilhado da janela de acesso institucional.
+  ========================================================== */
 
   const institutionalModal = document.getElementById("institutionalModal");
 
@@ -100,15 +84,17 @@ As permissões e senhas devem ser validadas pelo backend.
 
   let busy = false;
 
-  /* =====================================================
+  /* ==========================================================
      SUPER ADMIN
-  ====================================================== */
+     Identifica o fluxo de acesso administrativo especial e seus dados de validação.
+  ========================================================== */
 
   const ADMIN_EMAIL = "marcio.bezrrati@gmail.com";
 
-  /* =====================================================
+  /* ==========================================================
      AUTENTICAÇÃO
-  ====================================================== */
+     Centraliza a verificação das credenciais e a decisão de qual página abrir após o acesso.
+  ========================================================== */
 
   function getAuthMethod(name) {
     const auth = window.AlunoTecAuth;
@@ -122,9 +108,10 @@ As permissões e senhas devem ser validadas pelo backend.
     return auth[name].bind(auth);
   }
 
-  /* =====================================================
+  /* ==========================================================
      CONEXÃO
-  ====================================================== */
+     Atualiza o indicador de rede e mantém a resposta coerente com o estado online ou offline.
+  ========================================================== */
 
   function updateConnection() {
     const online = navigator.onLine;
@@ -138,9 +125,10 @@ As permissões e senhas devem ser validadas pelo backend.
       : "Offline — sem conexão com a internet";
   }
 
-  /* =====================================================
+  /* ==========================================================
      MENSAGENS
-  ====================================================== */
+     Exibe avisos de validação e retorno sem depender de alertas nativos do navegador.
+  ========================================================== */
 
   function showMessage(element, text) {
     element.textContent = text;
@@ -154,9 +142,10 @@ As permissões e senhas devem ser validadas pelo backend.
     element.hidden = true;
   }
 
-  /* =====================================================
+  /* ==========================================================
      ESTADO
-  ====================================================== */
+     Controla bloqueio do botão, progresso e disponibilidade dos campos durante uma operação.
+  ========================================================== */
 
   function setBusy(value) {
     busy = value;
@@ -172,9 +161,10 @@ As permissões e senhas devem ser validadas pelo backend.
     form.setAttribute("aria-busy", String(value));
   }
 
-  /* =====================================================
+  /* ==========================================================
      EXECUTAR AÇÃO
-  ====================================================== */
+     Executa a ação de acesso escolhida e mantém o tratamento comum de erros e carregamento.
+  ========================================================== */
 
   async function runAction(action) {
     if (busy) {
@@ -200,9 +190,10 @@ As permissões e senhas devem ser validadas pelo backend.
     }
   }
 
-  /* =====================================================
+  /* ==========================================================
      OLHO LOGIN PRINCIPAL
-  ====================================================== */
+     Alterna a visibilidade da senha no formulário de acesso principal.
+  ========================================================== */
 
   togglePassword.addEventListener("click", () => {
     const show = password.type === "password";
@@ -219,9 +210,10 @@ As permissões e senhas devem ser validadas pelo backend.
     eyeIcon.setAttribute("href", show ? "#icon-eye-off" : "#icon-eye");
   });
 
-  /* =====================================================
+  /* ==========================================================
      LOGIN ADMIN
-  ====================================================== */
+     Valida o acesso administrativo e encaminha a conta autorizada para sua área.
+  ========================================================== */
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -261,9 +253,10 @@ As permissões e senhas devem ser validadas pelo backend.
     });
   });
 
-  /* =====================================================
+  /* ==========================================================
      ABRIR MODAL INSTITUCIONAL
-  ====================================================== */
+     Abre a janela institucional, atualiza o estado acessível e posiciona o primeiro campo.
+  ========================================================== */
 
   function openInstitutionalModal() {
     clearMessage(institutionalMessage);
@@ -279,9 +272,10 @@ As permissões e senhas devem ser validadas pelo backend.
     }, 100);
   }
 
-  /* =====================================================
+  /* ==========================================================
      FECHAR MODAL
-  ====================================================== */
+     Fecha a janela institucional pelos controles disponíveis e restaura o foco da página.
+  ========================================================== */
 
   function closeInstitutionalModal() {
     institutionalModal.classList.remove("active");
@@ -317,9 +311,10 @@ As permissões e senhas devem ser validadas pelo backend.
     }
   });
 
-  /* =====================================================
+  /* ==========================================================
      INEP SOMENTE NÚMEROS
-  ====================================================== */
+     Remove caracteres não numéricos do identificador INEP antes da validação.
+  ========================================================== */
 
   institutionalInep.addEventListener("input", () => {
     institutionalInep.value = institutionalInep.value.replace(/\D/g, "");
@@ -327,9 +322,10 @@ As permissões e senhas devem ser validadas pelo backend.
     clearMessage(institutionalMessage);
   });
 
-  /* =====================================================
+  /* ==========================================================
      OLHO SENHA INSTITUCIONAL
-  ====================================================== */
+     Alterna a visibilidade da senha dentro do formulário institucional.
+  ========================================================== */
 
   toggleInstitutionalPassword.addEventListener("click", () => {
     const show = institutionalPassword.type === "password";
@@ -349,9 +345,10 @@ As permissões e senhas devem ser validadas pelo backend.
     );
   });
 
-  /* =====================================================
+  /* ==========================================================
      LOGIN INSTITUCIONAL
-  ====================================================== */
+     Valida os campos da instituição e executa a autenticação correspondente.
+  ========================================================== */
 
   institutionalForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -406,9 +403,10 @@ As permissões e senhas devem ser validadas pelo backend.
     }
   });
 
-  /* =====================================================
+  /* ==========================================================
      CONTA CONVIDADO
-  ====================================================== */
+     Prepara o acesso de demonstração sem misturá-lo com a autenticação institucional.
+  ========================================================== */
 
   guestButton.addEventListener("click", () => {
     runAction(async () => {
@@ -432,9 +430,10 @@ As permissões e senhas devem ser validadas pelo backend.
     });
   });
 
-  /* =====================================================
+  /* ==========================================================
      ESQUECI SENHA
-  ====================================================== */
+     Apresenta a orientação para recuperação da senha quando o usuário solicita ajuda.
+  ========================================================== */
 
   forgotButton.addEventListener("click", () => {
     runAction(async () => {
@@ -446,9 +445,10 @@ As permissões e senhas devem ser validadas pelo backend.
     });
   });
 
-  /* =====================================================
+  /* ==========================================================
      LIMPAR ERROS
-  ====================================================== */
+     Remove mensagens e estados de validação anteriores quando os campos voltam a ser editados.
+  ========================================================== */
 
   email.addEventListener("input", () => clearMessage(message));
 
@@ -458,9 +458,10 @@ As permissões e senhas devem ser validadas pelo backend.
     clearMessage(institutionalMessage),
   );
 
-  /* =====================================================
+  /* ==========================================================
      CONEXÃO
-  ====================================================== */
+     Atualiza o indicador de rede e mantém a resposta coerente com o estado online ou offline.
+  ========================================================== */
 
   window.addEventListener("online", updateConnection);
 

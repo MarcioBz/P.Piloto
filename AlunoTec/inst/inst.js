@@ -8,7 +8,10 @@
 "use strict";
 
 (() => {
-  /* CAMPOS E CHAVE: os IDs devem existir em inst.html. */
+  /* ==========================================================
+     CAMPOS E CHAVE
+     Centraliza a chave de armazenamento e associa os controles da tela aos campos do formulário.
+  ========================================================== */
   const STORAGE_KEY = "alunotec_institution_v1";
   const form = document.getElementById("institutionForm");
   const status = document.getElementById("institutionStatus");
@@ -22,7 +25,10 @@
     "schoolState",
   ];
 
-  /* CARREGAMENTO: restaura os dados da escola ao abrir a tela. */
+  /* ==========================================================
+     CARREGAMENTO
+     Preenche o formulário com os dados institucionais já salvos quando a página é aberta.
+  ========================================================== */
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
     fields.forEach((id) => {
@@ -34,7 +40,10 @@
       "Os dados salvos não puderam ser lidos. Você pode preencher e salvar novamente.";
   }
 
-  /* SALVAMENTO: valida, normaliza e grava os campos preenchidos. */
+  /* ==========================================================
+     SALVAMENTO
+     Valida e normaliza os campos antes de persistir as informações da instituição.
+  ========================================================== */
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     if (!form.reportValidity()) return;
@@ -46,7 +55,10 @@
     status.textContent = "Dados da instituição salvos neste navegador.";
   });
 
-  /* LIMPEZA: limpa o formulário atual sem apagar os dados já gravados. */
+  /* ==========================================================
+     LIMPEZA
+     Limpa os campos atuais do formulário sem remover os dados já armazenados.
+  ========================================================== */
   document.getElementById("clearInstitution").addEventListener("click", () => {
     form.reset();
     status.textContent =

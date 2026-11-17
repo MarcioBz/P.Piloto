@@ -6,17 +6,26 @@
 ========================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
-  /* ELEMENTOS: o menu só é iniciado nas páginas que possuem os dois itens. */
+  /* ==========================================================
+     ELEMENTOS
+     Confirma que a página possui o botão e a barra lateral antes de instalar os controles móveis.
+  ========================================================== */
   const button = document.getElementById("turmasMenuButton");
   const sidebar = document.querySelector(".sidebar");
   if (!button || !sidebar) return;
-  /* ESTADO ACESSÍVEL: classe visual e rótulos refletem abertura/fechamento. */
+  /* ==========================================================
+     ESTADO ACESSÍVEL
+     Mantém classe, atributo expandido e rótulos do botão sincronizados com o estado do menu.
+  ========================================================== */
   const setOpen = (open) => {
     document.body.classList.toggle("alunotec-menu-open", open);
     button.setAttribute("aria-expanded", String(open));
     button.setAttribute("aria-label", open ? "Fechar menu" : "Abrir menu");
   };
-  /* EVENTOS: botão, clique externo, Escape, navegação e mudança de largura. */
+  /* ==========================================================
+     EVENTOS
+     Conecta abertura, fechamento pelo clique externo ou Escape e retorno ao layout largo.
+  ========================================================== */
   button.addEventListener("click", () =>
     setOpen(!document.body.classList.contains("alunotec-menu-open")),
   );

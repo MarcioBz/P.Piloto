@@ -10,21 +10,22 @@
 "use strict";
 
 /* ==========================================================
-   ALUNOTEC
-   DASHBOARD ADMINISTRATIVO
-   dashboard.js
+   ALUNOTEC | DASHBOARD ADMINISTRATIVO
+   Controla dados, indicadores, navegação e menus da página inicial administrativa.
 ========================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
-  /* ======================================================
-       CONFIGURAÇÕES
-    ====================================================== */
+  /* ==========================================================
+     CONFIGURAÇÕES
+     Define chaves de armazenamento, valores padrão e opções usadas pelo painel.
+  ========================================================== */
 
   const LOGIN_PAGE = "../index.html";
 
-  /* ======================================================
-       ELEMENTOS
-    ====================================================== */
+  /* ==========================================================
+     ELEMENTOS
+     Reúne referências aos componentes HTML para atualizar a interface sem repetir buscas no documento.
+  ========================================================== */
 
   const sidebar = document.getElementById("sidebar");
   const sidebarOverlay = document.getElementById("sidebarOverlay");
@@ -239,9 +240,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  /* ======================================================
-       FUNÇÕES AUXILIARES
-    ====================================================== */
+  /* ==========================================================
+     FUNÇÕES AUXILIARES
+     Agrupa conversões, formatações e utilitários compartilhados pelas seções do painel.
+  ========================================================== */
 
   function formatNumber(value) {
     return new Intl.NumberFormat("pt-BR").format(value);
@@ -277,9 +279,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  /* ======================================================
-       DATA ATUAL
-    ====================================================== */
+  /* ==========================================================
+     DATA ATUAL
+     Calcula e apresenta a data usada nos cartões e no resumo do dia.
+  ========================================================== */
 
   function updateCurrentDate() {
     if (!todayDate) {
@@ -301,9 +304,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateCurrentDate();
 
-  /* ======================================================
-       STATUS DA INTERNET
-    ====================================================== */
+  /* ==========================================================
+     STATUS DA INTERNET
+     Monitora eventos de rede e mantém o indicador de conexão atualizado.
+  ========================================================== */
 
   let internetReachable = null;
 
@@ -354,9 +358,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   checkInternetConnection();
 
-  /* ======================================================
-       ÚLTIMA SINCRONIZAÇÃO
-    ====================================================== */
+  /* ==========================================================
+     ÚLTIMA SINCRONIZAÇÃO
+     Exibe o horário da última sincronização registrada pelo sistema.
+  ========================================================== */
 
   function updateLastSync() {
     const now = new Date();
@@ -373,9 +378,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateLastSync();
 
-  /* ======================================================
-       SIDEBAR MOBILE
-    ====================================================== */
+  /* ==========================================================
+     SIDEBAR MOBILE
+     Abre e fecha a navegação lateral em telas estreitas e mantém o estado acessível.
+  ========================================================== */
 
   function openSidebar() {
     if (!sidebar) {
@@ -413,9 +419,10 @@ document.addEventListener("DOMContentLoaded", () => {
     sidebarOverlay.addEventListener("click", closeSidebar);
   }
 
-  /* ======================================================
-       MENU DO PERFIL
-    ====================================================== */
+  /* ==========================================================
+     MENU DO PERFIL
+     Controla abertura, fechamento e ações do menu da conta administrativa.
+  ========================================================== */
 
   function closeProfileMenu() {
     if (!profile) {
@@ -447,30 +454,32 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* ======================================================
-       TROCAR CONTA
-    ====================================================== */
+  /* ==========================================================
+     TROCAR CONTA
+     Prepara a troca de conta preservando as demais contas salvas no navegador.
+  ========================================================== */
 
   if (switchAccountButton) {
     switchAccountButton.addEventListener("click", () => {
       /*
-       * Posteriormente podemos limpar apenas
-       * a sessão ativa e manter as contas salvas.
+       * Ao integrar a autenticação real, encerrar somente a sessão ativa
+       * e preservar as demais contas salvas no navegador.
        */
 
       window.location.href = LOGIN_PAGE;
     });
   }
 
-  /* ======================================================
-       SAIR
-    ====================================================== */
+  /* ==========================================================
+     SAIR
+     Encerra a sessão ativa e direciona para a entrada do sistema.
+  ========================================================== */
 
   if (logoutButton) {
     logoutButton.addEventListener("click", () => {
       /*
-       * Quando conectarmos a autenticação real,
-       * a limpeza da sessão será feita aqui.
+       * O fluxo atual limpa a sessão local; a integração real também deverá
+       * invalidar a sessão no serviço de autenticação, se houver.
        */
 
       try {
@@ -483,9 +492,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* ======================================================
-       DROPDOWNS PERSONALIZADOS
-    ====================================================== */
+  /* ==========================================================
+     DROPDOWNS PERSONALIZADOS
+     Sincroniza campos nativos ocultos com menus visuais, opções e valor selecionado.
+  ========================================================== */
 
   function closeAllDropdowns(exception = null) {
     document.querySelectorAll(".custom-select.open").forEach((dropdown) => {
@@ -560,7 +570,8 @@ document.addEventListener("DOMContentLoaded", () => {
         : option.textContent.trim();
 
       /*
-       * Remove seleção anterior.
+       * Remove a marcação visual das opções anteriores e seus ícones
+       * de seleção antes de aplicar a nova escolha.
        */
 
       options.forEach((item) => {
@@ -574,7 +585,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       /*
-       * Nova seleção.
+       * Marca a opção clicada e adiciona o indicador visual de seleção.
        */
 
       option.classList.add("selected");
@@ -588,7 +599,7 @@ document.addEventListener("DOMContentLoaded", () => {
       option.appendChild(check);
 
       /*
-       * Atualiza texto.
+       * Atualiza o rótulo visível do seletor para mostrar a opção escolhida.
        */
 
       if (display) {
@@ -596,7 +607,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       /*
-       * Atualiza input escondido.
+       * Sincroniza o campo nativo oculto e dispara `change` para avisar
+       * os demais controles que dependem desse valor.
        */
 
       if (hiddenInput) {
@@ -610,7 +622,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       /*
-       * Fecha menu.
+       * Fecha a lista de opções e atualiza `aria-expanded` no botão.
        */
 
       dropdown.classList.remove("open");
@@ -618,7 +630,8 @@ document.addEventListener("DOMContentLoaded", () => {
       trigger.setAttribute("aria-expanded", "false");
 
       /*
-       * Executa função específica.
+       * Notifica o componente que criou o seletor, quando ele forneceu
+       * uma função de alteração.
        */
 
       if (typeof onChange === "function") {
@@ -627,15 +640,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* ======================================================
-       ANO LETIVO
-    ====================================================== */
+  /* ==========================================================
+     ANO LETIVO
+     Carrega, salva e propaga o ano escolhido para os componentes e páginas do sistema.
+  ========================================================== */
 
   function changeSchoolYear(year, text) {
     /*
-     * Salva localmente o ano selecionado.
-     * Quando houver banco de dados, esta informação
-     * poderá vir da configuração do administrador.
+     * Persiste a seleção no navegador para as páginas atuais.
+     * Quando a configuração administrativa for a fonte oficial, o valor
+     * poderá ser carregado de lá.
      */
 
     try {
@@ -647,8 +661,8 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(`Ano letivo selecionado: ${text}`);
 
     /*
-     * Aqui futuramente carregaremos os dados
-     * específicos do ano selecionado.
+     * Ponto de integração para carregar dados separados por ano letivo,
+     * quando essa divisão estiver disponível na fonte de dados.
      */
 
     populateDashboardClassOptions();
@@ -772,9 +786,10 @@ document.addEventListener("DOMContentLoaded", () => {
   renderSchoolYearOptions();
   initializeSchoolYearDropdown();
 
-  /* ======================================================
-       FREQUÊNCIA DE HOJE
-    ====================================================== */
+  /* ==========================================================
+     FREQUÊNCIA DE HOJE
+     Seleciona e conta os registros de presença correspondentes à data atual.
+  ========================================================== */
 
   let attendanceFilter = "all";
 
@@ -796,9 +811,10 @@ document.addEventListener("DOMContentLoaded", () => {
     onChange: changeAttendanceFilter,
   });
 
-  /* ======================================================
-       SITUAÇÃO DAS TURMAS
-    ====================================================== */
+  /* ==========================================================
+     SITUAÇÃO DAS TURMAS
+     Classifica as turmas pelos dados disponíveis para alimentar os indicadores do painel.
+  ========================================================== */
 
   let statusFilter = "all";
 
@@ -820,9 +836,10 @@ document.addEventListener("DOMContentLoaded", () => {
     onChange: changeStatusFilter,
   });
 
-  /* ======================================================
-       SOMAR DADOS
-    ====================================================== */
+  /* ==========================================================
+     SOMAR DADOS
+     Calcula totais e percentuais a partir dos registros de chamada e das turmas.
+  ========================================================== */
 
   function getAllClasses() {
     let savedClasses = {};
@@ -978,9 +995,10 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
-  /* ======================================================
-       RESUMO GERAL
-    ====================================================== */
+  /* ==========================================================
+     RESUMO GERAL
+     Atualiza os números principais apresentados nos cartões do Dashboard.
+  ========================================================== */
 
   function updateSummary() {
     const data = getAttendanceData("all");
@@ -1002,9 +1020,10 @@ document.addEventListener("DOMContentLoaded", () => {
     setText("generalFrequency", `${frequency}%`);
   }
 
-  /* ======================================================
-       GRÁFICO FREQUÊNCIA
-    ====================================================== */
+  /* ==========================================================
+     GRÁFICO FREQUÊNCIA
+     Converte os dados de presença em segmentos e rótulos para o gráfico.
+  ========================================================== */
 
   function updateAttendancePanel() {
     const data = getAttendanceData(attendanceFilter);
@@ -1037,9 +1056,10 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    /*
-     * Converte porcentagem para graus.
-     */
+    /* ==========================================================
+       Converte porcentagem para graus.
+       Transforma uma porcentagem em ângulo para desenhar corretamente o gráfico circular.
+    ========================================================== */
 
     const presentDegrees = presentPercent * 3.6;
 
@@ -1061,9 +1081,10 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
   }
 
-  /* ======================================================
-       SITUAÇÃO DAS TURMAS
-    ====================================================== */
+  /* ==========================================================
+     SITUAÇÃO DAS TURMAS
+     Classifica as turmas pelos dados disponíveis para alimentar os indicadores do painel.
+  ========================================================== */
 
   function updateClassesPanel() {
     let classes;
@@ -1119,9 +1140,10 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
   }
 
-  /* ======================================================
-       ÚLTIMAS CHAMADAS
-    ====================================================== */
+  /* ==========================================================
+     ÚLTIMAS CHAMADAS
+     Monta as linhas das chamadas recentes e seus estados de processamento.
+  ========================================================== */
 
   function getStatusLabel(status) {
     switch (status) {
@@ -1230,10 +1252,10 @@ document.addEventListener("DOMContentLoaded", () => {
       .join("");
   }
 
-  /* ======================================================
-       ESTILO DOS STATUS DA TABELA
-       INSERIDO PELO JS PARA FUNCIONAR MESMO SEM CSS EXTRA
-    ====================================================== */
+  /* ==========================================================
+     ESTILO DOS STATUS DA TABELA
+     Adiciona estilos de contingência para os estados da tabela quando a folha complementar não está disponível.
+  ========================================================== */
 
   function createTableStatusStyles() {
     if (document.getElementById("alunotec-table-status-style")) {
@@ -1286,9 +1308,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   createTableStatusStyles();
 
-  /* ======================================================
-       ATUALIZAR DASHBOARD
-    ====================================================== */
+  /* ==========================================================
+     ATUALIZAR DASHBOARD
+     Recalcula os dados e redesenha os cartões, o gráfico e a tabela após mudanças no armazenamento.
+  ========================================================== */
 
   function updateDashboard() {
     updateSummary();
@@ -1303,9 +1326,10 @@ document.addEventListener("DOMContentLoaded", () => {
   populateDashboardClassOptions();
   updateDashboard();
 
-  /* ======================================================
-       CLIQUE FORA DOS MENUS
-    ====================================================== */
+  /* ==========================================================
+     CLIQUE FORA DOS MENUS
+     Fecha dropdowns abertos quando o usuário clica fora de seus limites.
+  ========================================================== */
 
   document.addEventListener("click", (event) => {
     closeAllDropdowns();
@@ -1315,9 +1339,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  /* ======================================================
-       ESC
-    ====================================================== */
+  /* ==========================================================
+     ESC
+     Fecha menus e diálogos abertos quando a tecla Escape é pressionada.
+  ========================================================== */
 
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") {
@@ -1331,9 +1356,10 @@ document.addEventListener("DOMContentLoaded", () => {
     closeSidebar();
   });
 
-  /* ======================================================
-       RESPONSIVIDADE
-    ====================================================== */
+  /* ==========================================================
+     RESPONSIVIDADE
+     Atualiza o comportamento dos menus quando a largura da tela muda.
+  ========================================================== */
 
   window.addEventListener("resize", () => {
     if (window.innerWidth > 1000) {

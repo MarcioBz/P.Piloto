@@ -27,7 +27,10 @@
   let internetReachable = null;
   let toastTimer;
 
-  /* UTILITÁRIOS: normalizam textos e protegem valores inseridos no HTML. */
+  /* ==========================================================
+     UTILITÁRIOS
+     Normaliza valores, compara texto e protege dados dinâmicos antes de inseri-los no HTML.
+  ========================================================== */
   function escapeHtml(value) {
     return String(value ?? "").replace(
       /[&<>"']/g,
@@ -51,7 +54,10 @@
       .trim();
   }
 
-  /* DADOS LOCAIS: leitura, busca e agrupamento das turmas e estudantes. */
+  /* ==========================================================
+     DADOS LOCAIS
+     Lê e agrupa turmas e estudantes armazenados no navegador para uso na tela.
+  ========================================================== */
   function readClasses() {
     try {
       const data = JSON.parse(localStorage.getItem(TURMAS_KEY) || "{}");
@@ -204,7 +210,10 @@
       );
   }
 
-  /* AVISOS E ATIVIDADES: mensagens temporárias e histórico compartilhado. */
+  /* ==========================================================
+     AVISOS E ATIVIDADES
+     Cria mensagens temporárias e organiza atividades recentes compartilhadas com a página.
+  ========================================================== */
   function showToast(message) {
     const toast = $("#toast");
     toast.textContent = message;
@@ -250,7 +259,10 @@
     return localDateKey(new Date());
   }
 
-  /* FILTROS: personaliza os seletores sem perder o valor do campo original. */
+  /* ==========================================================
+     FILTROS
+     Sincroniza controles personalizados com seus campos originais e preserva os valores selecionados.
+  ========================================================== */
   function enhanceSelect(select) {
     if (select.dataset.enhanced === "true") {
       refreshSelect(select);
@@ -331,7 +343,10 @@
     $$("select", root).forEach(enhanceSelect);
   }
 
-  /* LISTA E RESUMO: opções dos filtros, contagens e renderização da tela. */
+  /* ==========================================================
+     LISTA E RESUMO
+     Monta as opções de filtro, calcula contagens e renderiza a lista de estudantes.
+  ========================================================== */
   function fillFilters() {
     const data = readClasses();
     const baseClasses = data.base;
@@ -495,7 +510,10 @@
       "A turma de origem continua registrada. A frequência considera a turma de destino após o remanejamento.";
   }
 
-  /* DETALHES E REMANEJAMENTOS: janelas e movimentação entre turmas. */
+  /* ==========================================================
+     DETALHES E REMANEJAMENTOS
+     Abre os detalhes e executa o fluxo de movimentação do estudante entre turmas.
+  ========================================================== */
   function showDialog(content) {
     $("#dialogBox").innerHTML = content;
     enhanceAllSelects($("#dialogBox"));
@@ -636,7 +654,10 @@
     showToast("Remanejamento registrado. O aluno continua na turma de origem.");
   }
 
-  /* NOTIFICAÇÕES E CONEXÃO: atividades recentes e estado da rede. */
+  /* ==========================================================
+     NOTIFICAÇÕES E CONEXÃO
+     Atualiza avisos recentes e o indicador de disponibilidade da rede.
+  ========================================================== */
   function showNotifications() {
     const items = readActivities()
       .filter(
@@ -790,7 +811,10 @@
 
   $("#connectionButton").addEventListener("click", checkInternetConnection);
 
-  /* EVENTOS DA PÁGINA: filtros, pesquisa, ações e fechamento de diálogos. */
+  /* ==========================================================
+     EVENTOS DA PÁGINA
+     Conecta pesquisa, filtros, ações por estudante e fechamento dos diálogos.
+  ========================================================== */
   document.addEventListener("click", (event) => {
     if (!event.target.closest(".account-wrap")) {
       $("#accountMenu").hidden = true;
