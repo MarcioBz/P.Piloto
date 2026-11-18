@@ -16,11 +16,17 @@
     <title>Frequência | AlunoTec</title>
     <link rel="icon" type="image/png" href="../assets/icons/icone.png" />
     <link rel="stylesheet" href="frequencia.css" />
-    <script src="frequencia.js" defer></script>
+
+    <link rel="stylesheet" href="../shared/responsive-shell.css" />
     <link rel="stylesheet" href="../shared/profile.css" />
+    <link rel="stylesheet" href="../shared/banner.css" />
+    <script src="../shared/app-shell.js" defer></script>
+    <script src="../shared/banner.js" defer></script>
     <script src="../shared/profile.js" defer></script>
+    <script src="../shared/utils.js" defer></script>
+    <script src="frequencia.js" defer></script>
   </head>
-  <body>
+  <body data-app-page="frequency">
     <!-- =====================================================
          BIBLIOTECA DE ÍCONES
          Símbolos SVG reutilizados na navegação e nos controles da chamada.
@@ -111,64 +117,9 @@
 
     <div class="app-shell">
       <!-- =====================================================
-          MENU LATERAL
-          Links das áreas do AlunoTec e botão de suporte.
-     ===================================================== -->
-      <aside class="sidebar" id="frequencySidebar">
-        <a class="brand" href="../admin/dashboard.html"
-          ><img src="../assets/images/logo-alunotec1.png" alt="AlunoTec"
-        /></a>
-        <nav class="nav-menu" aria-label="Navegação principal">
-          <a class="nav-item" href="../admin/dashboard.html"
-            ><svg><use href="#i-home"></use></svg><span>Início</span></a
-          >
-          <a class="nav-item active" href="frequencia.html"
-            ><svg><use href="#i-calendar"></use></svg><span>Frequência</span></a
-          >
-          <a class="nav-item" href="../aluno/aluno.html"
-            ><svg><use href="#i-users"></use></svg><span>Alunos</span></a
-          >
-          <a class="nav-item" href="../turmas/index.html"
-            ><svg><use href="#i-book"></use></svg><span>Turmas</span></a
-          >
-          <a class="nav-item" href="../relat/relat.html"
-            ><svg><use href="#i-chart"></use></svg><span>Relatórios</span></a
-          >
-
-          <div class="nav-divider"></div>
-          <div class="nav-caption">PROFESSORES</div>
-
-          <a href="../eletivas/eletivas.html" class="nav-item">
-            <svg aria-hidden="true">
-              <use href="#i-capelo"></use>
-            </svg>
-            <span>Eletivas</span>
-          </a>
-
-          <div class="nav-divider"></div>
-          <div class="nav-caption">ADMINISTRAÇÃO</div>
-          <a class="nav-item" href="../inst/inst.html"
-            ><svg><use href="#i-building"></use></svg
-            ><span>Instituição</span></a
-          >
-          <a class="nav-item" href="../config/config.html"
-            ><svg><use href="#i-settings"></use></svg
-            ><span>Configurações</span></a
-          >
-        </nav>
-        <div class="sidebar-bottom">
-          <a class="support-card" href="#"
-            ><svg><use href="#i-headset"></use></svg
-            ><span
-              ><strong>Suporte</strong><small>Precisa de ajuda?</small></span
-            ><span class="support-chevron">›</span></a
-          >
-          <p class="sidebar-footer">
-            AlunoTec • <span id="footerYear">2026</span><br />Todos os direitos
-            reservados.
-          </p>
-        </div>
-      </aside>
+     MENU LATERAL COMPARTILHADO
+     A estrutura única é montada por ../shared/app-shell.js.
+===================================================== -->
 
       <!-- =====================================================
            ÁREA PRINCIPAL
@@ -176,101 +127,16 @@
       ===================================================== -->
       <main class="main-area">
         <!-- =====================================================
-             BARRA SUPERIOR
-             Ano letivo, notificações, conexão e perfil do usuário.
-        ===================================================== -->
-        <header class="topbar">
-          <button
-            id="mobileMenuButton"
-            class="mobile-menu-button"
-            type="button"
-            aria-label="Abrir menu"
-            aria-expanded="false"
-            aria-controls="frequencySidebar"
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M4 6h16M4 12h16M4 18h16"></path>
-            </svg>
-          </button>
-          <div class="year-picker-wrap">
-            <button
-              id="yearPickerButton"
-              class="year-picker"
-              type="button"
-              aria-expanded="false"
-            >
-              <svg class="year-icon"><use href="#i-calendar"></use></svg>
-              <span
-                ><small>Ano letivo</small
-                ><strong id="selectedYear">2026</strong></span
-              >
-              <svg class="year-chevron"><use href="#i-chevron-down"></use></svg>
-            </button>
-            <div id="yearMenu" class="year-menu" hidden></div>
-          </div>
-
-          <div class="topbar-actions">
-            <button
-              id="notificationBell"
-              class="bell-button"
-              type="button"
-              aria-label="Notificações"
-            >
-              <svg><use href="#i-bell"></use></svg
-              ><span id="bellCount" class="bell-count" hidden>0</span>
-            </button>
-            <button
-              id="connectionStatus"
-              class="connection"
-              type="button"
-              aria-label="Verificar conexão"
-              title="Clique para verificar a conexão"
-            >
-              <svg><use href="#i-wifi"></use></svg>
-              <span
-                ><strong id="connectionTitle">Verificando</strong
-                ><small id="connectionText">Aguarde...</small></span
-              >
-            </button>
-            <div class="profile-wrap">
-              <button
-                id="profileButton"
-                class="profile-button"
-                type="button"
-                aria-expanded="false"
-              >
-                <span class="avatar">MB</span
-                ><span
-                  ><strong>Márcio Bezerra</strong
-                  ><small>Super Administrador</small></span
-                ><svg class="profile-menu-icon"><use href="#i-menu"></use></svg>
-              </button>
-              <div id="profileMenu" class="profile-menu" hidden>
-                <div class="profile-menu-heading">
-                  <span class="avatar">MB</span
-                  ><span
-                    ><strong>Márcio Bezerra</strong
-                    ><small>Super Administrador</small></span
-                  >
-                </div>
-                <button id="switchAccountButton" type="button">
-                  <svg><use href="#i-users"></use></svg
-                  ><span>Trocar de conta</span>
-                </button>
-                <button id="logoutButton" type="button">
-                  <svg><use href="#i-logout"></use></svg><span>Sair</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
+     TOPBAR COMPARTILHADO
+     Os controles globais são montados por ../shared/app-shell.js.
+===================================================== -->
 
         <div class="page-content">
           <!-- =====================================================
                APRESENTAÇÃO
                Título e orientação da tela de frequência.
           ===================================================== -->
-          <section class="hero">
+          <section class="shared-banner">
             <div class="hero-copy">
               <div class="hero-title-row">
                 <svg><use href="#i-calendar"></use></svg>

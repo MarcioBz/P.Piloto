@@ -5,19 +5,10 @@
    por largura de tela e impressão. Há blocos complementares no final.
    Pesquise a classe do HTML antes de acrescentar uma regra duplicada.
 ========================================================= */
-
 /* ==========================================================
    ALUNOTEC - TURMAS
    Folha de estilos principal da tela de turmas; as seções abaixo acompanham a ordem visual da página.
 ========================================================== */
-
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
-
-/* ==========================================================
-   VARIÁVEIS
-   Centraliza cores, dimensões, raios e sombras usados pelos componentes da página.
-========================================================== */
-
 :root {
   --primary: #32712e;
   --primary-dark: #255b22;
@@ -47,9 +38,6 @@
   --warning: #f59e0b;
   --warning-light: #fff8e7;
 
-  --sidebar-width: 245px;
-  --topbar-height: 76px;
-
   --radius-sm: 8px;
   --radius: 12px;
   --radius-lg: 18px;
@@ -63,23 +51,17 @@
   --shadow-lg: 0 18px 50px rgba(16, 24, 40, 0.13);
 
   --transition: 0.2s ease;
-}
-
-/* ==========================================================
+} /* ==========================================================
    RESET
    Normaliza margens, dimensões e comportamento base antes das regras específicas da tela.
 ========================================================== */
-
 * {
-  box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
-
 html {
   scroll-behavior: smooth;
 }
-
 body {
   min-height: 100vh;
 
@@ -94,821 +76,35 @@ body {
 
   overflow-x: hidden;
 }
-
-button,
-input,
-select,
-textarea {
-  font: inherit;
-}
-
 button {
   border: 0;
-  cursor: pointer;
 }
-
 input {
   outline: none;
 }
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-svg {
-  width: 20px;
-  height: 20px;
-
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
 .hidden {
   display: none !important;
-}
-
-/* ==========================================================
+} /* ==========================================================
    SCROLLBAR
    Personaliza a barra de rolagem dos painéis sem alterar a rolagem do documento.
 ========================================================== */
-
 ::-webkit-scrollbar {
   width: 9px;
   height: 9px;
 }
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
   background: #cbd5cb;
   border-radius: 20px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
   background: #aeb9ae;
-}
-
-/* ==========================================================
-   LAYOUT
-   Define a divisão entre navegação lateral, barra superior e área de conteúdo.
-========================================================== */
-
-.app-layout {
-  min-height: 100vh;
-  display: flex;
-}
-
-.main-area {
-  min-width: 0;
-
-  width: calc(100% - var(--sidebar-width));
-
-  margin-left: var(--sidebar-width);
-}
-
-/* ==========================================================
-   SIDEBAR
-   Controla dimensões, fundo e posicionamento do menu lateral.
-========================================================== */
-
-.sidebar {
-  position: fixed;
-
-  inset: 0 auto 0 0;
-
-  z-index: 100;
-
-  width: var(--sidebar-width);
-
-  height: 100vh;
-
-  display: flex;
-  flex-direction: column;
-
-  padding: 22px 15px 18px;
-
-  background: linear-gradient(180deg, #183f1c 0%, #143818 100%);
-
-  border-right: 0;
-
-  box-shadow: 6px 0 25px rgba(18, 53, 22, 0.08);
-
-  overflow-y: auto;
-}
-
-/* ==========================================================
-   LOGO REAL ALUNOTEC
-   Dimensiona e posiciona a marca no topo do menu lateral.
-========================================================== */
-
-.sidebar-logo {
-  width: 100%;
-  min-height: 70px;
-
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-
-  padding: 8px 10px;
-
-  margin-bottom: 22px;
-
-  background: transparent;
-
-  border-radius: 12px;
-
-  transition:
-    background var(--transition),
-    transform var(--transition);
-}
-
-.sidebar-logo:hover {
-  background: rgba(255, 255, 255, 0.055);
-}
-
-.sidebar-logo:active {
-  transform: scale(0.985);
-}
-
-.sidebar-logo-image {
-  display: block;
-
-  width: auto;
-  max-width: 180px;
-
-  height: auto;
-  max-height: 55px;
-
-  object-fit: contain;
-  object-position: left center;
-}
-
-/* ==========================================================
-   MENU LATERAL
-   Estiliza os links, ícones, textos e áreas clicáveis da navegação.
-========================================================== */
-
-.sidebar-nav {
-  display: flex;
-  flex-direction: column;
-
-  gap: 5px;
-}
-
-.nav-link {
-  position: relative;
-
-  min-height: 46px;
-
-  display: flex;
-  align-items: center;
-
-  gap: 13px;
-
-  padding: 0 14px;
-
-  color: rgba(255, 255, 255, 0.72);
-
-  background: transparent;
-
-  border-radius: 9px;
-
-  font-size: 12px;
-  font-weight: 500;
-
-  transition:
-    background var(--transition),
-    color var(--transition);
-}
-
-.nav-link svg {
-  width: 19px;
-  height: 19px;
-
-  flex: 0 0 auto;
-
-  color: rgba(255, 255, 255, 0.74);
-}
-
-.nav-link:hover {
-  color: #ffffff;
-
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.nav-link:hover svg {
-  color: #ffffff;
-}
-
-/* ==========================================================
-   MENU ATIVO
-   Diferencia a seção atualmente selecionada no menu lateral.
-========================================================== */
-
-.nav-link.active {
-  color: #ffffff;
-
-  background: rgba(255, 255, 255, 0.13);
-
-  font-weight: 700;
-}
-
-.nav-link.active svg {
-  color: #ffffff;
-}
-
-.nav-link.active::before {
-  content: "";
-
-  position: absolute;
-
-  left: -15px;
-
-  top: 9px;
-  bottom: 9px;
-
-  width: 4px;
-
-  background: #83b77e;
-
-  border-radius: 0 5px 5px 0;
-}
-
-/* ==========================================================
-   DIVISOR
-   Separa visualmente grupos de links na navegação.
-========================================================== */
-
-.nav-divider {
-  height: 1px;
-
-  margin: 16px 8px 14px;
-
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.nav-section-title {
-  padding: 0 13px;
-
-  margin-bottom: 5px;
-
-  color: rgba(255, 255, 255, 0.4);
-
-  font-size: 9px;
-  font-weight: 800;
-
-  letter-spacing: 0.9px;
-
-  text-transform: uppercase;
-}
-
-/* ==========================================================
-   SIDEBAR INFERIOR
-   Organiza suporte e informações fixadas na parte inferior do menu.
-========================================================== */
-
-.sidebar-bottom {
-  margin-top: auto;
-
-  padding-top: 22px;
-}
-
-.support-card {
-  width: 100%;
-
-  display: flex;
-  align-items: center;
-
-  gap: 10px;
-
-  padding: 12px;
-
-  color: rgba(255, 255, 255, 0.82);
-
-  background: rgba(255, 255, 255, 0.06);
-
-  border: 1px solid rgba(255, 255, 255, 0.08);
-
-  border-radius: 10px;
-
-  text-align: left;
-
-  transition:
-    background var(--transition),
-    border-color var(--transition);
-}
-
-.support-card:hover {
-  color: #ffffff;
-
-  background: rgba(255, 255, 255, 0.1);
-
-  border-color: rgba(255, 255, 255, 0.13);
-}
-
-.support-card > svg:first-child {
-  width: 22px;
-  height: 22px;
-
-  flex: 0 0 auto;
-}
-
-.support-card span {
-  min-width: 0;
-
-  display: flex;
-  flex: 1;
-
-  flex-direction: column;
-}
-
-.support-card strong {
-  color: #ffffff;
-
-  font-size: 12px;
-}
-
-.support-card small {
-  color: rgba(255, 255, 255, 0.5);
-
-  font-size: 10px;
-}
-
-.support-arrow {
-  width: 15px !important;
-  height: 15px !important;
-}
-
-.sidebar-footer {
-  display: flex;
-  flex-direction: column;
-
-  gap: 2px;
-
-  padding: 18px 7px 0;
-
-  color: rgba(255, 255, 255, 0.34);
-
-  font-size: 9px;
-}
-
-/* ==========================================================
-   TOPBAR
-   Alinha título, seletores, avisos e perfil na barra superior.
-========================================================== */
-
-/* ==========================================================
-   CALENDARIO
-   Controla o seletor de calendário/ano e as opções exibidas ao abri-lo.
-========================================================== */
-
-.topbar > .custom-select.year-custom-select {
-  flex: 0 0 228px;
-  width: 228px;
-  min-width: 0;
-}
-
-/* ==========================================================
-   ESTADO DA SETA DO SELETOR
-   Mantém o ícone do seletor parado e gira somente a seta quando a lista está aberta.
-========================================================== */
-
-.topbar > .custom-select.year-custom-select .custom-select-trigger {
-  width: 100%;
-}
-
-.topbar-spacer {
-  flex: 1;
-}
-
-/* ==========================================================
-   Seletor de ano letivo
-   Define a largura, os estados e as opções do controle de ano letivo no cabeçalho.
-========================================================== */
-#yearDropdown {
-  width: 228px;
-  flex: 0 0 220px;
-}
-
-#yearDropdown {
-  zoom: 0.83;
-}
-
-#yearDropdown .custom-select-trigger {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  min-height: 66px;
-  padding: 12px 15px;
-  background: #fff;
-  border: 1px solid #48914e;
-  border-radius: 16px;
-  text-align: left;
-  box-sizing: border-box;
-}
-
-#yearDropdown .custom-select-icon {
-  display: grid;
-  place-items: center;
-  flex: 0 0 40px;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: #eaf7f0;
-  color: #18531b;
-}
-
-#yearDropdown .custom-select-icon svg {
-  width: 22px;
-  height: 22px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.7;
-  transform: none !important;
-}
-
-#yearDropdown .custom-select-content {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 5px;
-}
-
-#yearDropdown .custom-select-content small {
-  color: #557b5e;
-  font-size: 12px;
-  font-weight: 400;
-}
-
-#yearDropdown .custom-select-content strong {
-  color: #295d46;
-  font-size: 15px;
-  font-weight: 700;
-}
-
-/* ==========================================================
-   Impede que regras antigas girem todos os ícones
-   Preserva a orientação dos ícones internos e evita que regras genéricas girem o controle inteiro.
-========================================================== */
-#yearDropdown .custom-select-trigger svg {
-  transform: none !important;
-}
-
-#yearDropdown .custom-select-trigger > .custom-select-chevron {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-  color: #498c5b;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
-  transition: transform 0.2s;
-}
-
-/* ==========================================================
-   Apenas a seta gira
-   Gira somente o indicador do seletor quando as opções estão abertas.
-========================================================== */
-#yearDropdown
-  .custom-select-trigger[aria-expanded="true"]
-  > .custom-select-chevron {
-  transform: rotate(180deg) !important;
-}
-
-#yearDropdown .custom-select-trigger[aria-expanded="true"] {
-  border-color: #2e7d32;
-  box-shadow: 0 0 0 3px rgb(46 125 50 / 10%);
-}
-
-#yearDropdown {
-  position: relative;
-}
-
-#yearDropdown .custom-select-menu {
-  display: none;
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  width: 100%;
-  padding: 8px;
-  box-sizing: border-box;
-  background: #fff;
-  border: 1px solid #d5e2d6;
-  border-radius: 14px;
-  box-shadow: 0 8px 24px #00000014;
-  z-index: 1000;
-}
-
-#yearDropdown.open .custom-select-menu {
-  display: block;
-}
-
-#yearDropdown .custom-option {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  padding: 12px;
-  border: 0;
-  border-radius: 10px;
-  background: transparent;
-  color: #29485d;
-  cursor: pointer;
-}
-
-#yearDropdown .custom-option.selected {
-  background: #eaf7f0;
-  color: #246527;
-}
-
-#yearDropdown .custom-select-chevron {
-  transition: transform 0.2s;
-}
-
-#yearDropdown.open .custom-select-trigger > .custom-select-chevron {
-  transform: rotate(180deg) !important;
-}
-
-/* ==========================================================
-   AJUSTES COMPLEMENTARES DA BARRA SUPERIOR
-   Reúne controles do topo que complementam o seletor de ano, a conexão e o perfil.
-========================================================== */
-
-/* ==========================================================
-   ALINHAMENTO DA BARRA SUPERIOR
-   Agrupa calendário, conexão, notificações e perfil na faixa superior da página.
-========================================================== */
-
-.topbar {
-  position: sticky;
-
-  top: 0;
-
-  z-index: 80;
-
-  height: var(--topbar-height);
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  padding: 0 34px;
-
-  background: rgba(255, 255, 255, 0.97);
-
-  border-bottom: 1px solid #e8ece7;
-
-  box-shadow: 0 1px 5px rgba(31, 41, 55, 0.025);
-
-  backdrop-filter: blur(10px);
-}
-
-.topbar-right {
-  display: flex;
-  align-items: center;
-
-  gap: 22px;
-}
-
-/* ==========================================================
-   CONEXÃO
-   Apresenta o estado de conectividade e seus indicadores visuais.
-========================================================== */
-
-.connection-status {
-  display: flex;
-  align-items: center;
-
-  gap: 9px;
-
-  color: var(--primary);
-}
-
-.connection-status > svg {
-  width: 20px;
-  height: 20px;
-}
-
-.connection-status > div {
-  display: flex;
-  flex-direction: column;
-}
-
-.connection-status strong {
-  color: #344054;
-
-  font-size: 11px;
-}
-
-.connection-status span {
-  color: var(--text-light);
-
-  font-size: 9px;
-}
-
-/* ==========================================================
-   PERFIL
-   Dimensiona o botão de conta e o avatar no cabeçalho.
-========================================================== */
-
-.profile-wrapper {
-  position: relative;
-}
-
-.profile-button {
-  display: flex;
-  align-items: center;
-
-  gap: 10px;
-
-  padding: 5px 7px;
-
-  background: transparent;
-
-  border-radius: 10px;
-
-  transition: background var(--transition);
-}
-
-.profile-button:hover {
-  background: var(--primary-soft);
-}
-
-.profile-avatar {
-  width: 37px;
-  height: 37px;
-
-  display: grid;
-  place-items: center;
-
-  flex: 0 0 auto;
-
-  color: #ffffff;
-
-  background: var(--primary);
-
-  border-radius: 50%;
-
-  font-size: 11px;
-  font-weight: 800;
-
-  box-shadow: 0 3px 10px rgba(50, 113, 46, 0.16);
-}
-
-.profile-avatar.large {
-  width: 44px;
-  height: 44px;
-}
-
-.profile-info {
-  min-width: 105px;
-
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-
-  text-align: left;
-}
-
-.profile-info strong {
-  color: #344054;
-
-  font-size: 11px;
-}
-
-.profile-info small {
-  color: var(--text-light);
-
-  font-size: 9px;
-}
-
-.profile-arrow {
-  width: 15px;
-  height: 15px;
-
-  color: #98a2b3;
-}
-
-/* ==========================================================
-   MENU PERFIL
-   Define a abertura, identidade e ações disponíveis no menu de conta.
-========================================================== */
-
-.profile-menu {
-  position: absolute;
-
-  top: calc(100% + 12px);
-
-  right: 0;
-
-  z-index: 300;
-
-  width: 235px;
-
-  padding: 10px;
-
-  background: #ffffff;
-
-  border: 1px solid var(--border);
-
-  border-radius: 14px;
-
-  box-shadow: var(--shadow-lg);
-
-  opacity: 0;
-  visibility: hidden;
-
-  transform: translateY(-5px);
-
-  transition: var(--transition);
-}
-
-.profile-menu.open {
-  opacity: 1;
-  visibility: visible;
-
-  transform: translateY(0);
-}
-
-.profile-menu-user {
-  display: flex;
-  align-items: center;
-
-  gap: 11px;
-
-  padding: 8px;
-}
-
-.profile-menu-user > div {
-  display: flex;
-  flex-direction: column;
-}
-
-.profile-menu-user strong {
-  color: #344054;
-
-  font-size: 12px;
-}
-
-.profile-menu-user span {
-  color: var(--text-light);
-
-  font-size: 10px;
-}
-
-.profile-menu-divider {
-  height: 1px;
-
-  margin: 7px 0;
-
-  background: var(--border);
-}
-
-.profile-menu-item {
-  width: 100%;
-
-  display: flex;
-  align-items: center;
-
-  gap: 10px;
-
-  padding: 10px;
-
-  color: #475467;
-
-  background: transparent;
-
-  border-radius: 9px;
-
-  text-align: left;
-}
-
-.profile-menu-item:hover {
-  background: var(--primary-soft);
-}
-
-.profile-menu-item svg {
-  width: 17px;
-  height: 17px;
-}
-
-.profile-menu-item.danger {
-  color: var(--danger);
-}
-
-/* ==========================================================
+} /* ==========================================================
    CONTEÚDO
    Organiza a largura, o espaçamento e a hierarquia da área principal.
 ========================================================== */
-
 .content {
   width: 100%;
   max-width: 1600px;
@@ -916,13 +112,10 @@ svg {
   margin: 0 auto;
 
   padding: 27px 34px 50px;
-}
-
-/* ==========================================================
+} /* ==========================================================
    HERO / BANNER
    Controla a composição, o texto e o fundo do destaque da página.
 ========================================================== */
-
 .hero {
   position: relative;
 
@@ -943,7 +136,6 @@ svg {
 
   box-shadow: 0 10px 25px rgba(37, 91, 34, 0.12);
 }
-
 .hero::before {
   content: "";
 
@@ -961,7 +153,6 @@ svg {
 
   z-index: 1;
 }
-
 .hero::after {
   content: "";
 
@@ -979,7 +170,6 @@ svg {
 
   z-index: 1;
 }
-
 .hero-content {
   position: relative;
 
@@ -987,7 +177,6 @@ svg {
 
   max-width: 560px;
 }
-
 .hero-content h1 {
   margin-bottom: 7px;
 
@@ -996,7 +185,6 @@ svg {
   font-size: 12px;
   font-weight: 700;
 }
-
 .hero-content h2 {
   max-width: 520px;
 
@@ -1009,7 +197,6 @@ svg {
 
   letter-spacing: -0.7px;
 }
-
 .hero-content p {
   max-width: 510px;
 
@@ -1020,13 +207,10 @@ svg {
   font-size: 11px;
 
   line-height: 1.75;
-}
-
-/* ==========================================================
+} /* ==========================================================
    IMAGEM dashboard-sala.png
    Controla o recorte e a camada da imagem usada como fundo do banner.
 ========================================================== */
-
 .hero-image {
   position: absolute;
 
@@ -1044,7 +228,6 @@ svg {
 
   pointer-events: none;
 }
-
 .hero-image::before {
   content: "";
 
@@ -1062,7 +245,6 @@ svg {
     rgba(50, 113, 46, 0) 72%
   );
 }
-
 .hero-image-file {
   position: relative;
 
@@ -1075,13 +257,10 @@ svg {
 
   object-fit: cover;
   object-position: center;
-}
-
-/* ==========================================================
+} /* ==========================================================
    CITAÇÃO DO HERO
    Posiciona e apresenta a frase complementar dentro do banner.
 ========================================================== */
-
 .hero-quote {
   position: absolute;
 
@@ -1094,14 +273,12 @@ svg {
 
   text-align: right;
 }
-
 .hero-quote p {
   color: rgba(255, 255, 255, 0.78);
 
   font-size: 9px;
   font-style: italic;
 }
-
 .hero-quote span {
   display: inline-block;
 
@@ -1111,13 +288,10 @@ svg {
   margin-top: 8px;
 
   background: rgba(255, 255, 255, 0.5);
-}
-
-/* ==========================================================
+} /* ==========================================================
    CARDS RESUMO
    Organiza cartões com totais e indicadores das turmas.
 ========================================================== */
-
 .summary-grid {
   display: grid;
 
@@ -1127,7 +301,6 @@ svg {
 
   margin-top: 19px;
 }
-
 .summary-card {
   position: relative;
 
@@ -1150,7 +323,6 @@ svg {
 
   box-shadow: 0 3px 12px rgba(31, 41, 55, 0.035);
 }
-
 .summary-card i {
   position: absolute;
 
@@ -1162,7 +334,6 @@ svg {
 
   background: var(--primary);
 }
-
 .summary-icon {
   width: 45px;
   height: 45px;
@@ -1178,42 +349,35 @@ svg {
 
   border-radius: 11px;
 }
-
 .summary-icon svg {
   width: 22px;
   height: 22px;
 }
-
 .summary-card.green-light .summary-icon {
   color: #437d3e;
 
   background: #edf6eb;
 }
-
 .summary-card.mint .summary-icon {
   color: #2a6530;
 
   background: #e4f1e2;
 }
-
 .summary-card.soft-green .summary-icon {
   color: #5a8b55;
 
   background: #f0f7ee;
 }
-
 .summary-card > div:last-of-type {
   display: flex;
   flex-direction: column;
 }
-
 .summary-card span {
   color: var(--text-secondary);
 
   font-size: 10px;
   font-weight: 600;
 }
-
 .summary-card strong {
   margin-top: 2px;
 
@@ -1223,13 +387,10 @@ svg {
   font-weight: 750;
 
   line-height: 1.2;
-}
-
-/* ==========================================================
+} /* ==========================================================
    GERENCIAMENTO / ALUNOS
    Estiliza o painel que lista e administra estudantes vinculados às turmas.
 ========================================================== */
-
 .management-card,
 .students-card {
   margin-top: 19px;
@@ -1242,7 +403,6 @@ svg {
 
   box-shadow: 0 3px 14px rgba(31, 41, 55, 0.035);
 }
-
 .management-header,
 .students-header {
   display: flex;
@@ -1255,7 +415,6 @@ svg {
 
   border-bottom: 1px solid #e8ece7;
 }
-
 .management-header h3,
 .students-header h2 {
   color: #202b24;
@@ -1263,7 +422,6 @@ svg {
   font-size: 15px;
   font-weight: 700;
 }
-
 .management-header p,
 .students-header p {
   margin-top: 3px;
@@ -1272,16 +430,12 @@ svg {
 
   font-size: 10px;
 }
-
 .management-body {
   padding: 20px 24px 25px;
-}
-
-/* ==========================================================
+} /* ==========================================================
    BOTÕES
    Padroniza ações primárias, secundárias, de ícone e seus estados interativos.
 ========================================================== */
-
 .primary-button,
 .secondary-button,
 .cancel-button {
@@ -1307,7 +461,6 @@ svg {
     transform var(--transition),
     box-shadow var(--transition);
 }
-
 .primary-button {
   color: #ffffff;
 
@@ -1317,7 +470,6 @@ svg {
 
   box-shadow: 0 3px 9px rgba(50, 113, 46, 0.13);
 }
-
 .primary-button:hover {
   background: var(--primary-dark);
 
@@ -1325,19 +477,16 @@ svg {
 
   box-shadow: 0 5px 13px rgba(50, 113, 46, 0.17);
 }
-
 .primary-button:active,
 .secondary-button:active,
 .cancel-button:active {
   transform: scale(0.98);
 }
-
 .primary-button svg,
 .secondary-button svg {
   width: 17px;
   height: 17px;
 }
-
 .secondary-button,
 .cancel-button {
   color: #475467;
@@ -1346,7 +495,6 @@ svg {
 
   border: 1px solid #dce3db;
 }
-
 .secondary-button:hover,
 .cancel-button:hover {
   color: var(--primary);
@@ -1354,13 +502,10 @@ svg {
   background: var(--primary-soft);
 
   border-color: #bfd2bc;
-}
-
-/* ==========================================================
+} /* ==========================================================
    ABAS
    Define as guias usadas para alternar entre categorias de turmas.
 ========================================================== */
-
 .tabs {
   display: inline-flex;
 
@@ -1376,7 +521,6 @@ svg {
 
   border-radius: 10px;
 }
-
 .tab {
   min-height: 38px;
 
@@ -1398,12 +542,10 @@ svg {
 
   transition: var(--transition);
 }
-
 .tab svg {
   width: 16px;
   height: 16px;
 }
-
 .tab span {
   min-width: 20px;
   height: 20px;
@@ -1423,11 +565,9 @@ svg {
 
   font-size: 9px;
 }
-
 .tab:hover {
   color: var(--primary);
 }
-
 .tab.active {
   color: var(--primary);
 
@@ -1435,20 +575,16 @@ svg {
 
   box-shadow: 0 2px 7px rgba(31, 41, 55, 0.06);
 }
-
 .tab.active span {
   color: #ffffff;
 
   background: var(--primary);
 
   border-color: var(--primary);
-}
-
-/* ==========================================================
+} /* ==========================================================
    FILTROS
    Organiza os controles de filtro e seus rótulos.
 ========================================================== */
-
 .filters {
   display: grid;
 
@@ -1465,7 +601,6 @@ svg {
 
   margin-bottom: 20px;
 }
-
 .filter-group,
 .form-group {
   position: relative;
@@ -1477,27 +612,17 @@ svg {
 
   gap: 7px;
 }
-
 .filter-group > label,
 .form-group > label {
   color: #475467;
 
   font-size: 10px;
   font-weight: 700;
-}
-
-/* ==========================================================
+} /* ==========================================================
    SELECT PERSONALIZADO
    Controla o campo de seleção personalizado, opções e estados de abertura.
 ========================================================== */
-
-.custom-select {
-  position: relative;
-
-  width: 100%;
-}
-
-.custom-select-trigger {
+.custom-select .custom-select-trigger {
   width: 100%;
   min-height: 42px;
 
@@ -1526,18 +651,15 @@ svg {
     border-color var(--transition),
     box-shadow var(--transition);
 }
-
-.custom-select-trigger:hover {
+.custom-select .custom-select-trigger:hover {
   border-color: #b9ccb7;
 }
-
 .custom-select.open .custom-select-trigger {
   border-color: var(--primary);
 
   box-shadow: 0 0 0 3px rgba(50, 113, 46, 0.08);
 }
-
-.custom-select-trigger svg {
+.custom-select .custom-select-trigger svg {
   width: 15px;
   height: 15px;
 
@@ -1545,12 +667,10 @@ svg {
 
   transition: transform var(--transition);
 }
-
 .custom-select.open .custom-select-trigger svg {
   transform: rotate(180deg);
 }
-
-.custom-select-menu {
+.custom-select .custom-select-menu {
   position: absolute;
 
   z-index: 1600;
@@ -1581,14 +701,12 @@ svg {
 
   transition: var(--transition);
 }
-
 .custom-select.open .custom-select-menu {
   opacity: 1;
   visibility: visible;
 
   transform: translateY(0);
 }
-
 .custom-select-option {
   width: 100%;
   min-height: 37px;
@@ -1612,13 +730,11 @@ svg {
 
   text-align: left;
 }
-
 .custom-select-option:hover {
   color: var(--primary);
 
   background: var(--primary-soft);
 }
-
 .custom-select-option.selected {
   color: var(--primary);
 
@@ -1626,29 +742,23 @@ svg {
 
   font-weight: 700;
 }
-
 .option-check {
   width: 15px;
   height: 15px;
 
   opacity: 0;
 }
-
 .custom-select-option.selected .option-check {
   opacity: 1;
-}
-
-/* ==========================================================
+} /* ==========================================================
    PESQUISA
    Dimensiona e alinha o campo usado para localizar turmas ou estudantes.
 ========================================================== */
-
 .search-box {
   position: relative;
 
   width: 100%;
 }
-
 .search-box > svg {
   position: absolute;
 
@@ -1664,7 +774,6 @@ svg {
 
   pointer-events: none;
 }
-
 .search-box input {
   width: 100%;
   height: 42px;
@@ -1685,22 +794,17 @@ svg {
     border-color var(--transition),
     box-shadow var(--transition);
 }
-
 .search-box input::placeholder {
   color: #a7b0ad;
 }
-
 .search-box input:focus {
   border-color: var(--primary);
 
   box-shadow: 0 0 0 3px rgba(50, 113, 46, 0.08);
-}
-
-/* ==========================================================
+} /* ==========================================================
    TABELAS
    Controla largura, cabeçalhos, linhas, rolagem e estados vazios das listagens.
 ========================================================== */
-
 .table-wrapper {
   width: 100%;
 
@@ -1710,7 +814,6 @@ svg {
 
   border-radius: 11px;
 }
-
 table {
   width: 100%;
 
@@ -1718,11 +821,9 @@ table {
 
   border-collapse: collapse;
 }
-
 thead {
   background: #f8faf8;
 }
-
 th {
   height: 45px;
 
@@ -1742,7 +843,6 @@ th {
 
   white-space: nowrap;
 }
-
 td {
   min-height: 57px;
 
@@ -1756,24 +856,15 @@ td {
 
   vertical-align: middle;
 }
-
-tbody tr:last-child td {
-  border-bottom: 0;
-}
-
 tbody tr {
   transition: background var(--transition);
 }
-
 tbody tr:hover {
   background: #fafcfa;
-}
-
-/* ==========================================================
+} /* ==========================================================
    STATUS TURMAS
    Diferencia visualmente os estados das turmas listadas.
 ========================================================== */
-
 .status {
   display: inline-flex;
   align-items: center;
@@ -1791,7 +882,6 @@ tbody tr:hover {
 
   white-space: nowrap;
 }
-
 .status::before {
   content: "";
 
@@ -1800,7 +890,6 @@ tbody tr:hover {
 
   border-radius: 50%;
 }
-
 .status.active,
 .status.ativa,
 .status.ativo {
@@ -1808,13 +897,11 @@ tbody tr:hover {
 
   background: var(--primary-light);
 }
-
 .status.active::before,
 .status.ativa::before,
 .status.ativo::before {
   background: var(--primary);
 }
-
 .status.inactive,
 .status.inativa,
 .status.inativo {
@@ -1822,18 +909,14 @@ tbody tr:hover {
 
   background: #f1f3f2;
 }
-
 .status.inactive::before,
 .status.inativa::before,
 .status.inativo::before {
   background: #98a2b3;
-}
-
-/* ==========================================================
+} /* ==========================================================
    AÇÕES DAS TURMAS
    Organiza os comandos disponíveis para cada turma.
 ========================================================== */
-
 .table-actions {
   display: flex;
   align-items: center;
@@ -1843,7 +926,6 @@ tbody tr:hover {
 
   white-space: nowrap;
 }
-
 .action-button {
   width: 33px;
   height: 33px;
@@ -1865,12 +947,10 @@ tbody tr:hover {
     background var(--transition),
     transform var(--transition);
 }
-
 .action-button svg {
   width: 15px;
   height: 15px;
 }
-
 .action-button:hover {
   color: var(--primary);
 
@@ -1879,13 +959,10 @@ tbody tr:hover {
   border-color: #bfd3bd;
 
   transform: translateY(-1px);
-}
-
-/* ==========================================================
+} /* ==========================================================
    EDITAR TURMA / ELETIVA
    Estiliza a janela e os campos usados para editar uma turma ou eletiva.
 ========================================================== */
-
 .action-button.edit {
   color: var(--primary);
 
@@ -1893,20 +970,16 @@ tbody tr:hover {
 
   border-color: #d7e6d5;
 }
-
 .action-button.edit:hover {
   color: #ffffff;
 
   background: var(--primary);
 
   border-color: var(--primary);
-}
-
-/* ==========================================================
+} /* ==========================================================
    EXCLUIR TURMA / ELETIVA
    Apresenta a confirmação e os controles de exclusão de uma turma ou eletiva.
 ========================================================== */
-
 .action-button.danger,
 .action-button.delete,
 .action-button.remove {
@@ -1916,7 +989,6 @@ tbody tr:hover {
 
   border-color: #f3dddd;
 }
-
 .action-button.danger:hover,
 .action-button.delete:hover,
 .action-button.remove:hover {
@@ -1925,13 +997,10 @@ tbody tr:hover {
   background: #c9362b;
 
   border-color: #c9362b;
-}
-
-/* ==========================================================
+} /* ==========================================================
    EMPTY STATE
    Mostra uma orientação quando a lista não possui itens para exibir.
 ========================================================== */
-
 .empty-state {
   padding: 60px 20px !important;
 
@@ -1939,7 +1008,6 @@ tbody tr:hover {
 
   text-align: center;
 }
-
 .empty-state-content {
   display: flex;
   flex-direction: column;
@@ -1947,38 +1015,29 @@ tbody tr:hover {
 
   gap: 8px;
 }
-
 .empty-state-content svg {
   width: 32px;
   height: 32px;
 
   color: #9cb59a;
 }
-
 .empty-state-content strong {
   color: #58645b;
 
   font-size: 12px;
 }
-
 .empty-state-content span {
   font-size: 10px;
-}
-
-/* ==========================================================
+} /* ==========================================================
    DETALHES
    Define a estrutura visual da área com informações completas de uma turma.
 ========================================================== */
-
 #classDetailsView {
   overflow: visible;
-}
-
-/* ==========================================================
+} /* ==========================================================
    VOLTAR
    Posiciona o comando usado para retornar à lista anterior.
 ========================================================== */
-
 .back-button {
   min-height: 45px;
 
@@ -2010,7 +1069,6 @@ tbody tr:hover {
     transform var(--transition),
     box-shadow var(--transition);
 }
-
 .back-button-icon {
   width: 32px;
   height: 32px;
@@ -2026,12 +1084,10 @@ tbody tr:hover {
 
   transition: transform var(--transition);
 }
-
 .back-button-icon svg {
   width: 17px;
   height: 17px;
 }
-
 .back-button:hover {
   background: var(--primary-soft);
 
@@ -2039,16 +1095,12 @@ tbody tr:hover {
 
   transform: translateY(-1px);
 }
-
 .back-button:hover .back-button-icon {
   transform: translateX(-2px);
-}
-
-/* ==========================================================
+} /* ==========================================================
    CABEÇALHO DETALHES
    Alinha nome, identificação e ações no topo da tela de detalhes.
 ========================================================== */
-
 .class-details-header {
   position: relative;
 
@@ -2072,7 +1124,6 @@ tbody tr:hover {
 
   box-shadow: 0 4px 14px rgba(31, 41, 55, 0.035);
 }
-
 .class-details-header::after {
   content: "";
 
@@ -2088,13 +1139,11 @@ tbody tr:hover {
 
   border-radius: 50%;
 }
-
 .class-details-header > * {
   position: relative;
 
   z-index: 2;
 }
-
 .class-type {
   display: inline-flex;
 
@@ -2113,7 +1162,6 @@ tbody tr:hover {
 
   letter-spacing: 0.6px;
 }
-
 .class-details-header h1 {
   color: #1f2937;
 
@@ -2123,7 +1171,6 @@ tbody tr:hover {
 
   letter-spacing: -0.5px;
 }
-
 .class-details-header p {
   margin-top: 6px;
 
@@ -2131,7 +1178,6 @@ tbody tr:hover {
 
   font-size: 11px;
 }
-
 .class-details-meta {
   display: flex;
   align-items: stretch;
@@ -2144,7 +1190,6 @@ tbody tr:hover {
 
   box-shadow: var(--shadow-sm);
 }
-
 .class-details-meta > div {
   min-width: 115px;
 
@@ -2158,11 +1203,9 @@ tbody tr:hover {
 
   border-right: 1px solid var(--border);
 }
-
 .class-details-meta > div:last-child {
   border-right: 0;
 }
-
 .class-details-meta span {
   color: #98a2b3;
 
@@ -2171,18 +1214,14 @@ tbody tr:hover {
 
   text-transform: uppercase;
 }
-
 .class-details-meta strong:not(.status) {
   color: #344054;
 
   font-size: 14px;
-}
-
-/* ==========================================================
+} /* ==========================================================
    ALUNOS
    Organiza nomes, estados e informações dos estudantes dentro dos detalhes da turma.
 ========================================================== */
-
 .students-card {
   position: relative;
 
@@ -2190,11 +1229,9 @@ tbody tr:hover {
 
   overflow: visible;
 }
-
 .students-header {
   flex-wrap: wrap;
 }
-
 .students-header-actions {
   display: flex;
   align-items: center;
@@ -2202,12 +1239,10 @@ tbody tr:hover {
 
   gap: 8px;
 }
-
 .students-header-actions .secondary-button,
 #addStudentButton {
   min-height: 40px;
 }
-
 .student-toolbar {
   padding: 16px 24px;
 
@@ -2215,12 +1250,10 @@ tbody tr:hover {
 
   border-bottom: 1px solid #e7ece6;
 }
-
 .student-search {
   width: 100%;
   max-width: 390px;
 }
-
 .students-table-area {
   width: 100%;
 
@@ -2228,7 +1261,6 @@ tbody tr:hover {
 
   overflow: visible;
 }
-
 .students-table-wrapper {
   width: 100%;
 
@@ -2239,41 +1271,32 @@ tbody tr:hover {
 
   border-radius: 12px;
 }
-
 .students-table {
   min-width: 1150px;
 }
-
 .students-table th,
 .students-table td {
   vertical-align: middle;
 }
-
 .students-table th:first-child,
 .students-table td:first-child {
   width: 70px;
 }
-
 .students-table th:nth-child(2) {
   min-width: 270px;
 }
-
 .students-table th:nth-child(3) {
   min-width: 190px;
 }
-
 .student-actions-column,
 .students-table td:last-child {
   min-width: 500px;
 
   text-align: right;
-}
-
-/* ==========================================================
+} /* ==========================================================
    WHATSAPP
    Apresenta o atalho de contato por WhatsApp associado aos estudantes.
 ========================================================== */
-
 .whatsapp-link {
   display: inline-flex;
   align-items: center;
@@ -2288,29 +1311,23 @@ tbody tr:hover {
     color var(--transition),
     opacity var(--transition);
 }
-
 .whatsapp-link:hover {
   color: var(--primary-dark);
 
   text-decoration: none;
 }
-
 .whatsapp-link svg {
   width: 15px;
   height: 15px;
 }
-
 .no-whatsapp {
   color: #98a2b3;
 
   font-size: 10px;
-}
-
-/* ==========================================================
+} /* ==========================================================
    AÇÕES ALUNOS
    Alinha comandos disponíveis em cada registro de estudante.
 ========================================================== */
-
 .student-actions {
   position: relative;
 
@@ -2330,7 +1347,6 @@ tbody tr:hover {
 
   overflow: visible;
 }
-
 .student-action-button {
   min-height: 34px;
 
@@ -2364,7 +1380,6 @@ tbody tr:hover {
     box-shadow var(--transition),
     transform var(--transition);
 }
-
 .student-action-button:hover {
   color: var(--primary);
 
@@ -2374,19 +1389,15 @@ tbody tr:hover {
 
   transform: translateY(-1px);
 }
-
 .student-action-button svg {
   width: 14px;
   height: 14px;
 
   flex: 0 0 auto;
-}
-
-/* ==========================================================
+} /* ==========================================================
    EDITAR ALUNO
    Define os controles do formulário de edição de estudante.
 ========================================================== */
-
 .student-action-button.edit {
   color: var(--primary);
 
@@ -2394,20 +1405,16 @@ tbody tr:hover {
 
   border-color: #d5e5d2;
 }
-
 .student-action-button.edit:hover {
   color: #ffffff;
 
   background: var(--primary);
 
   border-color: var(--primary);
-}
-
-/* ==========================================================
+} /* ==========================================================
    TRANSFERIR ALUNO
    Estiliza a seleção e a confirmação de transferência entre turmas.
 ========================================================== */
-
 .student-action-button.transfer {
   color: #39703a;
 
@@ -2415,20 +1422,16 @@ tbody tr:hover {
 
   border-color: #d6e5d4;
 }
-
 .student-action-button.transfer:hover {
   color: #ffffff;
 
   background: #39703a;
 
   border-color: #39703a;
-}
-
-/* ==========================================================
+} /* ==========================================================
    COPIAR PARA ELETIVA
    Controla os elementos para incluir uma cópia do estudante em uma eletiva.
 ========================================================== */
-
 .student-action-button.copy {
   color: #557f50;
 
@@ -2436,20 +1439,16 @@ tbody tr:hover {
 
   border-color: #dce8da;
 }
-
 .student-action-button.copy:hover {
   color: #ffffff;
 
   background: #557f50;
 
   border-color: #557f50;
-}
-
-/* ==========================================================
+} /* ==========================================================
    REMOVER ALUNO
    Apresenta a ação e a confirmação de remoção do estudante.
 ========================================================== */
-
 .student-action-button.remove {
   color: #b42318;
 
@@ -2457,20 +1456,16 @@ tbody tr:hover {
 
   border-color: #f0d8d8;
 }
-
 .student-action-button.remove:hover {
   color: #ffffff;
 
   background: #c9362b;
 
   border-color: #c9362b;
-}
-
-/* ==========================================================
+} /* ==========================================================
    ATIVO / INATIVO
    Diferencia visualmente estudantes ativos e inativos nos registros.
 ========================================================== */
-
 .student-status-select {
   position: relative;
 
@@ -2480,7 +1475,6 @@ tbody tr:hover {
 
   overflow: visible;
 }
-
 .student-status-trigger {
   width: 100%;
   min-height: 34px;
@@ -2514,7 +1508,6 @@ tbody tr:hover {
     color var(--transition),
     box-shadow var(--transition);
 }
-
 .student-status-trigger::before {
   content: "";
 
@@ -2527,20 +1520,17 @@ tbody tr:hover {
 
   border-radius: 50%;
 }
-
 .student-status-trigger svg {
   width: 13px;
   height: 13px;
 
   margin-left: auto;
 }
-
 .student-status-trigger:hover {
   border-color: #b8d0b5;
 
   box-shadow: 0 2px 7px rgba(50, 113, 46, 0.08);
 }
-
 .student-status-select.inactive .student-status-trigger,
 .student-status-trigger.inactive {
   color: #667085;
@@ -2549,12 +1539,10 @@ tbody tr:hover {
 
   border-color: #dfe4df;
 }
-
 .student-status-select.inactive .student-status-trigger::before,
 .student-status-trigger.inactive::before {
   background: #98a2b3;
 }
-
 .student-status-menu {
   position: absolute;
 
@@ -2583,14 +1571,12 @@ tbody tr:hover {
 
   transition: var(--transition);
 }
-
 .student-status-select.open .student-status-menu {
   opacity: 1;
   visibility: visible;
 
   transform: translateY(0);
 }
-
 .student-status-option {
   width: 100%;
   min-height: 34px;
@@ -2613,7 +1599,6 @@ tbody tr:hover {
 
   text-align: left;
 }
-
 .student-status-option::before {
   content: "";
 
@@ -2622,47 +1607,35 @@ tbody tr:hover {
 
   border-radius: 50%;
 }
-
 .student-status-option[data-value="Ativo"]::before,
 .student-status-option[data-value="Ativa"]::before {
   background: var(--primary);
 }
-
 .student-status-option[data-value="Inativo"]::before,
 .student-status-option[data-value="Inativa"]::before {
   background: #98a2b3;
 }
-
 .student-status-option:hover {
   background: #f6f8f6;
-}
-
-/* ==========================================================
+} /* ==========================================================
    ALUNO INATIVO
    Aplica os estados de texto e controles específicos do estudante inativo.
 ========================================================== */
-
 .students-table tr.student-inactive {
   background: #fafbfa;
 }
-
 .students-table tr.student-inactive:hover {
   background: #f7f9f7;
 }
-
 .students-table tr.student-inactive td:not(:last-child) {
   color: #98a2b3;
 }
-
 .students-table tr.student-inactive .whatsapp-link {
   color: #87928a;
-}
-
-/* ==========================================================
+} /* ==========================================================
    MODAIS
    Reúne a estrutura comum, o fundo, os cabeçalhos e os controles das janelas.
 ========================================================== */
-
 .modal-overlay {
   position: fixed;
 
@@ -2685,12 +1658,10 @@ tbody tr:hover {
 
   transition: var(--transition);
 }
-
 .modal-overlay.open {
   opacity: 1;
   visibility: visible;
 }
-
 .modal {
   width: min(620px, 100%);
 
@@ -2711,20 +1682,16 @@ tbody tr:hover {
 
   transition: var(--transition);
 }
-
 .modal-overlay.open .modal {
   transform: translateY(0) scale(1);
 }
-
 .modal.small-modal {
   width: min(500px, 100%);
 }
-
 .student-modal,
 #studentModalOverlay .modal {
   width: min(560px, 100%);
 }
-
 .modal-header {
   display: flex;
   align-items: flex-start;
@@ -2738,7 +1705,6 @@ tbody tr:hover {
 
   border-bottom: 1px solid var(--border);
 }
-
 .modal-tag {
   display: inline-flex;
 
@@ -2757,7 +1723,6 @@ tbody tr:hover {
 
   letter-spacing: 0.5px;
 }
-
 .modal-header h2 {
   color: #1f2937;
 
@@ -2765,7 +1730,6 @@ tbody tr:hover {
 
   letter-spacing: -0.25px;
 }
-
 .modal-header p {
   margin-top: 4px;
 
@@ -2773,7 +1737,6 @@ tbody tr:hover {
 
   font-size: 10px;
 }
-
 .modal-close {
   width: 34px;
   height: 34px;
@@ -2794,53 +1757,42 @@ tbody tr:hover {
 
   transition: var(--transition);
 }
-
 .modal-close:hover {
   color: var(--danger);
 
   background: var(--danger-light);
-}
-
-/* ==========================================================
+} /* ==========================================================
    MODAIS TRANSFERÊNCIA / ELETIVA EM VERDE
    Diferencia as janelas de transferência e eletiva com a cor de ação correspondente.
 ========================================================== */
-
 #transferModalOverlay .modal-tag,
 #copyElectiveModalOverlay .modal-tag {
   color: var(--primary);
 
   background: var(--primary-light);
 }
-
 #transferModalOverlay .primary-button,
 #copyElectiveModalOverlay .primary-button {
   background: var(--primary);
 }
-
 #transferModalOverlay .primary-button:hover,
 #copyElectiveModalOverlay .primary-button:hover {
   background: var(--primary-dark);
 }
-
 #transferClassOptions,
 #copyElectiveOptions {
   max-height: 250px;
 
   overflow-y: auto;
-}
-
-/* ==========================================================
+} /* ==========================================================
    FORMULÁRIOS
    Organiza rótulos, campos, grades e ações de envio dos formulários.
 ========================================================== */
-
 .modal-form {
   padding: 22px 24px 24px;
 
   overflow: visible;
 }
-
 .form-grid {
   display: grid;
 
@@ -2848,11 +1800,9 @@ tbody tr:hover {
 
   gap: 17px 14px;
 }
-
 .form-group.full {
   grid-column: 1 / -1;
 }
-
 .form-group input {
   width: 100%;
   height: 43px;
@@ -2873,25 +1823,20 @@ tbody tr:hover {
     border-color var(--transition),
     box-shadow var(--transition);
 }
-
 .form-group input::placeholder {
   color: #a7b0ad;
 }
-
 .form-group input:hover {
   border-color: #c1d0bf;
 }
-
 .form-group input:focus {
   border-color: var(--primary);
 
   box-shadow: 0 0 0 3px rgba(50, 113, 46, 0.08);
 }
-
 #studentForm .form-group input {
   height: 45px;
 }
-
 .field-help {
   display: block;
 
@@ -2901,15 +1846,12 @@ tbody tr:hover {
 
   font-size: 9px;
 }
-
 #studentWhatsapp {
   letter-spacing: 0.1px;
 }
-
 #studentSubmitButton {
   min-width: 135px;
 }
-
 .modal-actions {
   display: flex;
   align-items: center;
@@ -2922,17 +1864,13 @@ tbody tr:hover {
   margin-top: 22px;
 
   border-top: 1px solid var(--border);
-}
-
-/* ==========================================================
+} /* ==========================================================
    CALENDÁRIO
    Estiliza o calendário, seus controles, dias e estados de seleção.
 ========================================================== */
-
 .date-group {
   position: relative;
 }
-
 .date-trigger {
   width: 100%;
   min-height: 43px;
@@ -2958,31 +1896,26 @@ tbody tr:hover {
     border-color var(--transition),
     box-shadow var(--transition);
 }
-
 .date-trigger:hover {
   border-color: #b9ccb7;
 }
-
 .date-trigger > svg:first-child {
   width: 17px;
   height: 17px;
 
   color: var(--primary);
 }
-
 .date-trigger span {
   flex: 1;
 
   font-size: 11px;
 }
-
 .date-arrow {
   width: 14px;
   height: 14px;
 
   color: #98a2b3;
 }
-
 .date-picker {
   position: absolute;
 
@@ -3011,14 +1944,12 @@ tbody tr:hover {
 
   transition: var(--transition);
 }
-
 .date-picker.open {
   opacity: 1;
   visibility: visible;
 
   transform: translateY(0);
 }
-
 .calendar-header {
   display: flex;
   align-items: center;
@@ -3026,7 +1957,6 @@ tbody tr:hover {
 
   margin-bottom: 12px;
 }
-
 .calendar-header button {
   width: 31px;
   height: 31px;
@@ -3040,24 +1970,20 @@ tbody tr:hover {
 
   border-radius: 8px;
 }
-
 .calendar-header button:hover {
   color: var(--primary);
 
   background: var(--primary-light);
 }
-
 .calendar-header button svg {
   width: 15px;
   height: 15px;
 }
-
 .calendar-header strong {
   color: #344054;
 
   font-size: 11px;
 }
-
 .calendar-weekdays,
 .calendar-days {
   display: grid;
@@ -3066,11 +1992,9 @@ tbody tr:hover {
 
   gap: 3px;
 }
-
 .calendar-weekdays {
   margin-bottom: 4px;
 }
-
 .calendar-weekdays span {
   height: 26px;
 
@@ -3082,7 +2006,6 @@ tbody tr:hover {
   font-size: 8px;
   font-weight: 700;
 }
-
 .calendar-day {
   aspect-ratio: 1;
 
@@ -3099,13 +2022,11 @@ tbody tr:hover {
 
   transition: var(--transition);
 }
-
 .calendar-day:hover {
   color: var(--primary);
 
   background: var(--primary-soft);
 }
-
 .calendar-day.today {
   color: var(--primary);
 
@@ -3113,7 +2034,6 @@ tbody tr:hover {
 
   font-weight: 800;
 }
-
 .calendar-day.selected {
   color: #ffffff;
 
@@ -3121,11 +2041,9 @@ tbody tr:hover {
 
   font-weight: 800;
 }
-
 .calendar-day.other-month {
   color: #c4cbc3;
 }
-
 .calendar-today {
   width: 100%;
   min-height: 34px;
@@ -3141,16 +2059,12 @@ tbody tr:hover {
   font-size: 9px;
   font-weight: 700;
 }
-
 .calendar-today:hover {
   background: var(--primary-light);
-}
-
-/* ==========================================================
+} /* ==========================================================
    TOAST
    Define as notificações temporárias que confirmam ações ou informam resultados.
 ========================================================== */
-
 .toast {
   position: fixed;
 
@@ -3181,40 +2095,32 @@ tbody tr:hover {
 
   transition: var(--transition);
 }
-
 .toast.show {
   opacity: 1;
   visibility: visible;
 
   transform: translateY(0);
 }
-
 .toast.success {
   background: var(--primary-dark);
 }
-
 .toast.error {
   background: var(--danger-dark);
 }
-
 .toast.warning {
   color: #543d00;
 
   background: #fdb022;
-}
-
-/* ==========================================================
+} /* ==========================================================
    ESTADOS
    Agrupa estados compartilhados de foco, carregamento, seleção e interação.
 ========================================================== */
-
 .disabled,
 button:disabled {
   cursor: not-allowed !important;
 
   opacity: 0.55;
 }
-
 .loading {
   pointer-events: none;
 
@@ -3227,49 +2133,33 @@ button:disabled {
 ========================================================== */
 
 @media (max-width: 1300px) {
-  :root {
-    --sidebar-width: 225px;
-  }
-
   .content {
     padding-left: 25px;
     padding-right: 25px;
   }
-
-  .topbar {
-    padding-left: 25px;
-    padding-right: 25px;
-  }
-
   .summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
   .filters {
     grid-template-columns:
       repeat(2, minmax(160px, 1fr))
       minmax(240px, 1.4fr);
   }
-
   .class-details-header {
     align-items: flex-start;
 
     flex-direction: column;
   }
-
   .class-details-meta {
     width: 100%;
   }
-
   .class-details-meta > div {
     flex: 1;
   }
-
   .student-actions-column,
   .students-table td:last-child {
     min-width: 470px;
   }
-
   .students-table {
     min-width: 1100px;
   }
@@ -3281,44 +2171,29 @@ button:disabled {
 ========================================================== */
 
 @media (max-width: 1050px) {
-  :root {
-    --sidebar-width: 205px;
-  }
-
-  .sidebar-logo-image {
-    max-width: 155px;
-  }
-
   .hero-quote {
     display: none;
   }
-
   .hero-image {
     width: 40%;
   }
-
   .filters {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
   .search-box {
     grid-column: 1 / -1;
   }
-
   .students-header {
     align-items: flex-start;
 
     flex-direction: column;
   }
-
   .students-header-actions {
     width: 100%;
   }
-
   .student-actions {
     justify-content: flex-start;
   }
-
   .student-actions-column,
   .students-table td:last-child {
     min-width: 450px;
@@ -3329,91 +2204,24 @@ button:disabled {
 
 /* ==========================================================
    RESPONSIVO - 820
-   Adapta a tela ao tablet, incluindo a navegação e os painéis principais.
+   Adapta o conteúdo e os painéis da página ao tablet.
 ========================================================== */
 
 @media (max-width: 820px) {
-  :root {
-    --sidebar-width: 76px;
-  }
-
-  .sidebar {
-    padding-left: 10px;
-    padding-right: 10px;
-  }
-
-  .nav-link span,
-  .nav-section-title,
-  .support-card span,
-  .support-arrow,
-  .sidebar-footer {
-    display: none;
-  }
-
-  .sidebar-logo {
-    min-height: 56px;
-
-    justify-content: center;
-
-    padding: 5px 0;
-  }
-
-  .sidebar-logo-image {
-    width: 48px;
-    max-width: 48px;
-
-    height: 48px;
-    max-height: 48px;
-
-    object-fit: contain;
-  }
-
-  .nav-link {
-    justify-content: center;
-
-    padding: 0;
-  }
-
-  .nav-link.active::before {
-    left: -10px;
-  }
-
-  .support-card {
-    justify-content: center;
-
-    padding: 11px 0;
-  }
-
   .content {
     padding: 20px 17px 40px;
   }
-
-  .topbar {
-    padding: 0 17px;
-  }
-
-  .profile-info {
-    display: none;
-  }
-
-  .connection-status > div {
-    display: none;
-  }
-
   .hero {
     min-height: 180px;
 
     padding: 28px;
   }
-
   .hero-content {
     max-width: 65%;
   }
-
   .hero-content h2 {
     font-size: 24px;
   }
-
   .hero-image {
     width: 43%;
   }
@@ -3428,39 +2236,31 @@ button:disabled {
   .summary-grid {
     grid-template-columns: 1fr;
   }
-
   .management-header {
     align-items: flex-start;
 
     flex-direction: column;
   }
-
   .management-header .primary-button {
     width: 100%;
   }
-
   .filters {
     grid-template-columns: 1fr;
   }
-
   .search-box {
     grid-column: auto;
   }
-
   .form-grid {
     grid-template-columns: 1fr;
   }
-
   .form-group.full {
     grid-column: auto;
   }
-
   .hero-image {
     opacity: 0.22;
 
     width: 65%;
   }
-
   .hero-image::before {
     background: linear-gradient(
       90deg,
@@ -3469,15 +2269,12 @@ button:disabled {
       transparent 100%
     );
   }
-
   .hero-content {
     max-width: 100%;
   }
-
   .class-details-meta {
     flex-direction: column;
   }
-
   .class-details-meta > div {
     width: 100%;
 
@@ -3485,11 +2282,9 @@ button:disabled {
 
     border-bottom: 1px solid var(--border);
   }
-
   .class-details-meta > div:last-child {
     border-bottom: 0;
   }
-
   .students-header-actions {
     display: grid;
 
@@ -3497,47 +2292,37 @@ button:disabled {
 
     width: 100%;
   }
-
   .students-header-actions button {
     width: 100%;
   }
-
   .student-search {
     max-width: none;
   }
-
   .modal-overlay {
     padding: 12px;
   }
-
   .modal-header,
   .modal-form {
     padding-left: 18px;
     padding-right: 18px;
   }
-
   .modal-actions {
     flex-direction: column-reverse;
   }
-
   .modal-actions button {
     width: 100%;
   }
-
   .date-picker {
     width: 100%;
   }
-
   #studentModalOverlay .modal,
   #transferModalOverlay .modal,
   #copyElectiveModalOverlay .modal {
     width: 100%;
   }
-
   .student-actions {
     justify-content: flex-start;
   }
-
   .student-action-button {
     min-height: 32px;
 
@@ -3552,39 +2337,10 @@ button:disabled {
 ========================================================== */
 
 @media (max-width: 480px) {
-  :root {
-    --sidebar-width: 64px;
-  }
-
-  .sidebar {
-    padding-left: 7px;
-    padding-right: 7px;
-  }
-
-  .sidebar-logo-image {
-    width: 42px;
-    max-width: 42px;
-
-    height: 42px;
-    max-height: 42px;
-  }
-
   .content {
     padding-left: 12px;
     padding-right: 12px;
   }
-
-  .topbar {
-    height: 66px;
-
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-
-  .topbar-right {
-    gap: 10px;
-  }
-
   .hero {
     min-height: 170px;
 
@@ -3592,34 +2348,27 @@ button:disabled {
 
     border-radius: 15px;
   }
-
   .hero-content h2 {
     font-size: 21px;
   }
-
   .hero-content p {
     font-size: 10px;
   }
-
   .summary-card {
     min-height: 90px;
   }
-
   .management-body {
     padding-left: 14px;
     padding-right: 14px;
   }
-
   .management-header,
   .students-header {
     padding-left: 16px;
     padding-right: 16px;
   }
-
   .tabs {
     width: 100%;
   }
-
   .tab {
     flex: 1;
 
@@ -3628,25 +2377,20 @@ button:disabled {
     padding-left: 8px;
     padding-right: 8px;
   }
-
   .class-details-header {
     padding: 22px;
   }
-
   .class-details-header h1 {
     font-size: 21px;
   }
-
   .students-table-area {
     padding-left: 14px;
     padding-right: 14px;
   }
-
   .student-toolbar {
     padding-left: 14px;
     padding-right: 14px;
   }
-
   .toast {
     right: 12px;
     bottom: 12px;
@@ -3662,8 +2406,6 @@ button:disabled {
 ========================================================== */
 
 @media print {
-  .sidebar,
-  .topbar,
   .hero,
   .summary-grid,
   .filters,
@@ -3677,19 +2419,11 @@ button:disabled {
   .student-status-select {
     display: none !important;
   }
-
-  .main-area {
-    width: 100%;
-
-    margin: 0;
-  }
-
   .content {
     max-width: none;
 
     padding: 0;
   }
-
   .management-card,
   .students-card,
   .class-details-header {
@@ -3697,12 +2431,10 @@ button:disabled {
 
     box-shadow: none;
   }
-
   .table-wrapper {
     overflow: visible;
   }
-}
-/* ==========================================================
+} /* ==========================================================
    Nome da turma abre o gerenciamento de alunos.
    Marca o nome da turma como acesso à respectiva área de gerenciamento.
 ========================================================== */
@@ -3724,9 +2456,7 @@ button:disabled {
   outline: 2px solid #167548;
   outline-offset: 4px;
   border-radius: 3px;
-}
-
-/* ==========================================================
+} /* ==========================================================
    Abertura da turma e data automática.
    Ajusta a apresentação do acionador e da data associada ao calendário da turma.
 ========================================================== */
@@ -3739,13 +2469,12 @@ button:disabled {
 .form-group.date-group {
   display: none;
 }
-
 .hero-content h1 {
   font-size: 20px;
   letter-spacing: 0.2px;
   margin-bottom: 9px;
 }
-.custom-select-menu {
+.custom-select .custom-select-menu {
   padding: 10px;
   background: #fff;
   border: 1px solid var(--border);
@@ -3763,48 +2492,6 @@ button:disabled {
 .custom-select-option:hover {
   background: var(--primary-soft);
   color: var(--primary);
-}
-.activity-bell {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  margin-right: 14px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: #fff;
-  color: var(--primary);
-  cursor: pointer;
-}
-.activity-bell:hover {
-  background: var(--primary-soft);
-}
-.activity-bell svg {
-  width: 21px;
-  height: 21px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.activity-bell-count {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  min-width: 19px;
-  padding: 3px 5px;
-  border: 2px solid #fff;
-  border-radius: 20px;
-  background: #dc4c45;
-  color: #fff;
-  font-size: 10px;
-  text-align: center;
-  font-weight: 800;
-}
-.activity-bell-count[hidden] {
-  display: none;
 }
 .alunotec-notice {
   position: fixed;
@@ -3979,19 +2666,6 @@ button:disabled {
   background: var(--primary-soft);
   color: var(--primary);
 }
-
-.connection-status {
-  border: 0;
-  cursor: pointer;
-  text-align: left;
-  font: inherit;
-}
-.connection-status.offline {
-  color: #a33;
-}
-.connection-status.checking {
-  opacity: 0.8;
-}
 .sync-login-dialog form {
   text-align: left;
 }
@@ -4015,9 +2689,7 @@ button:disabled {
   min-height: 1.2em;
   color: #b42318;
   font-size: 12px;
-}
-
-/* ==========================================================
+} /* ==========================================================
    Destaque do nome da aba e frase legível no banner.
    Melhora contraste e hierarquia do título da aba e do texto do banner.
 ========================================================== */
@@ -4029,13 +2701,11 @@ button:disabled {
   line-height: 1.05;
   letter-spacing: -0.8px;
 }
-
 .hero-content h2 {
   max-width: 540px;
   font-size: clamp(22px, 2.15vw, 29px);
   line-height: 1.2;
 }
-
 .hero-quote {
   right: 28px;
   bottom: 22px;
@@ -4049,7 +2719,6 @@ button:disabled {
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
 }
-
 .hero-quote p {
   color: #fff;
   font-size: 13px;
@@ -4057,7 +2726,6 @@ button:disabled {
   line-height: 1.5;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
 }
-
 .hero-quote span {
   display: block;
   margin-left: auto;
@@ -4072,15 +2740,12 @@ button:disabled {
     width: min(260px, 31%);
     padding: 10px 12px;
   }
-
   .hero-quote p {
     font-size: 11px;
   }
-
   .hero-content h1 {
     font-size: clamp(30px, 4vw, 36px);
   }
-
   .hero-content h2 {
     font-size: clamp(21px, 2.7vw, 25px);
   }
@@ -4090,17 +2755,13 @@ button:disabled {
   .hero-content h1 {
     font-size: 32px;
   }
-
   .hero-content h2 {
     font-size: 21px;
   }
-
   .hero-quote {
     display: none;
   }
-}
-
-/* ==========================================================
+} /* ==========================================================
    Frase do banner no formato de citação, no espaço verde ao lado do texto.
    Posiciona a frase como citação ao lado do texto principal do banner.
 ========================================================== */
@@ -4120,7 +2781,6 @@ button:disabled {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-
 .hero-quote p {
   color: rgba(255, 255, 255, 0.96);
   font-size: 15px;
@@ -4129,7 +2789,6 @@ button:disabled {
   line-height: 1.55;
   text-shadow: 0 1px 2px rgba(15, 54, 29, 0.25);
 }
-
 .hero-quote span {
   display: block;
   width: 44px;
@@ -4143,15 +2802,6 @@ button:disabled {
     display: none;
   }
 }
-
-/* ==========================================================
-   Reserva espaço para a barra e evita deslocamentos no layout
-   Mantém a rolagem vertical disponível para que mudanças de conteúdo não desloquem o cabeçalho.
-========================================================== */
-html {
-  overflow-y: scroll;
-}
-
 /* ==========================================================
    AJUSTES DE ALINHAMENTO DO BANNER
    Reorganiza texto e citação do banner para que caibam e permaneçam alinhados em larguras diferentes.
@@ -4164,7 +2814,6 @@ html {
   height: auto;
   min-height: 260px;
 }
-
 .hero .hero-content {
   position: relative;
   flex: 1 1 420px;
@@ -4172,7 +2821,6 @@ html {
   max-width: none;
   z-index: 2;
 }
-
 .hero .hero-quote {
   display: block;
   position: relative;
@@ -4186,17 +2834,14 @@ html {
   visibility: visible;
   z-index: 2;
 }
-
 .hero .hero-quote p {
   margin: 0;
   line-height: 1.5;
 }
-
 .hero {
   position: relative;
   isolation: isolate;
 }
-
 .hero .hero-image {
   position: absolute;
   top: 0;
@@ -4205,7 +2850,6 @@ html {
   z-index: -1;
   pointer-events: none;
 }
-
 .hero .hero-content,
 .hero .hero-quote {
   position: relative;
@@ -4215,5 +2859,85 @@ html {
 @media (min-width: 1100px) {
   .hero .hero-quote {
     transform: translateX(-350px);
+  }
+}
+
+/* ==========================================================
+   TURMAS EM CELULARES
+   Mantém o banner compacto, libera o texto e deixa os indicadores fáceis de ler.
+========================================================== */
+@media (max-width: 650px) {
+  .content {
+    padding: 18px 16px 32px;
+  }
+
+  .hero {
+    display: block;
+    height: auto;
+    min-height: 0;
+    padding: 22px 20px;
+  }
+
+  .hero .hero-content {
+    max-width: none;
+  }
+
+  .hero .hero-content h1 {
+    font-size: clamp(28px, 8vw, 34px);
+  }
+
+  .hero .hero-content h2 {
+    font-size: clamp(20px, 5.5vw, 23px);
+  }
+
+  .hero .hero-content p {
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  .hero .hero-quote {
+    display: none;
+  }
+
+  .hero .hero-image {
+    width: 70%;
+    opacity: 0.18;
+  }
+
+  .summary-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .summary-card {
+    min-height: 88px;
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .summary-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .summary-icon .at-icon {
+    width: 21px;
+    height: 21px;
+  }
+}
+
+@media (max-width: 380px) {
+  .content {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .hero {
+    padding: 20px 17px;
+  }
+
+  .summary-card {
+    padding: 14px;
   }
 }

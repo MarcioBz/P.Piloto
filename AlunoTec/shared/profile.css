@@ -253,11 +253,42 @@
    Dimensiona e alinha o indicador de abertura do menu de perfil.
 ========================================================== */
 #profileButton > svg {
-  width: 20px;
-  height: 20px;
-  flex: 0 0 20px;
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
   margin-left: 8px;
-  color: #698477;
+  color: #16834c;
+}
+
+/* ==========================================================
+   PERFIL COMPACTO NO TOPBAR MÓVEL
+   Mantém avatar e hambúrguer de conta visíveis abaixo de 640px.
+========================================================== */
+@media (max-width: 640px) {
+  #profileButton {
+    min-height: 40px;
+    padding: 3px 6px 3px 3px;
+    gap: 5px;
+  }
+
+  #profileButton > span:not(.avatar):not(.profile-avatar) {
+    display: none !important;
+  }
+
+  #profileButton .avatar,
+  #profileButton .profile-avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  #profileButton > svg {
+    display: block !important;
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+    margin-left: 0;
+    color: #16834c;
+  }
 }
 
 /* ==========================================================

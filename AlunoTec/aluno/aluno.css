@@ -5,14 +5,6 @@
    O HTML correspondente está em aluno.html. Classes compartilhadas
    de perfil/navegação podem vir de ../shared/.
 ========================================================== */
-
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
-
-/* ==========================================================
-   TOKENS E BASE GLOBAL
-   Define cores reutilizadas, dimensionamento, tipografia, controles nativos, foco visível, ícones e texto acessível.
-========================================================== */
-
 :root {
   --green: #32712e;
   --green-dark: #255b22;
@@ -21,15 +13,11 @@
   --text: #263b32;
   --muted: #75877c;
   --border: #e1e9df;
-  --sidebar-width: 245px;
 }
-
 * {
-  box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
-
 body {
   min-width: 320px;
   min-height: 100vh;
@@ -39,408 +27,23 @@ body {
     14px/1.5 "Inter",
     Arial,
     sans-serif;
-}
-
-button,
-input,
-select {
-  font: inherit;
-}
-button,
-a {
-  -webkit-tap-highlight-color: transparent;
-}
-a {
-  color: inherit;
-  text-decoration: none;
-}
-button {
-  cursor: pointer;
-}
-svg {
-  width: 20px;
-  height: 20px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-/* ==========================================================
+} /* ==========================================================
    ÍCONES E ACESSIBILIDADE
    Reúne os recursos visuais reutilizáveis e estilos auxiliares para leitores de tela.
 ========================================================== */
-
-.svg-library {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-}
-
-/* ==========================================================
-   NAVEGAÇÃO
-   menu lateral, marca e links da área de Alunos.
-========================================================== */
-.sidebar {
-  position: fixed;
-  inset: 0 auto 0 0;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  width: var(--sidebar-width);
-  padding: 22px 15px 18px;
-  overflow-y: auto;
-  color: #fff;
-  background: linear-gradient(180deg, #183f1c 0%, #143818 100%);
-  box-shadow: 6px 0 25px rgba(18, 53, 22, 0.08);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  min-height: 70px;
-  margin-bottom: 22px;
-  padding: 8px 10px;
-}
-.brand img {
-  display: block;
-  width: auto;
-  max-width: 180px;
-  max-height: 55px;
-  object-fit: contain;
-}
-.main-nav {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 5px;
-}
-.nav-link {
-  position: relative;
-  display: flex;
-  align-items: center;
-  min-height: 46px;
-  gap: 13px;
-  padding: 0 14px;
-  border-radius: 9px;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 12px;
-  font-weight: 500;
-}
-.nav-link svg {
-  flex: 0 0 auto;
-  width: 19px;
-  height: 19px;
-  color: rgba(255, 255, 255, 0.74);
-}
-.nav-link:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.08);
-}
-.nav-link.active {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.13);
-  font-weight: 700;
-}
-.nav-link.active::before {
-  position: absolute;
-  top: 9px;
-  bottom: 9px;
-  left: -15px;
-  width: 4px;
-  border-radius: 0 5px 5px 0;
-  background: #83b77e;
-  content: "";
-}
-.nav-divider {
-  height: 1px;
-  margin: 16px 8px 14px;
-  background: rgba(255, 255, 255, 0.1);
-}
-.nav-caption {
-  margin-bottom: 5px;
-  padding: 0 13px;
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.9px;
-}
-
-.sidebar-bottom {
-  margin-top: auto;
-  padding-top: 22px;
-}
-.support-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  margin-bottom: 18px;
-  padding: 12px;
-  border: 1px solid rgba(0, 198, 118, 0.3);
-  border-radius: 10px;
-  color: rgba(255, 255, 255, 0.82);
-  background: rgba(255, 255, 255, 0.07);
-}
-.support-card:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-.support-icon {
-  width: 22px;
-  height: 22px;
-  flex: 0 0 22px;
-  color: #fff;
-  stroke-width: 1.8;
-}
-.support-card span:nth-child(2) {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-}
-.support-card strong {
-  color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-}
-.support-card small {
-  color: rgba(255, 255, 255, 0.65);
-  font-size: 10px;
-}
-.support-arrow {
-  font-size: 22px;
-  font-weight: 300;
-}
-.sidebar-footer {
-  padding: 0 7px;
-  color: rgba(255, 255, 255, 0.34);
-  font-size: 9px;
-  line-height: 1.5;
-}
-
-/* ==========================================================
-   ESTRUTURA DA PÁGINA
-   conteúdo principal e barra superior.
-========================================================== */
-.main {
-  width: calc(100% - var(--sidebar-width));
-  min-height: 100vh;
-  margin-left: var(--sidebar-width);
-}
-
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 76px;
-  padding: 0 28px;
-  border-bottom: 1px solid #e7ece7;
-  background: rgba(255, 255, 255, 0.97);
-}
-.year-picker {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 182px;
-  min-height: 51px;
-  padding: 7px 12px;
-  border: 1px solid #d8e4d8;
-  border-radius: 12px;
-  background: #fff;
-}
-.year-picker > svg {
-  width: 31px;
-  height: 31px;
-  flex: 0 0 31px;
-  padding: 7px;
-  border-radius: 8px;
-  color: var(--green-dark);
-  background: #eaf8f1;
-}
-.year-label {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-width: 0;
-}
-.year-label small {
-  color: var(--muted);
-  font-size: 9px;
-}
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 22px;
-}
-.bell-button {
-  position: relative;
-  display: grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  color: var(--green);
-  background: #fff;
-}
-.bell-count {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  min-width: 18px;
-  padding: 1px 5px;
-  border-radius: 20px;
-  color: #fff;
-  background: #d94b45;
-  font-size: 10px;
-  font-weight: 700;
-}
-.connection {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  border: 0;
-  color: var(--green-dark);
-  background: transparent;
-  text-align: left;
-}
-.connection > svg {
-  width: 22px;
-  height: 22px;
-}
-.connection span,
-.profile-text {
-  display: flex;
-  flex-direction: column;
-}
-.connection strong,
-.profile strong {
-  color: #34433a;
-  font-size: 11px;
-}
-.connection small,
-.profile small {
-  color: var(--muted);
-  font-size: 9px;
-}
-.connection.offline strong {
-  color: #d94b45;
-}
-.connection.checking strong {
-  color: #b17b1c;
-}
-
-.account-wrap {
-  position: relative;
-}
-.profile {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 9px;
-  border: 0;
-  border-radius: 12px;
-  color: var(--text);
-  background: transparent;
-  text-align: left;
-}
-.profile:hover,
-.profile[aria-expanded="true"] {
-  background: #f3f7f3;
-}
-.avatar {
-  display: grid;
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
-  place-items: center;
-  border-radius: 50%;
-  color: #fff;
-  background: #347333;
-  font-size: 11px;
-  font-weight: 800;
-}
-.profile-menu-icon {
-  width: 18px;
-  height: 18px;
-  margin-left: 8px;
-  color: #75877c;
-}
-.account-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  z-index: 15;
-  width: 245px;
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: #fff;
-  box-shadow: 0 16px 40px rgba(20, 45, 30, 0.16);
-}
-.account-menu[hidden] {
-  display: none;
-}
-.account-identity {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 6px 14px;
-  border-bottom: 1px solid #e8eee8;
-}
-.account-identity > span:last-child {
-  display: flex;
-  flex-direction: column;
-}
-.account-identity strong {
-  font-size: 12px;
-}
-.account-identity small {
-  color: var(--muted);
-  font-size: 10px;
-}
-.account-menu > button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 11px 8px;
-  border: 0;
-  color: #445b4b;
-  background: transparent;
-  text-align: left;
-}
-.account-menu > button:hover {
-  border-radius: 8px;
-  background: #f3f7f3;
-}
-.account-menu > button svg {
-  width: 17px;
-  height: 17px;
-}
-.account-menu .logout-option {
-  color: #d64848;
-}
-
 /* ==========================================================
    CONTEÚDO PRINCIPAL
    Organiza a área de trabalho e o espaço ocupado pelo conteúdo depois da navegação lateral.
 ========================================================== */
-
 .content {
   width: 100%;
   max-width: 1600px;
   margin: 0 auto;
   padding: 12px 34px 40px;
-}
-/* ==========================================================
+} /* ==========================================================
    BANNER DA PÁGINA
    Controla o título, a imagem, a citação e a composição visual do destaque de Alunos.
 ========================================================== */
-
 .hero {
   position: relative;
   display: grid;
@@ -521,13 +124,10 @@ svg {
     url("../assets/images/dashboard-sala.png");
   background-position: center;
   background-size: cover;
-}
-
-/* ==========================================================
+} /* ==========================================================
    CARTÕES DE RESUMO
    Apresenta os indicadores numéricos e suas cores no início da página.
 ========================================================== */
-
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -593,9 +193,7 @@ svg {
 }
 .summary-card:nth-child(4) em {
   color: #1684ed;
-}
-
-/* ==========================================================
+} /* ==========================================================
    ESTUDANTES
    Reúne o painel da lista, título, pesquisa e filtros usados para localizar estudantes.
 ========================================================== */
@@ -631,7 +229,6 @@ svg {
   color: var(--muted);
   font-size: 10px;
 }
-
 .filters {
   display: grid;
   grid-template-columns: minmax(250px, 1.5fr) repeat(3, minmax(135px, 0.8fr));
@@ -680,13 +277,10 @@ svg {
   color: var(--text);
   background: transparent;
   font-size: 11px;
-}
-
-/* ==========================================================
+} /* ==========================================================
    FILTROS E SELETORES PERSONALIZADOS
    Controla aparência, abertura, opções e seleção dos filtros de busca e do ano letivo.
 ========================================================== */
-
 .custom-select {
   position: relative;
   min-width: 0;
@@ -777,56 +371,10 @@ svg {
   background: var(--green);
   font-size: 12px;
   font-weight: 800;
-}
-
-.year-picker .custom-select {
-  min-width: 74px;
-}
-.year-picker .select-trigger,
-.year-picker .select-trigger:hover {
-  height: 24px;
-  min-height: 24px;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  color: #17354a;
-  background: transparent;
-  box-shadow: none;
-  font-size: 11px;
-  font-weight: 700;
-}
-.year-picker .custom-select.open .select-trigger {
-  border: 0;
-  box-shadow: none;
-}
-.year-picker:has(.custom-select.open) {
-  border-color: var(--green);
-  box-shadow: 0 0 0 2px rgba(50, 113, 46, 0.12);
-}
-.year-picker .select-menu {
-  top: calc(100% + 12px);
-  left: -52px;
-  width: 182px;
-  min-width: 182px;
-  padding: 7px;
-  border-radius: 14px;
-}
-.year-picker .select-option {
-  min-height: 38px;
-  padding: 7px 11px;
-  border-radius: 9px;
-  color: #008c51;
-  font-weight: 700;
-}
-.year-picker .select-option[aria-selected="true"] {
-  background: #e8f7f0;
-}
-
-/* ==========================================================
+} /* ==========================================================
    ABAS DE CATEGORIA
    Define as guias usadas para alternar entre grupos ou estados da lista de estudantes.
 ========================================================== */
-
 .tabs {
   display: flex;
   flex-wrap: wrap;
@@ -861,9 +409,7 @@ svg {
 }
 .tab.active span {
   color: var(--green-dark);
-}
-
-/* ==========================================================
+} /* ==========================================================
    TABELA
    Controla rolagem, cabeçalho, células, identificação, situação, ações e estado vazio da lista.
 ========================================================== */
@@ -897,9 +443,6 @@ th {
 td {
   color: #43594f;
   font-size: 11px;
-}
-tbody tr:last-child td {
-  border-bottom: 0;
 }
 tbody tr:hover {
   background: #fbfdfb;
@@ -980,7 +523,6 @@ tbody tr:hover {
   color: var(--muted);
   font-size: 10px;
 }
-
 .dialog,
 .notification-dialog {
   width: min(540px, calc(100% - 28px));
@@ -1110,7 +652,6 @@ tbody tr:hover {
   margin-top: 4px;
   color: var(--muted);
 }
-
 .notification-dialog {
   width: min(560px, calc(100% - 28px));
 }
@@ -1178,7 +719,6 @@ tbody tr:hover {
   justify-content: center;
   padding-top: 16px;
 }
-
 .toast {
   position: fixed;
   right: 22px;
@@ -1205,9 +745,6 @@ tbody tr:hover {
    Adapta a navegação, os cartões, os filtros e a tabela aos principais tamanhos de tela.
 ========================================================== */
 @media (max-width: 1200px) {
-  :root {
-    --sidebar-width: 225px;
-  }
   .summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1216,53 +753,6 @@ tbody tr:hover {
   }
 }
 @media (max-width: 850px) {
-  :root {
-    --sidebar-width: 76px;
-  }
-  .sidebar {
-    align-items: center;
-    padding-right: 10px;
-    padding-left: 10px;
-  }
-  .brand {
-    justify-content: center;
-    padding: 8px 0;
-  }
-  .brand img {
-    width: 52px;
-    object-position: left;
-  }
-  .nav-link {
-    justify-content: center;
-    padding: 0;
-  }
-  .nav-link span,
-  .nav-caption,
-  .nav-divider,
-  .support-card span:not(.support-icon),
-  .sidebar-footer {
-    display: none;
-  }
-  .support-card {
-    justify-content: center;
-    width: 46px;
-    height: 46px;
-    padding: 0;
-  }
-  .support-icon {
-    width: 21px;
-    height: 21px;
-  }
-  .topbar {
-    padding: 0 14px;
-  }
-  .topbar-right {
-    gap: 10px;
-  }
-  .connection small,
-  .profile-text {
-    display: none;
-  }
   .content {
     padding: 18px 16px 28px;
   }
@@ -1281,29 +771,12 @@ tbody tr:hover {
   }
 }
 @media (max-width: 560px) {
-  :root {
-    --sidebar-width: 64px;
-  }
   .summary-grid,
   .filters {
     grid-template-columns: 1fr;
   }
   .summary-card {
     min-height: 84px;
-  }
-  .year-picker {
-    width: 145px;
-    min-width: 0;
-  }
-  .year-picker > svg {
-    width: 30px;
-    height: 30px;
-  }
-  .connection {
-    display: none;
-  }
-  .topbar-right {
-    gap: 8px;
   }
   .hero {
     min-height: 195px;
@@ -1322,24 +795,10 @@ tbody tr:hover {
     padding: 23px 19px;
   }
 }
-
-/* ==========================================================
-   Reserva espaço para a barra e evita deslocamentos no layout
-   Mantém a rolagem vertical disponível para evitar deslocamentos quando a página passa a ter mais conteúdo.
-========================================================== */
-html {
-  overflow-y: scroll;
-}
-
 /* ==========================================================
    Ajustes responsivos de Alunos
    Complementa os breakpoints com largura mínima, rolagem da tabela e navegação horizontal por abas.
 ========================================================== */
-.students-menu-button {
-  display: none;
-}
-
-.main,
 .content,
 .student-panel,
 .filters,
@@ -1347,17 +806,14 @@ html {
 .search-field {
   min-width: 0;
 }
-
 .table-wrap {
   max-width: 100%;
   overflow-x: auto;
 }
-
 .tabs {
   display: flex;
   overflow-x: auto;
 }
-
 .tabs .tab {
   flex-shrink: 0;
 }
@@ -1366,11 +822,9 @@ html {
   .hero {
     grid-template-columns: minmax(0, 1fr);
   }
-
   .hero-copy {
     max-width: 70%;
   }
-
   .hero-quote {
     display: none;
   }
@@ -1380,247 +834,73 @@ html {
   .hero-copy {
     max-width: 100%;
   }
-
   .hero h2 {
     overflow-wrap: anywhere;
   }
-
-  .topbar {
-    gap: 10px;
-    flex-wrap: wrap;
-    padding: 10px 14px;
-  }
-
-  .connection {
-    display: none;
-  }
-
   .panel-heading {
     flex-wrap: wrap;
     gap: 12px;
   }
 }
 
-@media (max-width: 850px) {
-  .sidebar .brand {
-    display: flex !important;
-    justify-content: center;
-    width: 100%;
-    padding: 0 !important;
-  }
-
-  .sidebar .brand img {
-    width: 54px !important;
-    max-width: 100% !important;
-    height: auto !important;
-    object-fit: contain !important;
-  }
-
-  .sidebar .support-card {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    width: 44px !important;
-    min-width: 0 !important;
-    height: 44px !important;
-    min-height: 44px !important;
-    padding: 0 !important;
-    margin: 12px auto !important;
-  }
-
-  .sidebar .support-card > :not(svg) {
-    display: none !important;
-  }
-
-  .sidebar .support-card > svg {
-    display: block !important;
-    width: 22px;
-    height: 22px;
-    flex-shrink: 0;
-  }
-}
-
-.topbar {
-  justify-content: flex-start;
-  gap: 8px;
-  padding: 10px;
-}
-
-.year-picker {
-  flex: 0 1 145px;
-  width: 145px;
-  min-width: 0;
-}
-
-.topbar-right {
-  gap: 6px;
-  margin-left: auto;
-}
-
-.profile-text {
-  display: none;
-}
-
 .content {
   padding: 12px;
 }
-
 .hero {
   grid-template-columns: minmax(0, 1fr);
   min-height: 180px;
   padding: 20px;
 }
-
 .hero-photo {
   opacity: 0.2;
   pointer-events: none;
 }
-
 .hero-copy {
   z-index: 2;
 }
-
 .hero h1 {
   font-size: 28px;
 }
-
 .hero h2 {
   font-size: 16px;
   line-height: 1.4;
 }
-
 .summary-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
-
 .summary-card {
   min-width: 0;
   flex-wrap: wrap;
   padding: 12px;
 }
-
 .filters,
 .form-grid {
   grid-template-columns: minmax(0, 1fr);
 }
-
 .table-wrap table {
   min-width: 850px;
-}
-
-/* ==========================================================
+} /* ==========================================================
    DIÁLOGOS, FORMULÁRIOS E AVISOS
    Reúne janelas de detalhes e edição, formulários, confirmações, notificações e mensagens temporárias.
 ========================================================== */
-
 .dialog,
 .notification-dialog {
   width: calc(100% - 24px);
   max-width: calc(100vw - 24px);
   max-height: calc(100dvh - 24px);
 }
-
 .dialog-box,
 .notification-box {
   padding: 20px;
   overflow-wrap: anywhere;
 }
-
 .dialog-actions {
   flex-wrap: wrap;
   gap: 10px;
 }
-
 .dialog-actions .button {
   flex: 1 1 140px;
-}
-
-/* ==========================================================
-   Menu compacto igual ao de Frequência
-   Ajusta marca, ícones e suporte para a navegação lateral compacta em tablets.
-========================================================== */
-@media (min-width: 601px) and (max-width: 850px) {
-  :root {
-    --sidebar-width: 74px;
-  }
-
-  .sidebar {
-    align-items: center;
-    padding: 16px 9px;
-    overflow-x: hidden;
-  }
-
-  .sidebar .brand {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 65px;
-    padding: 0;
-    margin-bottom: 16px;
-  }
-
-  .sidebar .brand img {
-    width: 54px;
-    max-width: 100%;
-    height: auto;
-    object-fit: contain;
-  }
-
-  .sidebar .main-nav,
-  .sidebar .sidebar-bottom {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .sidebar .nav-link {
-    justify-content: center;
-    padding: 0;
-  }
-
-  .sidebar .nav-link span,
-  .sidebar .nav-caption,
-  .sidebar .nav-divider,
-  .sidebar .sidebar-footer {
-    display: none;
-  }
-
-  .sidebar .support-card {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    min-width: 0;
-    min-height: 44px;
-    padding: 0;
-    margin: 12px auto;
-  }
-
-  .sidebar .support-card > span {
-    display: none;
-  }
-
-  .sidebar .support-card > svg:first-child {
-    display: block;
-    flex: 0 0 22px;
-    width: 22px;
-    height: 22px;
-  }
-}
-
-@media (min-width: 601px) and (max-width: 850px) {
-  .sidebar .nav-divider {
-    display: block;
-    width: 48px;
-    height: 1px;
-    min-height: 1px;
-    margin: 20px auto;
-    padding: 0;
-    border: 0;
-    background: rgba(255, 255, 255, 0.15);
-  }
 }
 
 /* ==========================================================
@@ -1634,11 +914,9 @@ html {
   gap: 32px;
   padding: 28px 34px;
 }
-
 .hero-copy {
   min-width: 0;
 }
-
 .hero-quote {
   display: block;
   position: relative;
@@ -1650,7 +928,6 @@ html {
   padding: 0;
   transform: none;
 }
-
 .hero-quote blockquote {
   margin: 0;
   line-height: 1.5;
@@ -1667,12 +944,7 @@ html {
     gap: 24px;
     padding: 24px;
   }
-}
-
-/* ==========================================================
+} /* ==========================================================
    Espaço entre os itens do cabeçalho
    Controla a distância entre os controles da barra superior.
 ========================================================== */
-.topbar-right {
-  gap: 24px;
-}

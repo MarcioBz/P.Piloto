@@ -118,8 +118,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   function updateConnectionStatus() {
     const title = byId("connectionTitle"),
-      text = byId("connectionText"),
-      badge = byId("connection");
+      text = byId("connectionSubtitle"),
+      badge = byId("connectionStatus");
     if (!title || !text) return;
     const online = navigator.onLine && internetReachable === true;
     const checking = navigator.onLine && internetReachable === null;
@@ -183,14 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
   }
 
-  function escapeHTML(value = "") {
-    return String(value)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
+  const escapeHTML = window.AlunoTecUtils.escapeHTML;
 
   function normalizeText(value = "") {
     return String(value)
@@ -1256,8 +1249,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     >
                         <div class="empty-state-content">
 
-                            <svg>
-                                <use href="#icon-users"></use>
+                            <svg class="at-icon" aria-hidden="true" focusable="false">
+                                <use href="#at-icon-users"></use>
                             </svg>
 
                             <strong>
@@ -1348,8 +1341,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     >
                         <div class="empty-state-content">
 
-                            <svg>
-                                <use href="#icon-book"></use>
+                            <svg class="at-icon" aria-hidden="true" focusable="false">
+                                <use href="#at-icon-book"></use>
                             </svg>
 
                             <strong>
@@ -2137,8 +2130,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     >
                         <div class="empty-state-content">
 
-                            <svg>
-                                <use href="#icon-users"></use>
+                            <svg class="at-icon" aria-hidden="true" focusable="false">
+                                <use href="#at-icon-users"></use>
                             </svg>
 
                             <strong>
@@ -3126,25 +3119,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* ==========================================================
-       PERFIL
-       Conecta os controles de perfil e conta disponíveis no cabeçalho da área de turmas.
+       PERFIL COMPARTILHADO
+       A abertura e o fechamento do menu são controlados por app-shell.js.
     ========================================================== */
-
-  const profileButton = byId("profileButton");
-
-  const profileMenu = byId("profileMenu");
-
-  profileButton?.addEventListener("click", (event) => {
-    event.stopPropagation();
-
-    profileMenu?.classList.toggle("open");
-  });
-
-  profileMenu?.addEventListener("click", (event) => event.stopPropagation());
-
-  document.addEventListener("click", () => {
-    profileMenu?.classList.remove("open");
-  });
 
   /* ==========================================================
        ESC
@@ -3157,8 +3134,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     closeAllDropdowns();
-
-    profileMenu?.classList.remove("open");
 
     if (transferModalOverlay?.classList.contains("open")) {
       closeTransferModal();
@@ -3211,7 +3186,7 @@ document.addEventListener("DOMContentLoaded", () => {
   updateYearFilter();
   renderTables();
 
-  byId("connection")?.addEventListener("click", () => {
+  byId("connectionStatus")?.addEventListener("click", () => {
     if (!navigator.onLine) {
       showToast(
         "Sem internet. As alterações ficam guardadas neste dispositivo.",
@@ -3221,12 +3196,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (!supabaseIsConfigured() || !getSupabaseSession()) openSupabaseLogin();
     else syncWithSupabase();
-  });
-  byId("connection")?.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      byId("connection").click();
-    }
   });
   activityBell?.addEventListener("click", () => {
     if (activityDialog) {

@@ -12,10 +12,13 @@ Cada HTML, CSS e JavaScript começa com um `MAPA DE EDIÇÃO` em português. Nos
 
 ## Arquivos compartilhados
 
-- `shared/management.css`: cabeçalho, navegação e formulários de Configurações, Instituição e Relatórios.
-- `shared/profile.css` e `shared/profile.js`: apresentação e comportamento do perfil em páginas que carregam esse recurso.
-- `shared/responsive-shell.css`: navegação e elementos responsivos das páginas que o importam.
-- `shared/turmas-menu.js`: menu móvel da área de Turmas.
+- `shared/app-shell.js`: cria o menu lateral e o topbar iguais nas páginas internas, registra a biblioteca `at-icon-*` e controla menu móvel, ano letivo, perfil e conexão.
+- `shared/responsive-shell.css`: estilos únicos do menu e topbar, traço e alinhamento dos ícones compartilhados, responsividade e regras base para dimensionamento, links, campos e tabelas.
+- `shared/profile.css` e `shared/profile.js`: edição do nome e da foto de perfil, compartilhada pelas páginas internas.
+- `shared/utils.js`: funções puras reutilizadas pelas telas, como a proteção de texto dinâmico antes de inseri-lo em HTML.
+- `shared/management.css`: cartões, formulários, indicadores e tabelas comuns a Configurações, Instituição e Relatórios.
+
+As páginas internas carregam os arquivos compartilhados no próprio HTML. Para mudar o menu, o topbar ou seu comportamento, edite os arquivos `shared` em vez de recriar a estrutura numa página. A tela inicial de login continua separada porque aparece antes da navegação autenticada.
 
 ## Dados usados por mais de uma tela
 

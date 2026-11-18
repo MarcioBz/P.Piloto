@@ -23,12 +23,16 @@
 
     <link rel="stylesheet" href="dashboard.css" />
 
-    <script src="dashboard.js" defer></script>
+    <link rel="stylesheet" href="../shared/responsive-shell.css" />
     <link rel="stylesheet" href="../shared/profile.css" />
+    <link rel="stylesheet" href="../shared/banner.css" />
+    <script src="../shared/app-shell.js" defer></script>
+    <script src="../shared/banner.js" defer></script>
     <script src="../shared/profile.js" defer></script>
+    <script src="dashboard.js" defer></script>
   </head>
 
-  <body>
+  <body data-app-page="dashboard">
     <!-- =====================================================
          BIBLIOTECA DE ÍCONES
          Símbolos SVG reutilizados pelos menus, cartões e botões do painel.
@@ -164,135 +168,9 @@
 
     <div class="app">
       <!-- =====================================================
-           SIDEBAR
-           Navegação fixa para as áreas principais do AlunoTec.
-      ===================================================== -->
-
-      <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">
-          <a
-            href="dashboard.html"
-            class="sidebar-logo-link"
-            aria-label="Ir para página inicial do AlunoTec"
-          >
-            <img src="../assets/images/logo-alunotec1.png" alt="AlunoTec" />
-          </a>
-
-          <button
-            class="sidebar-close"
-            id="sidebarClose"
-            type="button"
-            aria-label="Fechar menu"
-          ></button>
-        </div>
-
-        <!-- =====================================================
-             MENU PRINCIPAL
-             Links para as páginas de frequência, alunos, turmas e gestão.
-        ===================================================== -->
-
-        <nav class="sidebar-nav">
-          <a href="dashboard.html" class="nav-link active">
-            <svg>
-              <use href="#icon-home"></use>
-            </svg>
-
-            <span>Início</span>
-          </a>
-
-          <a href="../frequencia/frequencia.html" class="nav-link">
-            <svg>
-              <use href="#icon-calendar"></use>
-            </svg>
-
-            <span>Frequência</span>
-          </a>
-
-          <a href="../aluno/aluno.html" class="nav-link">
-            <svg>
-              <use href="#icon-users"></use>
-            </svg>
-
-            <span>Alunos</span>
-          </a>
-
-          <!-- =====================================================
-               LINK DE TURMAS
-               Abre a área de cadastro e gerenciamento das turmas.
-          ===================================================== -->
-
-          <a href="../turmas/index.html" class="nav-link">
-            <svg>
-              <use href="#icon-book"></use>
-            </svg>
-
-            <span>Turmas</span>
-          </a>
-
-          <a href="../relat/relat.html" class="nav-link">
-            <svg>
-              <use href="#icon-chart"></use>
-            </svg>
-
-            <span>Relatórios</span>
-          </a>
-
-          <div class="nav-separator"></div>
-          <p class="nav-title">PROFESSORES</p>
-
-          <a href="../eletivas/eletivas.html" class="nav-link">
-            <svg aria-hidden="true">
-              <use href="#icon-capelo"></use>
-            </svg>
-            <span>Eletivas</span>
-          </a>
-
-          <div class="nav-separator"></div>
-
-          <p class="nav-title">ADMINISTRAÇÃO</p>
-
-          <a href="../inst/inst.html" class="nav-link">
-            <svg>
-              <use href="#icon-building"></use>
-            </svg>
-
-            <span>Instituição</span>
-          </a>
-
-          <a href="../config/config.html" class="nav-link">
-            <svg>
-              <use href="#icon-settings"></use>
-            </svg>
-
-            <span>Configurações</span>
-          </a>
-        </nav>
-
-        <!-- =====================================================
-             SIDEBAR INFERIOR
-             Acesso ao suporte e informações de rodapé do sistema.
-        ===================================================== -->
-
-        <div class="sidebar-bottom">
-          <button class="support-card" type="button">
-            <svg>
-              <use href="#icon-headset"></use>
-            </svg>
-
-            <span>
-              <strong> Suporte </strong>
-
-              <small> Precisa de ajuda? </small>
-            </span>
-          </button>
-
-          <footer class="sidebar-footer">
-            <strong> AlunoTec • 2026 </strong>
-
-            <span> Todos os direitos reservados. </span>
-          </footer>
-        </div>
-      </aside>
+     MENU LATERAL COMPARTILHADO
+     A estrutura única é montada por ../shared/app-shell.js.
+===================================================== -->
 
       <!-- =====================================================
            PRINCIPAL
@@ -301,181 +179,9 @@
 
       <main class="main">
         <!-- =====================================================
-             TOPBAR
-             Controles globais de ano, conexão, notificações e perfil.
-        ===================================================== -->
-
-        <header class="topbar">
-          <div class="topbar-left">
-            <button
-              class="menu-button"
-              id="menuButton"
-              type="button"
-              aria-label="Abrir menu"
-            >
-              <svg>
-                <use href="#icon-menu"></use>
-              </svg>
-            </button>
-
-            <!-- =====================================================
-                 SELETOR DE ANO LETIVO
-                 O dashboard.js preenche e controla estas opções.
-            ===================================================== -->
-
-            <div class="custom-select year-custom-select" id="yearDropdown">
-              <button
-                class="custom-select-trigger"
-                type="button"
-                aria-haspopup="listbox"
-                aria-expanded="false"
-              >
-                <span class="custom-select-icon">
-                  <svg>
-                    <use href="#icon-calendar"></use>
-                  </svg>
-                </span>
-
-                <span class="custom-select-content">
-                  <small> Ano letivo </small>
-
-                  <strong id="selectedYear"> 2026 </strong>
-                </span>
-
-                <svg class="custom-select-chevron">
-                  <use href="#icon-chevron-down"></use>
-                </svg>
-              </button>
-
-              <div class="custom-select-menu" role="listbox">
-                <button type="button" class="custom-option" data-value="2024">
-                  <span>2024</span>
-                </button>
-
-                <button type="button" class="custom-option" data-value="2025">
-                  <span>2025</span>
-                </button>
-
-                <button
-                  type="button"
-                  class="custom-option selected"
-                  data-value="2026"
-                >
-                  <span>2026</span>
-
-                  <span class="option-check"> ✓ </span>
-                </button>
-
-                <button type="button" class="custom-option" data-value="2027">
-                  <span>2027</span>
-                </button>
-              </div>
-
-              <input type="hidden" id="yearSelect" value="2026" />
-            </div>
-          </div>
-
-          <!-- =====================================================
-               TOPO DIREITO
-               Notificações de turma, conexão e acesso ao perfil.
-          ===================================================== -->
-
-          <div class="topbar-right">
-            <button
-              class="activity-bell"
-              id="activityBell"
-              type="button"
-              aria-label="Notificações das turmas"
-              aria-expanded="false"
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"
-                />
-              </svg>
-              <span class="activity-bell-count" id="activityBellCount" hidden
-                >0</span
-              >
-            </button>
-
-            <button
-              class="connection"
-              id="connectionStatus"
-              type="button"
-              aria-label="Verificar conexão com a internet"
-            >
-              <svg>
-                <use href="#icon-wifi"></use>
-              </svg>
-
-              <span>
-                <strong id="connectionTitle"> Verificando </strong>
-
-                <small id="connectionSubtitle">
-                  Verificando acesso à internet…
-                </small>
-              </span>
-            </button>
-
-            <!-- =====================================================
-                 MENU DE PERFIL
-                 Identificação do usuário, troca de conta e saída do sistema.
-            ===================================================== -->
-
-            <div class="profile">
-              <button
-                class="profile-button"
-                id="profileButton"
-                type="button"
-                aria-expanded="false"
-              >
-                <span class="avatar"> MB </span>
-
-                <span class="profile-text">
-                  <strong> Márcio Bezerra </strong>
-
-                  <small> Super Administrador </small>
-                </span>
-
-                <svg class="profile-menu-icon">
-                  <use href="#icon-menu"></use>
-                </svg>
-              </button>
-
-              <div class="profile-dropdown" id="profileDropdown">
-                <div class="dropdown-profile">
-                  <span class="avatar"> MB </span>
-
-                  <div>
-                    <strong> Márcio Bezerra </strong>
-
-                    <small> Super Administrador </small>
-                  </div>
-                </div>
-
-                <div class="dropdown-divider"></div>
-
-                <button id="switchAccount" type="button">
-                  <svg>
-                    <use href="#icon-switch"></use>
-                  </svg>
-
-                  <span> Trocar de conta </span>
-                </button>
-
-                <div class="dropdown-divider"></div>
-
-                <button class="logout" id="logoutButton" type="button">
-                  <svg>
-                    <use href="#icon-logout"></use>
-                  </svg>
-
-                  <span> Sair </span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
+     TOPBAR COMPARTILHADO
+     Os controles globais são montados por ../shared/app-shell.js.
+===================================================== -->
 
         <!-- =====================================================
              CONTEÚDO
@@ -488,7 +194,7 @@
                Mensagem de boas-vindas e contexto da tela inicial.
           ===================================================== -->
 
-          <section class="hero">
+          <section class="shared-banner">
             <div class="hero-copy">
               <h1>Olá!</h1>
 
@@ -1015,7 +721,5 @@
          OVERLAY MOBILE
          Fundo que fecha o menu lateral quando o painel está em tela estreita.
     ===================================================== -->
-
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
   </body>
 </html>

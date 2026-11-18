@@ -1,8 +1,8 @@
 /* ==========================================================
    ALUNOTEC | MAPA DE EDIÇÃO — ESTILOS ADMINISTRATIVOS COMPARTILHADOS
    Este arquivo é usado por Configurações, Instituição e Relatórios.
-   Altere aqui cabeçalho, navegação, formulários e botões comuns a essas
-   páginas; para uma mudança exclusiva, prefira o CSS da própria página.
+   Altere aqui cartões, formulários, botões e tabelas comuns a essas
+   páginas; o menu e o topbar ficam em responsive-shell.css.
    As regras responsivas ficam no fim do arquivo.
 ========================================================== */
 
@@ -22,61 +22,14 @@
    BASE
    regra global de dimensionamento e estrutura da página.
 ========================================================== */
-* {
-  box-sizing: border-box;
-}
 body {
   margin: 0;
   min-width: 320px;
 }
-a {
-  color: inherit;
-}
-/* ==========================================================
-   NAVEGAÇÃO COMPARTILHADA
-   Controla a barra superior, a marca e os links usados em Configurações, Instituição e Relatórios.
-========================================================== */
-.management-header {
-  background: #073a54;
-  color: #fff;
-}
-.management-header-inner {
-  width: min(1180px, calc(100% - 32px));
-  margin: auto;
-  min-height: 72px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-}
-.management-brand {
-  font-size: 20px;
-  font-weight: 800;
-  text-decoration: none;
-  letter-spacing: 0.2px;
-  white-space: nowrap;
-}
-.management-nav {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.management-nav a {
-  padding: 10px 12px;
-  border-radius: 8px;
-  text-decoration: none;
-  color: #d7e6ed;
-  font-size: 14px;
-}
-.management-nav a:hover,
-.management-nav a[aria-current="page"] {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
-}
 /* ==========================================================
    CONTEÚDO E FORMULÁRIOS
-   Define largura da página, títulos, cartões, grades de campos, botões e mensagens de retorno.
+   Define o conteúdo abaixo do topbar: títulos, cartões, grades de campos,
+   botões e mensagens de retorno das páginas administrativas.
 ========================================================== */
 .management-main {
   width: min(1180px, calc(100% - 32px));
@@ -255,22 +208,9 @@ a {
 }
 /* ==========================================================
    RESPONSIVIDADE
-   Reorganiza cabeçalho, navegação, indicadores e formulários em telas estreitas.
+   Ajusta a largura do conteúdo, os indicadores e os formulários em telas estreitas.
 ========================================================== */
 @media (max-width: 760px) {
-  .management-header-inner {
-    align-items: flex-start;
-    flex-direction: column;
-    padding: 15px 0;
-    gap: 9px;
-  }
-  .management-nav {
-    gap: 2px;
-  }
-  .management-nav a {
-    padding: 8px 9px;
-    font-size: 13px;
-  }
   .management-main {
     margin-top: 22px;
   }

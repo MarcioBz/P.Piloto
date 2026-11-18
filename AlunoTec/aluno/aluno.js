@@ -12,7 +12,6 @@
   const TURMAS_KEY = "alunotec_turmas_v2";
   const ACTIVITY_KEY = "alunotec_turmas_activity_v1";
   const MOVEMENTS_KEY = "alunotec_alunos_remanejamentos_v1";
-  const SESSION_KEY = "alunotec_supabase_session_v1";
   const collator = new Intl.Collator("pt-BR", {
     numeric: true,
     sensitivity: "base",
@@ -31,19 +30,7 @@
      UTILITÁRIOS
      Normaliza valores, compara texto e protege dados dinâmicos antes de inseri-los no HTML.
   ========================================================== */
-  function escapeHtml(value) {
-    return String(value ?? "").replace(
-      /[&<>"']/g,
-      (char) =>
-        ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#39;",
-        })[char],
-    );
-  }
+  const escapeHtml = window.AlunoTecUtils.escapeHTML;
 
   function normalizeName(value) {
     return String(value || "")
@@ -340,7 +327,9 @@
   }
 
   function enhanceAllSelects(root = document) {
-    $$("select", root).forEach(enhanceSelect);
+    $("select", root)
+      .filter((select) => select.id !== "yearFilter")
+      .forEach(enhanceSelect);
   }
 
   /* ==========================================================
@@ -388,6 +377,11 @@
       $("#classFilter").value = oldClass;
     if (years.includes(oldListYear)) $("#listYearFilter").value = oldListYear;
     if (years.includes(oldYear)) $("#yearFilter").value = oldYear;
+
+    window.AlunoTecShell?.setYears(
+      [...$("#yearFilter").options].map((option) => option.value),
+      window.AlunoTecShell?.getYear(),
+    );
 
     enhanceAllSelects();
   }
@@ -690,18 +684,18 @@
     const count = readActivities().filter(
       (item) => localDateKey(item.date || item.createdAt) === todayKey(),
     ).length;
-    $("#bellCount").textContent = count;
-    $("#bellCount").hidden = count === 0;
+    $("#activityBellCount").textContent = count;
+    $("#activityBellCount").hidden = count === 0;
   }
 
   function updateConnectionStatus() {
-    const button = $("#connectionButton");
+    const button = $("#connectionStatus");
     const checking = navigator.onLine && internetReachable === null;
     const online = navigator.onLine && internetReachable === true;
 
     button.classList.toggle("offline", !online && !checking);
     button.classList.toggle("checking", checking);
-    $("#connectionText").textContent = online
+    $("#connectionTitle").textContent = online
       ? "Online"
       : checking
         ? "Verificando"
@@ -774,7 +768,7 @@
     render();
   });
 
-  $("#bellButton").addEventListener("click", showNotifications);
+  $("#activityBell").addEventListener("click", showNotifications);
   $$(".notification-dialog [data-close-notifications]").forEach((button) =>
     button.addEventListener("click", () => $("#notificationDialog").close()),
   );
@@ -792,34 +786,13 @@
     showToast("Notificações limpas.");
   });
 
-  $("#profileButton").addEventListener("click", () => {
-    const menu = $("#accountMenu");
-    const isOpening = menu.hidden;
-    menu.hidden = !isOpening;
-    $("#profileButton").setAttribute("aria-expanded", String(isOpening));
-  });
-
-  $("#switchAccount").addEventListener("click", () => {
-    window.location.href = "../index.html";
-  });
-
-  $("#logoutButton").addEventListener("click", () => {
-    sessionStorage.removeItem("alunotecSession");
-    localStorage.removeItem(SESSION_KEY);
-    window.location.href = "../index.html";
-  });
-
-  $("#connectionButton").addEventListener("click", checkInternetConnection);
+  $("#connectionStatus").addEventListener("click", checkInternetConnection);
 
   /* ==========================================================
      EVENTOS DA PÁGINA
      Conecta pesquisa, filtros, ações por estudante e fechamento dos diálogos.
   ========================================================== */
   document.addEventListener("click", (event) => {
-    if (!event.target.closest(".account-wrap")) {
-      $("#accountMenu").hidden = true;
-      $("#profileButton").setAttribute("aria-expanded", "false");
-    }
     if (!event.target.closest(".custom-select")) closeSelectMenus();
   });
 
@@ -859,44 +832,3 @@
   render();
   updateBell();
 })();
-
-document.addEventListener("DOMContentLoaded", () => {
-  const button = document.getElementById("studentsMenuButton");
-  const sidebar = document.getElementById("studentsSidebar");
-
-  if (!button || !sidebar) return;
-
-  function setMenu(open) {
-    document.body.classList.toggle("students-menu-open", open);
-    button.setAttribute("aria-expanded", String(open));
-    button.setAttribute("aria-label", open ? "Fechar menu" : "Abrir menu");
-  }
-
-  button.addEventListener("click", () => {
-    setMenu(!document.body.classList.contains("students-menu-open"));
-  });
-
-  document.addEventListener("click", (event) => {
-    if (!sidebar.contains(event.target) && !button.contains(event.target)) {
-      setMenu(false);
-    }
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (
-      event.key === "Escape" &&
-      document.body.classList.contains("students-menu-open")
-    ) {
-      setMenu(false);
-      button.focus();
-    }
-  });
-
-  sidebar.addEventListener("click", (event) => {
-    if (event.target.closest("a")) setMenu(false);
-  });
-
-  window.addEventListener("resize", () => {
-    if (window.innerWidth > 600) setMenu(false);
-  });
-});

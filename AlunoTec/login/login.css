@@ -103,7 +103,7 @@ input:focus-visible {
   grid-template-columns: minmax(0, 1.65fr) minmax(390px, 1fr);
   background:
     linear-gradient(90deg, transparent 48%, #004c32 100%),
-    url("assets/fundo-escolar.jpg") center / cover no-repeat,
+    url("../assets/images/dashboard-sala.png") center / cover no-repeat,
     #dceee4;
 }
 

@@ -198,6 +198,13 @@
      Atualiza a consulta quando os filtros mudam e conecta o botão de exportação.
   ========================================================== */
   yearSelect.addEventListener("change", calculate);
+  document.addEventListener("alunotec:yearchange", (event) => {
+    const year = String(event.detail?.year || "");
+    if ([...yearSelect.options].some((option) => option.value === year)) {
+      yearSelect.value = year;
+      calculate();
+    }
+  });
   monthSelect.addEventListener("change", calculate);
   document.getElementById("exportReport").addEventListener("click", exportCsv);
   calculate();

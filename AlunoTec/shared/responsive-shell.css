@@ -1,522 +1,1091 @@
 /* ==========================================================
-   ALUNOTEC | MAPA DE EDIÇÃO — CASCA RESPONSIVA COMPARTILHADA
-   Padroniza variáveis, menu lateral, barra superior, banner e ajustes
-   para telas menores. Como é compartilhado, mudanças afetam todas as
-   páginas que importam este arquivo.
+   ALUNOTEC | ESTRUTURA COMPARTILHADA
+   Estilos únicos do menu lateral, barra superior, seletores e
+   ajustes responsivos usados pelas páginas internas do sistema.
 ========================================================== */
 
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
 /* ==========================================================
-   AlunoTec — identidade compartilhada de navegação, topbar e banner
-   Reúne cores e dimensões comuns antes das regras de cada componente.
+   VARIÁVEIS DA NAVEGAÇÃO
+   Mantém a mesma largura, altura e identidade visual nas páginas internas.
 ========================================================== */
 :root {
-  --at-sidebar: #073a54;
-  --at-sidebar-deep: #07364f;
-  --at-green-1: #204f28;
-  --at-green-2: #347a36;
-  --at-green-3: #4b8746;
-  --at-topbar-height: 80px;
-  --at-sidebar-width: 250px;
-}
-
-html,
-body {
-  max-width: 100%;
-  overflow-x: hidden;
-}
-body {
-  min-width: 320px;
+  --at-sidebar-width: 245px;
+  --at-topbar-height: 78px;
+  --at-sidebar: #183f1c;
+  --at-sidebar-mid: #214f26;
+  --at-green: #32712e;
+  --at-green-dark: #255b22;
+  --at-green-pale: #e9f3e7;
+  --at-ink: #27382c;
+  --at-muted: #718178;
+  --at-line: #e4e9e3;
 }
 
 /* ==========================================================
-   Sidebar — mesma largura, cor, tipografia e estados em todas as áreas
-   Padroniza marca, links, estados selecionados e suporte da navegação lateral.
+   REGRAS BASE COMPARTILHADAS
+   Reúne dimensionamento, links, ícones, controles e tabelas usados nas páginas internas.
 ========================================================== */
-.sidebar {
-  width: var(--at-sidebar-width) !important;
-  background: linear-gradient(
-    180deg,
-    var(--at-sidebar) 0%,
-    #07425e 48%,
-    var(--at-sidebar-deep) 100%
-  ) !important;
-  color: #fff;
-  box-shadow: 8px 0 28px rgba(8, 47, 73, 0.08);
-  z-index: 1100;
+* {
+  box-sizing: border-box;
 }
-.sidebar .brand,
-.sidebar .sidebar-brand,
-.sidebar .sidebar-logo {
-  min-height: 76px;
-  height: 76px;
-  display: flex;
-  align-items: center;
-  padding: 8px 18px 14px;
+
+.at-icon-library {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
-.sidebar .brand img,
-.sidebar .sidebar-logo img,
-.sidebar .sidebar-logo-image,
-.sidebar .sidebar-logo-link img {
+
+.at-icon {
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+html {
+  overflow-y: scroll;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  cursor: pointer;
+}
+
+svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Mantém as bibliotecas SVG disponíveis sem ocupar espaço na interface. */
+.svg-library,
+.svg-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.custom-select {
+  position: relative;
   width: 100%;
-  max-width: 175px;
-  max-height: 52px;
-  object-fit: contain;
 }
-.sidebar .nav-menu,
-.sidebar .main-nav,
-.sidebar .sidebar-nav {
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* ==========================================================
+   QUADRO DO APLICATIVO
+   Reserva espaço para a navegação fixa e mantém o conteúdo rolável.
+========================================================== */
+.app {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background: linear-gradient(180deg, #f7f9f6 0%, #f2f6f1 100%);
+  color: var(--at-ink);
+  font-family: Inter, system-ui, sans-serif;
+}
+
+/* ==========================================================
+   MENU LATERAL
+   Aplica a navegação e os estados de item ativo em todas as páginas.
+========================================================== */
+.app > .sidebar {
+  position: fixed;
+  z-index: 1100;
+  inset: 0 auto 0 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  margin: 16px 0 0;
-  padding: 0 4px;
+  width: var(--at-sidebar-width);
+  height: 100vh;
+  padding: 22px 15px 18px;
+  overflow: auto;
+  background: linear-gradient(180deg, #183f1c 0%, #214f26 52%, #173c1c 100%);
+  box-shadow: 6px 0 25px rgba(18, 53, 22, 0.08);
+  color: #fff;
+  transition: transform 0.25s ease;
 }
-.sidebar .nav-item,
-.sidebar .nav-link {
+
+.sidebar-brand {
   position: relative;
-  min-height: 45px;
-  height: 45px;
   display: flex;
   align-items: center;
-  gap: 13px;
+  justify-content: center;
+  min-height: 70px;
+  margin: 0 0 22px;
+  padding: 8px 10px;
+}
+
+.sidebar-logo-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 180px;
+  text-decoration: none;
+}
+
+.sidebar-logo-link img {
+  display: block;
+  width: auto;
+  max-width: 180px;
+  max-height: 55px;
+  object-fit: contain;
+}
+
+.sidebar-close {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+}
+
+.sidebar-close::before {
+  content: "×";
+  font-size: 25px;
+  line-height: 1;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar-nav .nav-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 45px;
+  margin: 0;
   padding: 0 14px;
+  gap: 13px;
   border-radius: 9px;
-  color: #c8d7df;
-  font-size: 13px;
-  font-weight: 600;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  font-weight: 500;
   text-decoration: none;
   transition:
     background 0.18s ease,
     color 0.18s ease;
 }
-.sidebar .nav-item svg,
-.sidebar .nav-link svg {
+
+.sidebar-nav .nav-link svg {
   width: 19px;
   height: 19px;
   flex: 0 0 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
 }
-.sidebar .nav-item:hover,
-.sidebar .nav-link:hover {
+
+.sidebar-nav .nav-link:hover {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
 }
-.sidebar .nav-item.active,
-.sidebar .nav-link.active {
+
+.sidebar-nav .nav-link.active {
+  background: rgba(255, 255, 255, 0.13);
   color: #fff;
-  background: rgba(255, 255, 255, 0.16);
   font-weight: 700;
 }
-.sidebar .nav-item.active::before,
-.sidebar .nav-link.active::before {
-  content: "";
+
+.sidebar-nav .nav-link.active::before {
   position: absolute;
-  left: -14px;
-  top: 8px;
+  top: 9px;
+  bottom: 9px;
+  left: -15px;
   width: 4px;
-  height: 29px;
   border-radius: 0 5px 5px 0;
-  background: #8dc794;
+  background: #8fc58c;
+  content: "";
 }
-.sidebar .nav-divider,
-.sidebar .nav-separator {
+
+.sidebar-nav .nav-separator {
   height: 1px;
-  background: rgba(255, 255, 255, 0.17);
-  margin: 13px 8px 8px;
+  margin: 16px 8px 14px;
+  background: rgba(255, 255, 255, 0.16);
 }
-.sidebar .nav-caption,
-.sidebar .nav-title,
-.sidebar .nav-section-title {
-  margin: 0;
-  padding: 0 13px 7px;
-  color: #9bb4c1;
-  font-size: 10px;
+
+.sidebar-nav .nav-title {
+  margin: 0 0 5px;
+  padding: 0 13px;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 9px;
   font-weight: 800;
-  letter-spacing: 0.75px;
+  letter-spacing: 0.9px;
 }
-.sidebar .sidebar-bottom {
+
+.sidebar-bottom {
   margin-top: auto;
-  padding: 12px 4px 0;
+  padding: 22px 4px 0;
 }
-.sidebar .support-card {
-  min-height: 58px;
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 12px;
+
+.support-card {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 0;
+  margin: 0 0 18px;
+  padding: 12px;
+  gap: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.07);
   color: #fff;
+  text-align: left;
 }
-.sidebar .support-card small {
-  color: #c4d3dc;
+
+.support-card > svg {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
 }
-.sidebar .sidebar-footer {
-  color: #9bb4c1;
+
+.support-card span {
+  display: grid;
+  gap: 3px;
+}
+
+.support-card strong {
+  margin: 0;
+  font-size: 12px;
+}
+
+.support-card small {
+  color: #d0dfd0;
   font-size: 10px;
-  line-height: 1.7;
+}
+
+.sidebar-footer {
+  display: grid;
+  padding: 0 7px;
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.sidebar-footer strong,
+.sidebar-footer span {
+  color: inherit;
+}
+
+/* Separa os créditos do aviso legal e mantém os responsáveis legíveis no menu. */
+.sidebar-footer-credits {
+  display: grid;
+  gap: 2px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.sidebar-footer-credits strong {
+  color: rgba(255, 255, 255, 0.84);
+  font-weight: 700;
 }
 
 /* ==========================================================
-   Topbar — altura, fundo, borda e alinhamento consistentes
-   Uniformiza barra superior, grupos de ações e botões de menu nas páginas compartilhadas.
+   ÁREA PRINCIPAL E TOPBAR
+   Centraliza largura, alinhamento, botões e dados globais do cabeçalho.
 ========================================================== */
-.main > .topbar,
-.main-area > .topbar {
-  min-height: var(--at-topbar-height);
-  height: var(--at-topbar-height);
-  position: sticky;
+.app > .main {
+  box-sizing: border-box;
+  min-width: 0;
+  width: calc(100% - var(--at-sidebar-width));
+  min-height: 100vh;
+  margin-left: var(--at-sidebar-width);
+  padding-top: var(--at-topbar-height);
+}
+
+.main > .topbar {
+  position: fixed;
+  z-index: 950;
   top: 0;
-  z-index: 100;
+  right: 0;
+  left: var(--at-sidebar-width);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 0 30px;
-  background: #fff;
-  border-bottom: 1px solid #e7ecef;
-  box-shadow: 0 3px 14px rgba(8, 47, 73, 0.025);
+  min-height: var(--at-topbar-height);
+  padding: 12px clamp(16px, 2.4vw, 32px);
+  gap: 20px;
+  border-bottom: 1px solid #e7eeea;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 5px 22px rgba(8, 47, 73, 0.045);
+  backdrop-filter: blur(18px);
 }
-.main > .topbar .topbar-left,
-.main > .topbar .topbar-right,
-.main-area > .topbar .topbar-left,
-.main-area > .topbar .topbar-right,
-.main-area > .topbar .topbar-actions {
+
+.topbar-left,
+.topbar-right {
   display: flex;
   align-items: center;
-  gap: 16px;
   min-width: 0;
 }
-.main > .topbar .topbar-right,
-.main-area > .topbar .topbar-right {
+
+.topbar-left {
+  gap: 16px;
+}
+
+.topbar-right {
+  justify-content: flex-end;
   margin-left: auto;
+  gap: 12px;
 }
-.main > .topbar button,
-.main-area > .topbar button {
-  flex-shrink: 0;
-}
-.main > .topbar .menu-button,
-.main-area > .topbar .mobile-menu-button,
-.main > .topbar .students-menu-button,
-.main-area > .topbar .turmas-menu-button {
+
+.menu-button {
+  display: none;
+  align-items: center;
+  justify-content: center;
   width: 42px;
   height: 42px;
-  display: inline-grid;
-  place-items: center;
-  border: 1px solid #e1e9ed;
-  border-radius: 11px;
-  background: #fff;
-  color: #174b63;
+  flex: 0 0 42px;
+  border: 1px solid #e5ece7;
+  border-radius: 13px;
+  background: #f7faf8;
+  color: #16834c;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
 }
-.main > .topbar .menu-button svg,
-.main-area > .topbar .mobile-menu-button svg,
-.main > .topbar .students-menu-button svg,
-.main-area > .topbar .turmas-menu-button svg {
+
+.menu-button:hover {
+  border-color: #b9ddc7;
+  background: #edf7f0;
+  transform: translateY(-1px);
+}
+
+.menu-button svg {
   width: 20px;
   height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 2;
 }
-.main-area > .topbar .mobile-menu-button,
-.main > .topbar .students-menu-button,
-.main-area > .topbar .turmas-menu-button {
+
+/* ==========================================================
+   SELETOR DO ANO LETIVO
+   Fornece o mesmo botão e lista de anos em todas as áreas internas.
+========================================================== */
+.year-custom-select {
+  position: relative;
+  z-index: 1600;
+  width: 168px;
+  min-width: 168px;
+  flex: 0 0 168px;
+}
+
+.year-custom-select .custom-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 48px;
+  padding: 7px 12px;
+  gap: 10px;
+  border: 1px solid #e1eae3;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(20, 65, 40, 0.035);
+  color: var(--at-ink);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.year-custom-select .custom-select-trigger:hover,
+.year-custom-select.open .custom-select-trigger {
+  border-color: #83c49a;
+  background: #fbfefc;
+  box-shadow: 0 0 0 3px rgba(0, 166, 99, 0.08);
+}
+
+.custom-select-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  border-radius: 10px;
+  background: #eaf7ef;
+  color: #16834c;
+}
+
+.custom-select-icon svg,
+.custom-select-chevron {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.custom-select-icon svg {
+  color: inherit;
+}
+
+/* ==========================================================
+   ACIONADOR DO ANO LETIVO COMPARTILHADO
+   Isola cor e abertura do menu dos estilos de seletores locais das páginas.
+========================================================== */
+.year-custom-select .custom-select-chevron {
+  color: #16834c;
+}
+
+.year-custom-select .custom-select-menu {
+  z-index: 1700;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease,
+    visibility 0.18s ease;
+}
+
+.custom-select-content {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+
+.custom-select-content small {
+  color: #728077;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.custom-select-content strong {
+  color: #173d2a;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.custom-select-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  display: none;
+  width: 100%;
+  max-height: min(280px, 60vh);
+  padding: 6px;
+  overflow: auto;
+  border: 1px solid #e1eae3;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 14px 35px rgba(20, 45, 28, 0.16);
+}
+
+.year-custom-select.open .custom-select-menu {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.year-custom-select .custom-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 38px;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #263b30;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.year-custom-select .custom-option:hover,
+.year-custom-select .custom-option.selected {
+  background: #edf7ef;
+  color: #205c2b;
+}
+
+.year-custom-select .option-check {
+  color: #32712e;
+}
+
+.shell-year-compat {
+  display: none !important;
+}
+
+/* ==========================================================
+   NOTIFICAÇÕES, CONEXÃO E PERFIL
+   Uniformiza os controles e mantém a conexão com largura estável entre as páginas.
+========================================================== */
+.activity-bell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  padding: 0;
+  border: 1px solid #e5ece7;
+  border-radius: 13px;
+  background: #fff;
+  color: #16834c;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(20, 65, 40, 0.035);
+}
+
+.activity-bell:hover {
+  border-color: #b9ddc7;
+  background: #f1faf4;
+}
+
+.activity-bell svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.activity-bell-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  display: grid;
+  min-width: 18px;
+  height: 18px;
+  place-items: center;
+  padding: 0 4px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #e84e50;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.activity-bell-count[hidden] {
   display: none;
 }
 
-/* ==========================================================
-   Conteúdo sempre ocupa o espaço disponível sem estourar a viewport
-   Evita que o conteúdo ultrapasse a área útil e mantém mídia flexível.
-========================================================== */
-.main-area,
-.main {
-  min-width: 0;
-  width: calc(100% - var(--at-sidebar-width));
-  margin-left: var(--at-sidebar-width);
-}
-.page-content,
-.content {
-  width: 100%;
-  max-width: 1600px;
-  min-width: 0;
-  margin: 0 auto;
-  padding-left: clamp(14px, 2.2vw, 34px);
-  padding-right: clamp(14px, 2.2vw, 34px);
-}
-img,
-svg,
-video,
-canvas {
-  max-width: 100%;
+.connection {
+  display: flex;
+  align-items: center;
+  width: 274px;
+  min-width: 274px;
+  flex: 0 0 274px;
+  min-height: 48px;
+  padding: 7px 13px;
+  gap: 10px;
+  border: 1px solid #dcefe2;
+  border-radius: 13px;
+  background: #f0faf3;
+  color: #28603a;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
 }
 
-/* ==========================================================
-   Banner padrão: mesmo verde, recorte e fotografia usados em Frequência
-   Alinha fundo, imagem, texto e citação dos banners das diferentes páginas.
-========================================================== */
-.hero {
-  position: relative;
-  isolation: isolate;
+.connection > svg {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.connection > span {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.connection strong {
   overflow: hidden;
-  min-height: 210px;
-  border-radius: 18px;
-  color: #fff !important;
-  background: linear-gradient(
-    110deg,
-    var(--at-green-1) 0%,
-    var(--at-green-2) 58%,
-    var(--at-green-3) 100%
-  ) !important;
-  box-shadow: 0 10px 25px rgba(37, 91, 34, 0.12);
+  font-size: 12px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.hero-photo,
-.hero-image {
-  position: absolute !important;
-  z-index: -1 !important;
-  inset: 0 0 0 auto !important;
-  width: 48% !important;
-  height: 100% !important;
-  background-image:
-    linear-gradient(
-      90deg,
-      #347a36 0%,
-      rgba(52, 122, 54, 0.67) 22%,
-      transparent 75%
-    ),
-    url("../assets/images/dashboard-sala.png") !important;
-  background-position: center !important;
-  background-size: cover !important;
-  background-repeat: no-repeat !important;
-  opacity: 0.96;
+
+.connection small {
+  overflow: hidden;
+  color: #668171;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.hero-image::before {
-  display: none !important;
+
+.connection.offline {
+  border-color: #f1d2d2;
+  background: #fff5f4;
+  color: #ad3c3c;
 }
-.hero-image-file {
+
+.profile {
+  position: relative;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.profile-button {
+  display: flex;
+  align-items: center;
+  min-height: 50px;
+  padding: 5px 10px 5px 6px;
+  gap: 11px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.profile-button:hover,
+.profile-button[aria-expanded="true"] {
+  border-color: #e4eee7;
+  background: #f7faf8;
+}
+
+.profile-button .avatar,
+.profile-dropdown .avatar,
+.profile-button .profile-avatar {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #32712e;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.profile-button .avatar img,
+.profile-button .profile-avatar img,
+.profile-dropdown .avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.01;
-}
-.hero-copy,
-.hero-content {
-  position: relative;
-  z-index: 2;
-  max-width: 640px;
-}
-.hero h1,
-.hero-content h2 {
-  color: #fff;
-}
-.hero h2,
-.hero-content h2 {
-  line-height: 1.25;
-}
-.hero blockquote,
-.hero-quote {
-  position: relative;
-  z-index: 2;
-  color: #fff;
 }
 
-/* ==========================================================
-   Tabelas, cartões e grades: permitir adaptação em telas menores
-   Limita a largura de tabelas e campos e evita que cartões comprimam o layout.
-========================================================== */
-.table-responsive,
-.table-wrap,
-.table-container {
-  max-width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-.stats-grid,
-.summary-grid,
-.dashboard-grid,
-.cards-grid {
+.profile-text {
+  display: grid;
   min-width: 0;
+  gap: 3px;
 }
-input,
-select,
-textarea {
-  max-width: 100%;
+
+.profile-text strong {
+  max-width: 180px;
+  overflow: hidden;
+  color: #173d2a;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-text small {
+  color: #728077;
+  font-size: 10px;
+}
+
+.profile-menu-icon {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+  fill: none;
+  color: #16834c;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  transition: color 0.2s ease;
+}
+
+.profile-dropdown {
+  position: absolute;
+  z-index: 1700;
+  top: calc(100% + 10px);
+  right: 0;
+  display: none;
+  box-sizing: border-box;
+  width: 270px;
+  max-width: calc(100vw - 24px);
+  padding: 13px 13px 12px;
+  border: 1px solid #e1e9e2;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 15px 40px rgba(22, 52, 31, 0.17);
+}
+
+.profile.open .profile-dropdown {
+  display: block;
+}
+
+.dropdown-profile {
+  display: flex;
+  align-items: center;
+  padding: 2px 3px 12px;
+  gap: 12px;
+}
+
+.dropdown-profile > div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.dropdown-profile strong {
+  overflow: hidden;
+  color: #1c3425;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dropdown-profile small {
+  color: #728077;
+  font-size: 11px;
+}
+
+.dropdown-divider {
+  height: 1px;
+  margin: 4px 0;
+  background: #edf1ed;
+}
+
+.profile-dropdown > button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 10px;
+  gap: 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #34483a;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+}
+
+.profile-dropdown > button:hover {
+  background: #edf6ef;
+}
+
+.profile-dropdown > button.logout {
+  color: #b33a3a;
+}
+
+.profile-dropdown > button svg {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
 }
 
 /* ==========================================================
-   TABLET: MENU E BANNER
-   Ajusta medidas intermediárias sem ocultar a navegação lateral.
+   FUNDO DO MENU MÓVEL
+   Fecha o painel lateral quando o usuário toca fora da navegação.
 ========================================================== */
+.sidebar-overlay {
+  position: fixed;
+  z-index: 1050;
+  inset: 0;
+  display: none;
+  background: rgba(11, 28, 16, 0.42);
+  backdrop-filter: blur(2px);
+}
 
+.sidebar-overlay.active {
+  display: block;
+}
+
+/* ==========================================================
+   AJUSTES PARA TELAS MÉDIAS
+   Reduz espaços do cabeçalho e prepara o menu para abrir sobre a página.
+========================================================== */
 @media (max-width: 1000px) {
-  :root {
-    --at-sidebar-width: 245px;
+  .app > .sidebar {
+    z-index: 1200;
+    width: min(285px, 84vw);
+    transform: translateX(-105%);
   }
-  .main > .topbar,
-  .main-area > .topbar {
-    padding: 0 20px;
-  }
-  .hero {
-    grid-template-columns: minmax(0, 1fr) !important;
-  }
-  .hero-photo,
-  .hero-image {
-    width: 48% !important;
-  }
-}
 
-/* ==========================================================
-   CELULAR: NAVEGAÇÃO RECOLHÍVEL
-   Transforma a barra lateral em painel deslizante e reduz o banner e os controles.
-========================================================== */
+  .app > .sidebar.open {
+    transform: translateX(0);
+  }
 
-@media (max-width: 850px) {
-  .main,
-  .main-area {
+  .sidebar-brand {
+    justify-content: space-between;
+  }
+
+  .sidebar-close,
+  .menu-button {
+    display: inline-flex;
+  }
+
+  .app > .main {
     width: 100%;
     margin-left: 0;
   }
-  .main-area > .topbar .mobile-menu-button,
-  .main > .topbar .students-menu-button,
-  .main-area > .topbar .turmas-menu-button {
-    display: inline-grid;
+
+  .main > .topbar {
+    left: 0;
   }
-  .sidebar {
-    width: 260px !important;
-    max-width: 85vw;
-    padding: 20px 15px 17px;
-    transform: translateX(-105%);
-    transition: transform 0.25s ease;
+}
+
+@media (max-width: 900px) {
+  :root {
+    --at-topbar-height: 70px;
   }
-  /* ==========================================================
-   Drawer móvel mantém a navegação completa, como no Dashboard.
-   Mostra textos e divisores no menu aberto em celular, preservando os atalhos da navegação.
-========================================================== */
-  .sidebar .nav-item,
-  .sidebar .nav-link {
-    justify-content: flex-start;
-    padding: 0 14px;
-  }
-  .sidebar .nav-item span,
-  .sidebar .nav-link span,
-  .sidebar .nav-caption,
-  .sidebar .nav-title,
-  .sidebar .support-card span,
-  .sidebar .nav-divider,
-  .sidebar .nav-separator {
-    display: block;
-  }
-  .sidebar .nav-item span,
-  .sidebar .nav-link span {
-    white-space: nowrap;
-  }
-  .sidebar.open,
-  body.frequency-menu-open .sidebar,
-  body.students-menu-open .sidebar,
-  body.alunotec-menu-open .sidebar {
-    transform: translateX(0);
-  }
-  body.frequency-menu-open::after,
-  body.students-menu-open::after,
-  body.alunotec-menu-open::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 1090;
-    background: rgba(3, 27, 40, 0.34);
-  }
-  .main > .topbar,
-  .main-area > .topbar {
-    height: 70px;
+
+  .main > .topbar {
     min-height: 70px;
-    padding: 0 16px;
+    padding: 10px 16px;
+    gap: 12px;
   }
-  .hero {
-    min-height: 190px;
+
+  .topbar-left {
+    gap: 10px;
   }
-  .hero-photo,
-  .hero-image {
-    width: 55% !important;
-    opacity: 0.55;
+
+  .topbar-right {
+    gap: 8px;
+  }
+
+  .connection {
+    width: min(274px, 34vw);
+    min-width: 0;
+    flex: 1 1 220px;
+    padding: 7px 9px;
+  }
+
+  .profile-text strong {
+    max-width: 130px;
   }
 }
 
 /* ==========================================================
-   CELULAR: CONTEÚDO COMPACTO
-   Reduz espaços, remove informações secundárias do topo e reorganiza cartões e banner.
+   TOPBAR EM TABLETS E JANELAS ESTREITAS
+   Preserva espaço para ano, notificações e perfil antes do layout de celular.
 ========================================================== */
+@media (max-width: 760px) and (min-width: 641px) {
+  .connection {
+    display: none;
+  }
 
-@media (max-width: 600px) {
-  .sidebar {
-    width: min(260px, 85vw) !important;
-  }
-  .main > .topbar,
-  .main-area > .topbar {
-    gap: 8px;
-    padding: 0 12px;
-  }
-  .main > .topbar .topbar-right,
-  .main-area > .topbar .topbar-right,
-  .main-area > .topbar .topbar-actions {
-    gap: 8px;
-  }
-  .main > .topbar .connection span,
-  .main-area > .topbar .connection span,
-  .main-area > .topbar .connection-status span {
-    display: none;
-  }
-  .hero {
-    min-height: 205px;
-    padding: 22px 18px !important;
-    border-radius: 14px;
-  }
-  .hero h1 {
-    font-size: clamp(23px, 7vw, 30px);
-  }
-  .hero h2,
-  .hero-content h2 {
-    font-size: 14px;
-  }
-  .hero-copy > p,
-  .hero-content p {
-    max-width: 100%;
-    font-size: 11px;
-  }
-  .hero blockquote,
-  .hero-quote {
-    display: none;
-  }
-  .hero-photo,
-  .hero-image {
-    width: 72% !important;
-    opacity: 0.32;
-  }
-  .page-content,
-  .content {
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-  .stats-grid,
-  .summary-grid,
-  .dashboard-grid,
-  .cards-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  .main > .topbar {
+    padding-right: 14px;
+    padding-left: 14px;
   }
 }
 
 /* ==========================================================
-   CELULAR ESTREITO: AÇÕES E CARTÕES
-   Reduz botões e coloca os cartões em uma coluna em aparelhos estreitos.
+   AJUSTES PARA CELULARES
+   Compacta o cabeçalho sem esconder os controles principais.
 ========================================================== */
-
-@media (max-width: 380px) {
-  .main > .topbar,
-  .main-area > .topbar {
-    padding: 0 8px;
+@media (max-width: 640px) {
+  :root {
+    --at-topbar-height: 64px;
   }
-  .main > .topbar .menu-button,
-  .main-area > .topbar .mobile-menu-button,
-  .main > .topbar .students-menu-button,
-  .main-area > .topbar .turmas-menu-button {
+
+  .main > .topbar {
+    min-height: var(--at-topbar-height);
+    padding: 8px 12px;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 4px 18px rgba(22, 52, 31, 0.07);
+  }
+
+  .topbar-left {
+    gap: 8px;
+  }
+
+  .topbar-right {
+    gap: 7px;
+  }
+
+  .menu-button,
+  .activity-bell {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+    border-radius: 12px;
+  }
+
+  .year-custom-select {
+    width: 116px;
+    min-width: 116px;
+    flex-basis: 116px;
+  }
+
+  .year-custom-select .custom-select-trigger {
+    min-height: 44px;
+    padding: 5px 8px;
+    gap: 6px;
+  }
+
+  .custom-select-icon {
+    width: 30px;
+    height: 30px;
+    flex-basis: 30px;
+  }
+
+  .custom-select-content small {
+    font-size: 9px;
+  }
+
+  .custom-select-content strong {
+    font-size: 13px;
+  }
+
+  .connection {
+    display: none;
+  }
+
+  .profile-button {
+    min-height: 40px;
+    padding: 3px 6px 3px 3px;
+    gap: 5px;
+    border: 1px solid #e5ece7;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(20, 65, 40, 0.035);
+  }
+
+  .profile-button .avatar,
+  .profile-button .profile-avatar {
     width: 36px;
     height: 36px;
+    flex-basis: 36px;
   }
-  .stats-grid,
-  .summary-grid,
-  .dashboard-grid,
-  .cards-grid {
-    grid-template-columns: minmax(0, 1fr) !important;
+
+  .profile-text {
+    display: none !important;
+  }
+
+  .profile-menu-icon {
+    display: block !important;
+    width: 16px;
+    height: 16px;
+    flex-basis: 16px;
+    color: #16834c;
+  }
+}
+
+@media (max-width: 380px) {
+  .main > .topbar {
+    gap: 6px;
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .topbar-left {
+    gap: 6px;
+  }
+
+  .year-custom-select {
+    width: 104px;
+    min-width: 104px;
+    flex-basis: 104px;
+  }
+
+  .year-custom-select .custom-select-trigger {
+    padding-right: 6px;
+    padding-left: 6px;
+    gap: 4px;
+  }
+
+  .year-custom-select .custom-select-icon {
+    width: 26px;
+    height: 26px;
+    flex-basis: 26px;
+  }
+
+  .menu-button,
+  .activity-bell {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+  }
+
+  .custom-select-chevron {
+    width: 16px;
+    height: 16px;
+  }
+
+  .topbar-right {
+    gap: 5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app > .sidebar,
+  .menu-button {
+    transition-duration: 0.01ms;
   }
 }

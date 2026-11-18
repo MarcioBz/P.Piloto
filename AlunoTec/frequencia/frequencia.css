@@ -5,12 +5,10 @@
    O arquivo é extenso e possui complementos no fim: pesquise primeiro
    a classe no HTML antes de criar uma regra nova para o mesmo elemento.
 ========================================================== */
-
 /* ==========================================================
    TOKENS E BASE GLOBAL
    Define cores, tipografia, dimensionamento global, controles, foco e recursos de ícones da chamada.
 ========================================================== */
-
 :root {
   --g950: #12391d;
   --g900: #174523;
@@ -26,394 +24,12 @@
   --shadow: 0 8px 22px #193d1710;
   font-family: Inter, "Segoe UI", Arial, sans-serif;
 }
-* {
-  box-sizing: border-box;
-}
 body {
   margin: 0;
   background: var(--page);
   color: var(--ink);
   font-size: 14px;
-}
-button,
-input,
-select {
-  font: inherit;
-}
-button {
-  cursor: pointer;
-}
-svg {
-  width: 20px;
-  height: 20px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.svg-defs {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-}
-.app-shell {
-  min-height: 100vh;
-}
-/* ==========================================================
-   NAVEGAÇÃO
-   menu lateral e marca da área de Frequência.
-========================================================== */
-.sidebar {
-  position: fixed;
-  inset: 0 auto 0 0;
-  width: 245px;
-  background: linear-gradient(160deg, #174523, #103719);
-  color: #fff;
-  padding: 22px 15px 17px;
-  display: flex;
-  flex-direction: column;
-  z-index: 5;
-}
-.brand {
-  height: 75px;
-  display: flex;
-  padding: 8px 12px;
-}
-.brand img {
-  width: 180px;
-  max-height: 48px;
-  object-fit: contain;
-}
-.nav-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 24px;
-}
-.nav-item {
-  position: relative;
-  height: 45px;
-  padding: 0 15px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  color: #c5d2c7;
-  text-decoration: none;
-  border-radius: 9px;
-  font-weight: 600;
-}
-.nav-item svg {
-  width: 19px;
-  height: 19px;
-}
-.nav-item:hover {
-  background: #ffffff16;
-  color: #fff;
-}
-.nav-item.active {
-  background: #ffffff25;
-  color: #fff;
-  font-weight: 700;
-}
-.nav-item.active:before {
-  content: "";
-  position: absolute;
-  left: -15px;
-  top: 8px;
-  height: 29px;
-  width: 4px;
-  border-radius: 0 5px 5px 0;
-  background: #8dc794;
-}
-.nav-divider {
-  height: 1px;
-  background: #ffffff26;
-  margin: 14px 8px 9px;
-}
-.nav-caption {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.7px;
-  color: #94ab97;
-  padding: 0 13px 7px;
-}
-.sidebar-bottom {
-  margin-top: auto;
-}
-.support-card {
-  height: 58px;
-  padding: 0 13px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: #fff;
-  text-decoration: none;
-  border: 1px solid #ffffff20;
-  background: #ffffff0c;
-  border-radius: 12px;
-}
-.support-card > svg {
-  width: 20px;
-}
-.support-card span:nth-child(2) {
-  display: grid;
-  gap: 3px;
-}
-.support-card small {
-  font-size: 11px;
-  color: #c4d3c5;
-}
-.support-chevron {
-  margin-left: auto;
-  font-size: 26px;
-}
-.sidebar-footer {
-  font-size: 10px;
-  line-height: 1.7;
-  color: #8fa494;
-  margin: 18px 7px 0;
-}
-/* ==========================================================
-   ESTRUTURA DA PÁGINA
-   área principal e cabeçalho.
-========================================================== */
-.main-area {
-  margin-left: 245px;
-  min-height: 100vh;
-}
-.topbar {
-  height: 76px;
-  background: #fff;
-  border-bottom: 1px solid #e7ece7;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 32px;
-  position: sticky;
-  top: 0;
-  z-index: 4;
-}
-.year-picker-wrap {
-  position: relative;
-}
-.year-picker {
-  height: 52px;
-  min-width: 174px;
-  border: 1px solid var(--line);
-  border-radius: 13px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 11px;
-  background: #fff;
-  text-align: left;
-  color: var(--ink);
-}
-.year-picker:hover,
-.year-picker[aria-expanded="true"] {
-  border-color: #80ad86;
-  box-shadow: 0 0 0 2px #30834116;
-}
-.year-icon {
-  width: 32px;
-  height: 32px;
-  padding: 7px;
-  border-radius: 9px;
-  color: var(--g700);
-  background: var(--g100);
-}
-.year-picker span:nth-child(2) {
-  display: grid;
-  gap: 2px;
-  flex: 1;
-}
-.year-picker small {
-  font-size: 10px;
-  color: var(--muted);
-}
-.year-picker strong {
-  font-size: 12px;
-}
-.year-chevron {
-  width: 15px;
-  height: 15px;
-  color: #718578;
-  transition: transform 0.18s;
-}
-.year-picker[aria-expanded="true"] .year-chevron {
-  transform: rotate(180deg);
-}
-.year-menu {
-  position: absolute;
-  z-index: 8;
-  top: calc(100% + 8px);
-  left: 0;
-  width: 100%;
-  padding: 7px;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  box-shadow: 0 12px 24px #173d1d1e;
-}
-.year-option {
-  width: 100%;
-  height: 39px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: 8px;
-  background: #e9f6ef;
-  color: var(--g700);
-  font-weight: 700;
-  text-align: left;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.year-option.selected:after {
-  content: "✓";
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--g700);
-  color: white;
-  display: grid;
-  place-items: center;
-}
-.topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 23px;
-}
-.bell-button {
-  position: relative;
-  width: 43px;
-  height: 43px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fff;
-  color: var(--g700);
-  display: grid;
-  place-items: center;
-}
-.bell-button.urgent {
-  color: var(--red);
-  border-color: #f1b6b7;
-  background: #fff0f0;
-}
-.bell-count {
-  position: absolute;
-  right: -6px;
-  top: -7px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 20px;
-  background: var(--red);
-  color: #fff;
-  font-size: 10px;
-  font-weight: 800;
-  display: grid;
-  place-items: center;
-}
-.connection {
-  display: flex;
-  gap: 9px;
-  align-items: center;
-  color: var(--g700);
-}
-.connection > svg {
-  width: 22px;
-  height: 22px;
-}
-.connection span,
-.profile-button > span:nth-child(2) {
-  display: grid;
-  gap: 3px;
-}
-.connection strong,
-.profile-button strong {
-  font-size: 12px;
-}
-.connection small,
-.profile-button small,
-.profile-menu-heading small {
-  font-size: 10px;
-  color: var(--muted);
-}
-.connection.offline {
-  color: var(--red);
-}
-.profile-wrap {
-  position: relative;
-}
-.profile-button {
-  border: 0;
-  background: transparent;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--ink);
-  text-align: left;
-  padding: 5px;
-}
-.avatar {
-  width: 39px;
-  height: 39px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: var(--g700);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 800;
-  flex: 0 0 auto;
-}
-.profile-menu-icon {
-  font-size: 18px;
-  margin-left: 12px;
-  color: var(--muted);
-}
-.profile-menu {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 8px);
-  width: 240px;
-  padding: 12px;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  box-shadow: 0 12px 24px #173d1d20;
-}
-.profile-menu-heading {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 4px 3px 12px;
-  border-bottom: 1px solid var(--line);
-}
-.profile-menu-heading > span:nth-child(2) {
-  display: grid;
-  gap: 3px;
-}
-.profile-menu button {
-  width: 100%;
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  background: #fff;
-  text-align: left;
-  padding: 12px 5px;
-  color: #52675a;
-  font-weight: 650;
-  display: flex;
-  gap: 11px;
-}
-.profile-menu button:last-child {
-  border-bottom: 0;
-  color: #d34b50;
-}
-/* ==========================================================
+} /* ==========================================================
    CONTEÚDO DA CHAMADA
    filtros, cartões e áreas da página.
 ========================================================== */
@@ -509,12 +125,10 @@ svg {
     linear-gradient(90deg, #347a36 0%, #347a36aa 22%, transparent 75%),
     url("../assets/images/dashboard-sala.png") center/cover no-repeat;
   opacity: 0.92;
-}
-/* ==========================================================
+} /* ==========================================================
    CARTÕES DE RESUMO
    Organiza os indicadores de presença, ausência e justificativas exibidos acima da chamada.
 ========================================================== */
-
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -573,8 +187,7 @@ svg {
   border: 1px solid var(--line);
   border-radius: 15px;
   box-shadow: var(--shadow);
-}
-/* ==========================================================
+} /* ==========================================================
    LISTA E TABELA
    Reúne o painel da chamada, o cabeçalho, os filtros de turma/data e os controles de registro.
 ========================================================== */
@@ -634,16 +247,10 @@ svg {
   font-size: 10px;
   color: #64756a;
   font-weight: 650;
-}
-/* ==========================================================
+} /* ==========================================================
    FILTROS E CONTROLES DA CHAMADA
    Reúne seletor de turma, data, botões de ação e seus estados de interação.
 ========================================================== */
-
-.custom-select {
-  position: relative;
-  width: 100%;
-}
 .custom-select.native-hidden select {
   position: absolute !important;
   width: 1px !important;
@@ -770,8 +377,7 @@ svg {
   background: #fff;
   border: 1px solid #cbdccc;
   color: var(--g800);
-}
-/* ==========================================================
+} /* ==========================================================
    TABELA
    Controla a rolagem, as colunas de estudantes, os estados de presença, anexos e ações por linha.
 ========================================================== */
@@ -932,12 +538,10 @@ td {
 }
 .dot.justified {
   background: var(--blue);
-}
-/* ==========================================================
+} /* ==========================================================
    DIÁLOGOS DE REGISTRO E ANEXOS
    Define a janela de registro, confirmação e visualização dos arquivos enviados.
 ========================================================== */
-
 .dialog {
   border: 0;
   border-radius: 18px;
@@ -1016,12 +620,10 @@ td {
 .file-name {
   font-size: 11px !important;
   overflow-wrap: anywhere;
-}
-/* ==========================================================
+} /* ==========================================================
    CENTRAL DE NOTIFICAÇÕES
    Organiza avisos, prioridades, datas e ações de leitura dentro da janela de notificações.
 ========================================================== */
-
 .notification-dialog {
   width: min(560px, calc(100% - 28px));
 }
@@ -1089,12 +691,10 @@ td {
   padding: 20px;
   color: #87948a;
   font-size: 12px;
-}
-/* ==========================================================
+} /* ==========================================================
    CALENDÁRIO DE REGISTROS
    Controla navegação entre meses, dias marcados, seleção e legenda do calendário.
 ========================================================== */
-
 .calendar-dialog {
   width: min(360px, calc(100% - 28px));
 }
@@ -1210,12 +810,6 @@ td {
   }
 }
 @media (max-width: 1180px) {
-  .sidebar {
-    width: 220px;
-  }
-  .main-area {
-    margin-left: 220px;
-  }
   .toolbar {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -1227,49 +821,8 @@ td {
   }
 }
 @media (max-width: 850px) {
-  .sidebar {
-    width: 74px;
-    padding: 16px 9px;
-  }
-  .brand {
-    padding: 8px 2px;
-    justify-content: center;
-  }
-  .brand img {
-    width: 56px;
-    object-fit: cover;
-    object-position: left;
-  }
-  .nav-item {
-    justify-content: center;
-    padding: 0;
-  }
-  .nav-item svg {
-    width: 21px;
-    height: 21px;
-  }
-  .nav-item span,
-  .nav-caption,
-  .nav-divider,
-  .support-card span,
-  .sidebar-footer {
-    display: none;
-  }
-  .support-card {
-    justify-content: center;
-    padding: 0;
-  }
-  .main-area {
-    margin-left: 74px;
-  }
-  .topbar {
-    padding: 0 16px;
-  }
   .page-content {
     padding: 16px;
-  }
-  .connection small {
-    display: none;
   }
   .hero blockquote {
     display: none;
@@ -1283,24 +836,6 @@ td {
   }
 }
 @media (max-width: 600px) {
-  .topbar {
-    height: 66px;
-  }
-  .topbar-actions {
-    gap: 10px;
-  }
-  .connection {
-    display: none;
-  }
-  .profile-button > span:nth-child(2) {
-    display: none;
-  }
-  .profile-menu-icon {
-    margin-left: 0;
-  }
-  .year-picker {
-    min-width: 135px;
-  }
   .hero {
     padding: 22px;
     min-height: 170px;
@@ -1371,112 +906,15 @@ td {
   .legend {
     flex-wrap: wrap;
   }
-  .profile-button {
-    gap: 6px;
-  }
-  .avatar {
-    width: 34px;
-    height: 34px;
-  }
   .custom-select-trigger,
   .date-picker-button {
     height: 42px;
     font-size: 11px;
   }
-}
-
-/* ==========================================================
-   Ajustes de consistência com o cabeçalho do Dashboard.
-   Padroniza seletor de ano, conexão, perfil e estados de foco com o cabeçalho do Dashboard.
+} /* ==========================================================
+   AJUSTES DOS CONTROLES DA CHAMADA
+   Padroniza estados dos seletores locais e controles de notificação.
 ========================================================== */
-.year-picker-wrap {
-  z-index: 8;
-  width: 182px;
-  flex: 0 0 182px;
-}
-.year-picker {
-  width: 182px;
-  min-width: 0;
-  height: 48px;
-  border-color: #d7e5d8;
-  border-radius: 14px;
-  padding: 6px 11px;
-  gap: 10px;
-}
-.year-picker[aria-expanded="true"],
-.year-picker:hover {
-  border-color: #347a3a;
-  box-shadow: 0 0 0 3px rgba(52, 122, 58, 0.08);
-}
-.year-menu {
-  top: calc(100% + 7px);
-  width: 100%;
-  padding: 7px;
-  border-color: #e0eae2;
-  border-radius: 14px;
-  box-shadow: 0 12px 30px rgba(24, 55, 31, 0.16);
-}
-.year-menu[hidden] {
-  display: none;
-}
-.year-option {
-  height: 39px;
-  border-radius: 9px;
-  background: #e9f6ef;
-  color: #287536;
-}
-.year-option.selected:after {
-  width: 20px;
-  height: 20px;
-  background: #287536;
-}
-.year-chevron {
-  color: #287536;
-  stroke-width: 2;
-}
-.connection {
-  border: 0;
-  padding: 5px 9px;
-  background: transparent;
-  font: inherit;
-  cursor: pointer;
-  border-radius: 11px;
-  transition:
-    background 0.18s ease,
-    opacity 0.18s ease;
-}
-.connection:hover,
-.connection:focus-visible {
-  background: #f0f7f0;
-}
-.connection:focus-visible,
-.year-picker:focus-visible,
-.profile-button:focus-visible {
-  outline: 3px solid rgba(50, 113, 46, 0.2);
-  outline-offset: 2px;
-}
-.connection.checking {
-  opacity: 0.7;
-}
-.profile-menu-icon {
-  width: 18px;
-  height: 18px;
-  margin-left: 12px;
-  color: #718578;
-}
-.profile-button[aria-expanded="true"] {
-  border-radius: 12px;
-  background: #f1f7f3;
-}
-.profile-menu button svg {
-  width: 17px;
-  height: 17px;
-  flex: 0 0 auto;
-  color: currentColor;
-}
-.profile-menu button:last-child svg {
-  color: #d34b50;
-}
 .select-chevron {
   width: 16px;
   height: 16px;
@@ -1497,58 +935,23 @@ td {
 .notification-footer .button {
   min-width: 180px;
 }
-@media (max-width: 600px) {
-  .connection {
-    display: flex;
-  }
-  .topbar-actions {
-    gap: 10px;
-  }
-  .year-picker-wrap,
-  .year-picker {
-    width: 136px;
-    flex-basis: 136px;
-  }
-  .connection small {
-    display: none;
-  }
-}
-
 /* ==========================================================
-   Alinhamento do cabeçalho e do banner com o Dashboard.
-   Ajusta o texto do estado de conexão e a composição do banner para manter alinhamento.
+   AJUSTES DO BANNER
+   Mantém alinhada a composição do destaque da página.
 ========================================================== */
 .hero {
   height: 210px;
   min-height: 210px;
-}
-.connection {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 5px 8px;
-  text-align: left;
-}
-.connection > svg {
-  width: 23px;
-  height: 23px;
-  flex: 0 0 23px;
-}
-.connection span {
-  min-width: 0;
-  text-align: left;
 }
 @media (max-width: 600px) {
   .hero {
     height: 170px;
     min-height: 170px;
   }
-}
-/* ==========================================================
+} /* ==========================================================
    ANEXOS NA TABELA
    Alinha o nome do arquivo e o comando para abrir sua visualização.
 ========================================================== */
-
 .attachment-cell {
   display: flex;
   align-items: center;
@@ -1602,12 +1005,10 @@ td {
   .attachment-cell {
     min-width: 160px;
   }
-}
-/* ==========================================================
+} /* ==========================================================
    CAMPOS DA JUSTIFICATIVA
    Organiza o campo de dias da justificativa, seu estado de foco e o texto auxiliar.
 ========================================================== */
-
 .certificate-days-field {
   display: grid;
   grid-template-columns: 1fr 92px;
@@ -1637,12 +1038,10 @@ td {
   font-size: 10px;
   font-weight: 400;
   line-height: 1.45;
-}
-/* ==========================================================
+} /* ==========================================================
    ESTADOS DO CALENDÁRIO
    Diferencia dias com registros parciais e mantém coerentes a legenda e a data atual.
 ========================================================== */
-
 .calendar-day.partial:not(.today) {
   background: #ffdf70;
   color: #573f00;
@@ -1658,292 +1057,9 @@ td {
 }
 .legend-square.today {
   background: #1683e8;
-}
-
-/* ==========================================================
-   Menu lateral e barra superior no mesmo padrão do Dashboard atualizado.
-   Consolida as dimensões e os estados finais do menu lateral e da barra superior.
-========================================================== */
-:root {
-  --sidebar-width: 245px;
-}
-.sidebar {
-  width: var(--sidebar-width);
-  padding: 22px 15px 18px;
-  background: linear-gradient(180deg, #183f1c 0%, #143818 100%);
-  box-shadow: 6px 0 25px rgba(18, 53, 22, 0.08);
-}
-.brand {
-  height: 70px;
-  margin-bottom: 22px;
-  padding: 8px 10px;
-}
-.brand img {
-  width: 180px;
-  max-height: 55px;
-}
-.nav-menu {
-  gap: 5px;
-  margin-top: 0;
-}
-.nav-item {
-  height: 45px;
-  min-height: 45px;
-  padding: 0 14px;
-  gap: 13px;
-  border-radius: 9px;
-  color: rgba(255, 255, 255, 0.72);
-}
-.nav-item svg {
-  width: 19px;
-  height: 19px;
-  flex: 0 0 auto;
-  stroke-width: 1.8;
-}
-.nav-item span {
-  font-size: 12px;
-  font-weight: 500;
-}
-.nav-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-}
-.nav-item.active {
-  background: rgba(255, 255, 255, 0.13);
-  color: #fff;
-  font-weight: 700;
-  box-shadow: none;
-}
-.nav-item.active:before {
-  top: 9px;
-  bottom: 9px;
-  left: -15px;
-  width: 4px;
-  height: auto;
-}
-.nav-divider {
-  margin: 16px 8px 14px;
-  background: rgba(255, 255, 255, 0.16);
-}
-.nav-caption {
-  margin: 0 0 5px;
-  padding: 0 13px;
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 9px;
-  letter-spacing: 0.9px;
-}
-.support-card {
-  height: auto;
-  min-height: 0;
-  margin: 0 0 18px;
-  padding: 12px;
-  gap: 10px;
-  border-radius: 10px;
-}
-.support-card > svg {
-  width: 22px;
-  height: 22px;
-  flex: 0 0 22px;
-}
-.sidebar-footer {
-  padding: 0 7px;
-  color: rgba(255, 255, 255, 0.34);
-}
-.sidebar-footer span {
-  color: inherit;
-}
-
-.topbar {
-  height: 76px;
-  padding: 0 28px;
-}
-.topbar-actions {
-  gap: 18px;
-}
-.year-picker-wrap {
-  z-index: 8;
-  width: 182px;
-  flex: 0 0 182px;
-}
-.year-picker {
-  width: 182px;
-  height: 52px;
-  min-width: 0;
-  padding: 6px 11px;
-  border-color: #d7e5d8;
-  border-radius: 14px;
-  gap: 10px;
-}
-.year-picker:hover,
-.year-picker[aria-expanded="true"] {
-  border-color: #347a3a;
-  box-shadow: 0 0 0 3px rgba(52, 122, 58, 0.08);
-}
-.year-icon {
-  width: 32px;
-  height: 32px;
-  flex: 0 0 32px;
-  padding: 7px;
-  border-radius: 9px;
-  color: #287536;
-  background: #e8f4e9;
-}
-.year-picker small {
-  font-size: 10px;
-  color: #75847a;
-}
-.year-picker strong {
-  font-size: 12px;
-  color: #172d22;
-}
-.year-menu {
-  top: calc(100% + 7px);
-  padding: 7px;
-  border-color: #e0eae2;
-  border-radius: 14px;
-  box-shadow: 0 12px 30px rgba(24, 55, 31, 0.16);
-}
-.year-option {
-  height: 39px;
-  border-radius: 9px;
-  background: #e9f6ef;
-  color: #287536;
-}
-.bell-button {
-  width: 42px;
-  height: 42px;
-  flex-basis: 42px;
-  border-radius: 12px;
-}
-.connection {
-  gap: 12px;
-  padding: 5px 8px;
-  border-radius: 11px;
-  background: transparent;
-  font: inherit;
-  cursor: pointer;
-}
-.connection:hover,
-.connection:focus-visible {
-  background: #f0f7f0;
-}
-.connection > svg {
-  width: 23px;
-  height: 23px;
-  flex: 0 0 23px;
-}
-.connection strong {
-  font-size: 12px;
-}
-.connection small {
-  font-size: 10px;
-  color: #75847a;
-}
-.profile-button {
-  min-height: 49px;
-  padding: 5px;
-  gap: 10px;
-  border-radius: 12px;
-}
-.profile-button:hover,
-.profile-button[aria-expanded="true"] {
-  background: #f1f7f3;
-}
-.profile-button .avatar {
-  width: 39px;
-  height: 39px;
-  flex: 0 0 39px;
-  background: #287536;
-  color: #fff;
-}
-.profile-button > span:nth-child(2) {
-  display: grid;
-  gap: 3px;
-}
-.profile-button strong {
-  font-size: 12px;
-}
-.profile-button small {
-  font-size: 10px;
-  color: #75847a;
-}
-.profile-menu-icon {
-  width: 18px;
-  height: 18px;
-  margin-left: 12px;
-  color: #718578;
-}
-@media (max-width: 600px) {
-  .topbar {
-    height: 66px;
-    padding: 0 14px;
-  }
-  .topbar-actions {
-    gap: 10px;
-  }
-  .year-picker-wrap,
-  .year-picker {
-    width: 136px;
-    flex-basis: 136px;
-  }
-  .connection {
-    display: flex;
-  }
-  .connection small {
-    display: none;
-  }
-  .profile-button {
-    min-height: 44px;
-    gap: 6px;
-  }
-  .profile-button .avatar {
-    width: 34px;
-    height: 34px;
-    flex-basis: 34px;
-  }
-  .profile-menu-icon {
-    margin-left: 0;
-  }
-}
-@media (max-width: 1300px) and (min-width: 1181px) {
-  :root {
-    --sidebar-width: 225px;
-  }
-  .sidebar {
-    width: 225px;
-  }
-  .main-area {
-    margin-left: 225px;
-  }
-}
-@media (max-width: 780px) {
-  .topbar {
-    height: 70px;
-    min-height: 70px;
-    padding: 9px 14px;
-  }
-  .connection {
-    min-width: 0;
-    padding: 8px 10px;
-  }
-  .connection span,
-  .profile-button .profile-text {
-    display: none;
-  }
-  .profile-button {
-    min-height: 48px;
-  }
-}
-@media (max-width: 600px) {
-  .topbar {
-    height: 70px;
-    min-height: 70px;
-  }
-}
-
-/* ==========================================================
-   Ajustes finais para igualar banner e controles superiores ao Dashboard.
-   Refina espaçamentos, contraste, foco e dimensões dos controles superiores e do banner.
+} /* ==========================================================
+   AJUSTES FINAIS DA CHAMADA
+   Refina os espaçamentos do conteúdo e as dimensões responsivas do banner.
 ========================================================== */
 .page-content {
   width: 100%;
@@ -1956,71 +1072,6 @@ td {
   min-height: 210px;
   border-radius: 18px;
 }
-.year-picker {
-  width: 182px;
-  height: 52px;
-  min-height: 52px;
-}
-.bell-button {
-  width: 42px;
-  height: 42px;
-  flex: 0 0 42px;
-  border-color: #e1e9df;
-  border-radius: 12px;
-  color: #287536;
-  background: #fff;
-}
-.bell-button.urgent {
-  color: #287536;
-  border-color: #e1e9df;
-  background: #fff;
-}
-.bell-button:hover,
-.bell-button.urgent:hover {
-  border-color: #cbdcc9;
-  background: #e8f4e9;
-}
-.bell-button svg {
-  width: 21px;
-  height: 21px;
-}
-.bell-count {
-  top: -6px;
-  right: -6px;
-  min-width: 19px;
-  height: 19px;
-  padding: 0 5px;
-  border: 2px solid #fff;
-  background: #dc4c45;
-  font-size: 10px;
-}
-.bell-count[hidden] {
-  display: none;
-}
-.connection {
-  min-width: 0;
-  min-height: 51px;
-  padding: 8px 10px;
-  gap: 0;
-}
-.connection span {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-.connection > svg {
-  width: 26px;
-  height: 26px;
-  flex: 0 0 26px;
-  margin: 0 11px 0 0;
-}
-.connection small {
-  margin-top: 2px;
-}
-.connection:focus-visible {
-  outline: 3px solid rgba(40, 117, 54, 0.2);
-  outline-offset: 2px;
-}
 @media (max-width: 600px) {
   .page-content {
     padding: 14px 16px 32px;
@@ -2029,63 +1080,23 @@ td {
     height: 170px;
     min-height: 170px;
   }
-}
-
-/* ==========================================================
-   Reserva espaço para a barra e evita deslocamentos no layout
-   Mantém a rolagem vertical disponível para evitar deslocamentos quando a página passa a ter mais conteúdo.
-========================================================== */
-html {
-  overflow-y: scroll;
-}
-
-/*=============================================
-TESTE DO SINAL VERMELHO
-===============================*/
-#notificationBell.urgent {
-  color: #dc2626;
-  background: #fef2f2;
-  border-color: #dc2626;
-}
-
-#notificationBell.urgent svg {
-  stroke: #dc2626;
-}
-
-#notificationBell.urgent #bellCount {
-  color: #fff;
-  background: #dc2626;
-}
-
-/* ==========================================================
-   Responsividade da página Frequência
-   Agrupa os limites mínimos e os controles necessários antes dos ajustes para cada tamanho de tela.
+} /* ==========================================================
+   RESPONSIVIDADE DA PÁGINA FREQUÊNCIA
+   Agrupa os limites e os ajustes de conteúdo para cada tamanho de tela.
 ========================================================== */
 /* ==========================================================
-   NAVEGAÇÃO RESPONSIVA
-   Define os controles móveis e os limites mínimos da página antes dos ajustes por breakpoint.
+   LAYOUT RESPONSIVO
+   Define larguras mínimas e rolagem para painéis, campos e tabelas.
 ========================================================== */
-
-.mobile-menu-button {
-  display: none;
-}
-
-.main-area,
 .page-content,
 .panel,
 .field {
   min-width: 0;
 }
-
-.sidebar {
-  overflow-y: auto;
-}
-
 .table-wrap {
   max-width: 100%;
   overflow-x: auto;
 }
-
 .dialog {
   box-sizing: border-box;
   max-width: calc(100vw - 24px);
@@ -2093,168 +1104,44 @@ TESTE DO SINAL VERMELHO
   overflow: auto;
 }
 
-@media (max-width: 1180px) and (min-width: 851px) {
-  .sidebar {
-    width: 220px;
-  }
-
-  .main-area {
-    margin-left: 220px;
-  }
-}
-
 @media (max-width: 850px) {
-  .sidebar {
-    width: 74px;
-    padding: 16px 9px;
-  }
-
-  .main-area {
-    margin-left: 74px;
-  }
-
   .page-content {
     padding: 16px;
   }
-
-  .topbar {
-    gap: 10px;
-    padding: 10px 14px;
-  }
-
-  .topbar-actions {
-    gap: 8px;
-  }
-
-  .connection {
-    display: none;
-  }
-
   .stats-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
   .toolbar {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
   .toolbar .button {
     width: 100%;
   }
-
   .hero {
     height: auto;
     min-height: 190px;
   }
-
   .hero h1 {
     font-size: clamp(24px, 5vw, 36px);
   }
-
   .hero h2 {
     font-size: clamp(16px, 3vw, 22px);
   }
 }
 
 @media (max-width: 600px) {
-  .main-area {
-    margin-left: 0;
-  }
-
-  .sidebar {
-    width: 260px;
-    max-width: 85vw;
-    padding: 20px 15px;
-    transform: translateX(-100%);
-    visibility: hidden;
-    transition:
-      transform 0.2s,
-      visibility 0.2s;
-    z-index: 30;
-  }
-
-  body.frequency-menu-open .sidebar {
-    transform: translateX(0);
-    visibility: visible;
-  }
-
-  .sidebar .brand img {
-    width: 180px;
-    max-width: 100%;
-    object-fit: contain;
-  }
-
-  .sidebar .nav-item {
-    justify-content: flex-start;
-    padding: 12px;
-  }
-
-  .sidebar .nav-item span,
-  .sidebar .nav-caption,
-  .sidebar .support-card span {
-    display: block;
-  }
-
-  .sidebar .nav-divider {
-    display: block;
-  }
-
-  .mobile-menu-button {
-    display: grid;
-    place-items: center;
-    flex: 0 0 40px;
-    width: 40px;
-    height: 40px;
-    padding: 8px;
-    border: 1px solid #d5e2d6;
-    border-radius: 10px;
-    background: white;
-    color: #246527;
-  }
-
-  .topbar {
-    height: auto;
-    min-height: 70px;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    padding: 10px 12px;
-  }
-
-  .topbar-actions {
-    margin-left: auto;
-  }
-
-  .year-picker-wrap {
-    width: 150px;
-    flex: 0 0 150px;
-  }
-
-  .year-picker {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .profile-text,
-  .profile-info {
-    display: none;
-  }
-
   .page-content {
     padding: 12px;
   }
-
   .hero {
     padding: 20px;
   }
-
   .hero-photo {
     opacity: 0.2;
   }
-
   .toolbar {
     grid-template-columns: minmax(0, 1fr);
   }
-
   .panel-heading,
   .table-footer,
   .dialog-actions,
@@ -2262,87 +1149,16 @@ TESTE DO SINAL VERMELHO
     flex-wrap: wrap;
     gap: 12px;
   }
-
   .table-wrap table {
     min-width: 850px;
   }
-
   .dialog-card {
     box-sizing: border-box;
     width: 100%;
     min-width: 0;
     padding: 20px;
   }
-
   .dialog-actions .button {
     flex: 1 1 140px;
-  }
-}
-
-/* ==========================================================
-   Corrige logo e suporte no menu compacto
-   Centraliza a marca e o cartão de suporte quando a navegação lateral usa largura compacta.
-========================================================== */
-@media (min-width: 601px) and (max-width: 850px) {
-  .sidebar {
-    align-items: center;
-    overflow-x: hidden;
-  }
-
-  .sidebar .brand {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: 0;
-  }
-
-  .sidebar .brand img {
-    width: 54px;
-    max-width: 100%;
-    height: auto;
-    object-fit: contain;
-  }
-
-  .sidebar .sidebar-bottom {
-    width: 100%;
-  }
-
-  .sidebar .support-card {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    min-width: 0;
-    min-height: 44px;
-    padding: 0;
-    margin: 12px auto;
-  }
-
-  .sidebar .support-card > span,
-  .sidebar .support-card .support-chevron,
-  .sidebar .sidebar-footer {
-    display: none;
-  }
-
-  .sidebar .support-card > svg:first-child {
-    display: block;
-    flex: 0 0 22px;
-    width: 22px;
-    height: 22px;
-  }
-}
-
-@media (min-width: 601px) and (max-width: 850px) {
-  .sidebar .nav-divider {
-    display: block;
-    width: 48px;
-    height: 1px;
-    min-height: 1px;
-    margin: 20px auto;
-    padding: 0;
-    border: 0;
-    background: rgba(255, 255, 255, 0.15);
   }
 }

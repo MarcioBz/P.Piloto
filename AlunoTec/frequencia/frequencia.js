@@ -45,18 +45,7 @@
     localStorage.setItem(key, JSON.stringify(value));
   const uid = () =>
     `freq_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-  const esc = (value) =>
-    String(value ?? "").replace(
-      /[&<>"']/g,
-      (c) =>
-        ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#39;",
-        })[c],
-    );
+  const esc = window.AlunoTecUtils.escapeHTML;
   const normalize = (value) =>
     String(value ?? "")
       .normalize("NFD")
@@ -668,12 +657,7 @@
     localStorage.setItem(KEYS.year, selected);
     $("selectedYear").textContent = selected;
     $("footerYear").textContent = selected;
-    $("yearMenu").innerHTML = (years.length ? years : [selected])
-      .map(
-        (year) =>
-          `<button class="year-option ${year === selected ? "selected" : ""}" type="button" data-year="${esc(year)}">${esc(year)}</button>`,
-      )
-      .join("");
+    window.AlunoTecShell?.setYears(years.length ? years : [selected], selected);
 
     const previous = $("classSelect").value;
     const options = classes
@@ -880,9 +864,10 @@
     const unread = read(KEYS.alerts, []).filter(
       (alert) => alert.active !== false && !alert.read,
     );
-    $("bellCount").hidden = !unread.length;
-    $("bellCount").textContent = unread.length > 99 ? "99+" : unread.length;
-    $("notificationBell").classList.toggle("urgent", unread.length > 0);
+    $("activityBellCount").hidden = !unread.length;
+    $("activityBellCount").textContent =
+      unread.length > 99 ? "99+" : unread.length;
+    $("activityBell").classList.toggle("urgent", unread.length > 0);
   }
 
   function openNotifications() {
@@ -1007,7 +992,7 @@
   ========================================================== */
   async function checkConnection() {
     const title = $("connectionTitle"),
-      text = $("connectionText"),
+      text = $("connectionSubtitle"),
       status = $("connectionStatus");
     status.classList.add("checking");
     if (!navigator.onLine) {
@@ -1044,34 +1029,18 @@
     $("attendanceDate").value = today();
     $("dateDisplay").textContent = dateBR(today());
     populateYears();
-    setupCustomSelect($("classSelect"));
-    setupCustomSelect($("shiftSelect"));
-
-    $("yearPickerButton").addEventListener("click", () => {
-      const menu = $("yearMenu");
-      menu.hidden = !menu.hidden;
-      $("yearPickerButton").setAttribute("aria-expanded", String(!menu.hidden));
-    });
-    $("yearMenu").addEventListener("click", (event) => {
-      const option = event.target.closest("[data-year]");
-      if (!option) return;
-      localStorage.setItem(KEYS.year, option.dataset.year);
-      $("yearMenu").hidden = true;
-      $("yearPickerButton").setAttribute("aria-expanded", "false");
+    document.addEventListener("alunotec:yearchange", (event) => {
+      const year = String(event.detail?.year || "");
+      if (!year) return;
+      localStorage.setItem(KEYS.year, year);
       resetForFilterChange();
       populateYears();
       render();
     });
+    setupCustomSelect($("classSelect"));
+    setupCustomSelect($("shiftSelect"));
 
     document.addEventListener("click", (event) => {
-      if (!event.target.closest(".year-picker-wrap")) {
-        $("yearMenu").hidden = true;
-        $("yearPickerButton").setAttribute("aria-expanded", "false");
-      }
-      if (!event.target.closest(".profile-wrap")) {
-        $("profileMenu").hidden = true;
-        $("profileButton").setAttribute("aria-expanded", "false");
-      }
       document.querySelectorAll(".custom-select.open").forEach((wrap) => {
         if (!wrap.contains(event.target)) {
           wrap.classList.remove("open");
@@ -1197,7 +1166,7 @@
     });
     $("saveJustificationButton").addEventListener("click", saveJustification);
 
-    $("notificationBell").addEventListener("click", openNotifications);
+    $("activityBell").addEventListener("click", openNotifications);
     $("closeNotificationDialog").addEventListener("click", () =>
       $("notificationDialog").close(),
     );
@@ -1220,21 +1189,6 @@
           $(button.dataset.closeDialog).close(),
         ),
       );
-
-    $("profileButton").addEventListener("click", () => {
-      const menu = $("profileMenu");
-      menu.hidden = !menu.hidden;
-      $("profileButton").setAttribute("aria-expanded", String(!menu.hidden));
-    });
-    $("switchAccountButton").addEventListener("click", () => {
-      window.location.href = "../index.html";
-    });
-    $("logoutButton").addEventListener("click", () => {
-      try {
-        sessionStorage.removeItem("alunotecSession");
-      } catch {}
-      window.location.href = "../index.html";
-    });
 
     window.addEventListener("online", checkConnection);
     window.addEventListener("offline", checkConnection);
@@ -1301,41 +1255,3 @@
 
   document.addEventListener("DOMContentLoaded", initialize);
 })();
-
-/* ==========================================================
-     MENU RESPONSIVO
-     Controla a abertura e o fechamento da navegação em telas menores.
-  ========================================================== */
-document.addEventListener("DOMContentLoaded", () => {
-  const button = document.getElementById("mobileMenuButton");
-  const sidebar = document.getElementById("frequencySidebar");
-
-  if (!button || !sidebar) return;
-
-  function setMenu(open) {
-    document.body.classList.toggle("frequency-menu-open", open);
-    button.setAttribute("aria-expanded", String(open));
-    button.setAttribute("aria-label", open ? "Fechar menu" : "Abrir menu");
-  }
-
-  button.addEventListener("click", () => {
-    setMenu(!document.body.classList.contains("frequency-menu-open"));
-  });
-
-  document.addEventListener("click", (event) => {
-    if (!sidebar.contains(event.target) && !button.contains(event.target)) {
-      setMenu(false);
-    }
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      setMenu(false);
-      button.focus();
-    }
-  });
-
-  sidebar.addEventListener("click", (event) => {
-    if (event.target.closest("a")) setMenu(false);
-  });
-});

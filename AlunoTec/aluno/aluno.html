@@ -16,11 +16,17 @@
     <title>Alunos | AlunoTec</title>
     <link rel="icon" type="image/png" href="../assets/icons/icone.png" />
     <link rel="stylesheet" href="aluno.css" />
-    <script src="aluno.js" defer></script>
+
+    <link rel="stylesheet" href="../shared/responsive-shell.css" />
     <link rel="stylesheet" href="../shared/profile.css" />
+    <link rel="stylesheet" href="../shared/banner.css" />
+    <script src="../shared/app-shell.js" defer></script>
+    <script src="../shared/banner.js" defer></script>
     <script src="../shared/profile.js" defer></script>
+    <script src="../shared/utils.js" defer></script>
+    <script src="aluno.js" defer></script>
   </head>
-  <body>
+  <body data-app-page="students">
     <!-- =====================================================
          BIBLIOTECA DE ÍCONES
          Símbolos SVG reutilizados nos links, botões e cartões desta página.
@@ -115,68 +121,9 @@
     </svg>
 
     <!-- =====================================================
-         MENU LATERAL
-         Navegação das áreas do sistema; os links levam às outras páginas.
-    ===================================================== -->
-    <aside class="sidebar" id="studentsSidebar">
-      <a class="brand" href="../admin/dashboard.html" aria-label="AlunoTec">
-        <img src="../assets/images/logo-alunotec1.png" alt="AlunoTec" />
-      </a>
-
-      <!-- =====================================================
-           LINKS PRINCIPAIS
-           Atalhos para início, frequência, turmas e relatórios.
-      ===================================================== -->
-      <nav class="main-nav">
-        <a class="nav-link" href="../admin/dashboard.html"
-          ><svg><use href="#i-home"></use></svg><span>Início</span></a
-        >
-        <a class="nav-link" href="../frequencia/frequencia.html"
-          ><svg><use href="#i-calendar"></use></svg><span>Frequência</span></a
-        >
-        <a class="nav-link active" href="aluno.html"
-          ><svg><use href="#i-users"></use></svg><span>Alunos</span></a
-        >
-        <a class="nav-link" href="../turmas/index.html"
-          ><svg><use href="#i-book"></use></svg><span>Turmas</span></a
-        >
-        <a class="nav-link" href="#"
-          ><svg><use href="#i-chart"></use></svg><span>Relatórios</span></a
-        >
-
-        <div class="nav-divider"></div>
-        <p class="nav-caption">PROFESSORES</p>
-
-        <a href="../eletivas/eletivas.html" class="nav-link">
-          <svg aria-hidden="true">
-            <use href="#i-capelo"></use>
-          </svg>
-          <span>Eletivas</span>
-        </a>
-        <div class="nav-divider"></div>
-        <p class="nav-caption">ADMINISTRAÇÃO</p>
-        <a class="nav-link" href="#"
-          ><svg><use href="#i-building"></use></svg><span>Instituição</span></a
-        >
-        <a href="../config/config.html" class="nav-link">
-          <svg aria-hidden="true">
-            <use href="#i-settings"></use>
-          </svg>
-          <span>Configurações</span>
-        </a>
-      </nav>
-
-      <div class="sidebar-bottom">
-        <a class="support-card" href="#">
-          <svg class="support-icon"><use href="#i-headset"></use></svg>
-          <span><strong>Suporte</strong><small>Precisa de ajuda?</small></span>
-          <span class="support-arrow">›</span>
-        </a>
-        <p class="sidebar-footer">
-          AlunoTec • 2026<br />Todos os direitos reservados.
-        </p>
-      </div>
-    </aside>
+     MENU LATERAL COMPARTILHADO
+     A estrutura única é montada por ../shared/app-shell.js.
+===================================================== -->
 
     <!-- =====================================================
          ÁREA PRINCIPAL
@@ -184,88 +131,9 @@
     ===================================================== -->
     <main class="main">
       <!-- =====================================================
-           BARRA SUPERIOR
-           Ano letivo, notificações, conexão e perfil do usuário.
-      ===================================================== -->
-      <header class="topbar">
-        <button
-          id="studentsMenuButton"
-          class="students-menu-button"
-          type="button"
-          aria-label="Abrir menu"
-          aria-expanded="false"
-          aria-controls="studentsSidebar"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 6h16M4 12h16M4 18h16"></path>
-          </svg>
-        </button>
-        <div class="year-picker">
-          <svg><use href="#i-calendar"></use></svg>
-          <span class="year-label">
-            <small>Ano letivo</small>
-            <select id="yearFilter" aria-label="Ano letivo"></select>
-          </span>
-        </div>
-
-        <div class="topbar-right">
-          <button
-            class="bell-button"
-            id="bellButton"
-            type="button"
-            aria-label="Notificações"
-          >
-            <svg><use href="#i-bell"></use></svg>
-            <span id="bellCount" class="bell-count" hidden>0</span>
-          </button>
-
-          <button
-            class="connection"
-            id="connectionButton"
-            type="button"
-            aria-label="Verificar conexão"
-          >
-            <svg><use href="#i-wifi"></use></svg>
-            <span>
-              <strong id="connectionText">Verificando</strong>
-              <small id="connectionSubtitle"
-                >Verificando acesso à internet…</small
-              >
-            </span>
-          </button>
-
-          <div class="account-wrap">
-            <button
-              class="profile"
-              id="profileButton"
-              type="button"
-              aria-expanded="false"
-            >
-              <span class="avatar">MB</span>
-              <span class="profile-text">
-                <strong>Márcio Bezerra</strong>
-                <small>Super Administrador</small>
-              </span>
-              <svg class="profile-menu-icon"><use href="#i-menu"></use></svg>
-            </button>
-            <div class="account-menu" id="accountMenu" hidden>
-              <div class="account-identity">
-                <span class="avatar">MB</span>
-                <span
-                  ><strong>Márcio Bezerra</strong
-                  ><small>Super Administrador</small></span
-                >
-              </div>
-              <button type="button" id="switchAccount">
-                <svg><use href="#i-switch"></use></svg>Trocar de conta
-              </button>
-              <button type="button" id="logoutButton" class="logout-option">
-                <svg><use href="#i-logout"></use></svg>Sair
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+     TOPBAR COMPARTILHADO
+     Os controles globais são montados por ../shared/app-shell.js.
+===================================================== -->
 
       <!-- =====================================================
            CONTEÚDO DE ALUNOS
@@ -276,7 +144,7 @@
              APRESENTAÇÃO
              Título da página e orientação para consulta dos alunos.
         ===================================================== -->
-        <section class="hero">
+        <section class="shared-banner">
           <div class="hero-copy">
             <div class="hero-title">
               <svg><use href="#i-users"></use></svg>

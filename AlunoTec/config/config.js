@@ -31,6 +31,13 @@
     yearSelect.append(option);
   });
 
+  document.addEventListener("alunotec:yearchange", (event) => {
+    const year = String(event.detail?.year || "");
+    if ([...yearSelect.options].some((option) => option.value === year)) {
+      yearSelect.value = year;
+    }
+  });
+
   /* ==========================================================
      SALVAMENTO
      Grava o ano letivo escolhido para que as outras páginas possam usar a mesma referência.

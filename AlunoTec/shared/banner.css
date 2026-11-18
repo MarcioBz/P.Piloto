@@ -1,0 +1,284 @@
+/* ==========================================================
+   ALUNOTEC | BANNER E LARGURA DE CONTEÚDO COMPARTILHADOS
+   Mantém o mesmo banner, o mesmo fundo e as mesmas margens em todas as abas.
+========================================================== */
+
+/* ==========================================================
+   ÁREA DE CONTEÚDO
+   Centraliza o conteúdo e deixa margens laterais iguais às do dashboard.
+========================================================== */
+body[data-app-page] {
+  min-width: 320px;
+  margin: 0;
+}
+
+.app > .main > .content,
+.app > .main > .page-content,
+.app > .main > .management-main,
+.app > .main > .shared-page-content {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 14px clamp(16px, 2.1vw, 32px) 40px;
+}
+
+/* Mantém o fundo da dashboard nas páginas com o shell compartilhado. */
+.app > .main {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f7f9f6 0%, #f2f6f1 100%);
+}
+
+/* ==========================================================
+   BANNER PRINCIPAL
+   Padroniza altura, imagem, degradê e arredondamento entre as páginas.
+========================================================== */
+.app .shared-banner {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(170px, 0.52fr) minmax(
+      0,
+      1.12fr
+    );
+  align-items: stretch;
+  width: 100%;
+  height: 210px;
+  min-height: 210px;
+  max-height: 210px;
+  margin: 0 0 18px;
+  overflow: hidden;
+  border-radius: 18px;
+  background-color: #285f2f;
+  background-image:
+    linear-gradient(
+      90deg,
+      #214f28 0%,
+      #32712e 54%,
+      rgba(50, 113, 46, 0.78) 69%,
+      rgba(50, 113, 46, 0.08) 100%
+    ),
+    url("../assets/images/dashboard-sala.png"),
+    linear-gradient(115deg, #214f28 0%, #32712e 58%, #4b8746 100%);
+  background-position:
+    center,
+    right center,
+    center;
+  background-repeat: no-repeat;
+  background-size:
+    100% 100%,
+    48% 100%,
+    100% 100%;
+  box-shadow: 0 10px 25px rgba(37, 91, 34, 0.12);
+  color: #fff;
+}
+
+.app .shared-banner::before,
+.app .shared-banner::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Posiciona o título e a descrição na coluna esquerda do banner. */
+.app .shared-banner .hero-copy,
+.app .shared-banner .hero-content {
+  position: relative;
+  z-index: 1;
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  max-width: 590px;
+  min-width: 0;
+  margin: 0;
+  padding: 24px 16px 24px 34px;
+}
+
+/* Oculta ícones locais de banner para manter a composição igual à dashboard. */
+.app .shared-banner .hero-title,
+.app .shared-banner .hero-title-row {
+  display: block;
+  margin: 0;
+}
+
+.app .shared-banner .hero-title > svg,
+.app .shared-banner .hero-title-row > svg {
+  display: none !important;
+}
+
+.app .shared-banner h1 {
+  margin: 0 0 5px;
+  color: #fff;
+  font-size: clamp(30px, 3vw, 42px);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+}
+
+.app .shared-banner h2 {
+  margin: 0 0 12px;
+  color: rgba(255, 255, 255, 0.97);
+  font-size: clamp(15px, 1.45vw, 18px);
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.app .shared-banner .hero-copy > p,
+.app .shared-banner .hero-content > p {
+  max-width: 470px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* Alinha a frase complementar na coluna central. */
+.app .shared-banner .hero-quote,
+.app .shared-banner > blockquote {
+  position: relative;
+  top: auto;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  z-index: 1;
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  width: 100%;
+  max-width: 230px;
+  margin: 0;
+  padding: 0 10px;
+  color: #fff;
+  text-align: left;
+  transform: none;
+}
+
+.app .shared-banner .hero-quote blockquote,
+.app .shared-banner .hero-quote p,
+.app .shared-banner > blockquote {
+  color: #fff;
+  font-size: 15px;
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.app .shared-banner .hero-quote blockquote,
+.app .shared-banner .hero-quote p,
+.app .shared-banner > blockquote {
+  margin: 0;
+}
+
+.app .shared-banner .hero-quote span,
+.app .shared-banner > blockquote span {
+  display: block;
+  width: 45px;
+  height: 2px;
+  margin-top: 12px;
+  background: #c5ebc4;
+}
+
+/* A imagem de fundo é controlada aqui, sem depender dos estilos de cada página. */
+.app .shared-banner .hero-photo,
+.app .shared-banner .hero-image {
+  display: none !important;
+}
+
+/* ==========================================================
+   AJUSTES RESPONSIVOS
+   Mantém a altura do banner e reduz os elementos antes de faltar espaço.
+========================================================== */
+@media (max-width: 1000px) {
+  .app .shared-banner {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
+    background-size:
+      100% 100%,
+      46% 100%,
+      100% 100%;
+  }
+
+  .app .shared-banner .hero-quote,
+  .app .shared-banner > blockquote {
+    display: none;
+  }
+
+  .app .shared-banner .hero-copy,
+  .app .shared-banner .hero-content {
+    max-width: 100%;
+    padding-left: 26px;
+  }
+}
+
+@media (max-width: 780px) {
+  .app > .main > .content,
+  .app > .main > .page-content,
+  .app > .main > .management-main,
+  .app > .main > .shared-page-content {
+    padding: 14px 16px 32px;
+  }
+}
+
+@media (max-width: 600px) {
+  .app .shared-banner {
+    grid-template-columns: minmax(0, 1fr);
+    height: 170px;
+    min-height: 170px;
+    max-height: 170px;
+    margin-bottom: 16px;
+    border-radius: 16px;
+    background-image:
+      linear-gradient(
+        90deg,
+        #214f28 0%,
+        rgba(50, 113, 46, 0.96) 55%,
+        rgba(50, 113, 46, 0.45) 100%
+      ),
+      url("../assets/images/dashboard-sala.png"),
+      linear-gradient(115deg, #214f28 0%, #32712e 58%, #4b8746 100%);
+    background-size:
+      100% 100%,
+      58% 100%,
+      100% 100%;
+  }
+
+  .app .shared-banner .hero-copy,
+  .app .shared-banner .hero-content {
+    max-width: 86%;
+    padding: 20px 18px;
+  }
+
+  .app .shared-banner h1 {
+    font-size: clamp(27px, 8vw, 34px);
+  }
+
+  .app .shared-banner h2 {
+    margin-bottom: 8px;
+    font-size: 15px;
+  }
+
+  .app .shared-banner .hero-copy > p,
+  .app .shared-banner .hero-content > p {
+    font-size: 11px;
+    line-height: 1.45;
+  }
+}
+
+@media (max-width: 380px) {
+  .app > .main > .content,
+  .app > .main > .page-content,
+  .app > .main > .management-main,
+  .app > .main > .shared-page-content {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .app .shared-banner .hero-copy,
+  .app .shared-banner .hero-content {
+    max-width: 92%;
+    padding-right: 12px;
+    padding-left: 16px;
+  }
+}

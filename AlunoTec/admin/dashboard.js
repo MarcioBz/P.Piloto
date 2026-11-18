@@ -20,24 +20,10 @@ document.addEventListener("DOMContentLoaded", () => {
      Define chaves de armazenamento, valores padrão e opções usadas pelo painel.
   ========================================================== */
 
-  const LOGIN_PAGE = "../index.html";
-
   /* ==========================================================
      ELEMENTOS
      Reúne referências aos componentes HTML para atualizar a interface sem repetir buscas no documento.
   ========================================================== */
-
-  const sidebar = document.getElementById("sidebar");
-  const sidebarOverlay = document.getElementById("sidebarOverlay");
-  const menuButton = document.getElementById("menuButton");
-  const sidebarClose = document.getElementById("sidebarClose");
-
-  const profile = document.querySelector(".profile");
-  const profileButton = document.getElementById("profileButton");
-  const profileDropdown = document.getElementById("profileDropdown");
-
-  const logoutButton = document.getElementById("logoutButton");
-  const switchAccountButton = document.getElementById("switchAccount");
 
   const connectionStatus = document.getElementById("connectionStatus");
 
@@ -379,120 +365,6 @@ document.addEventListener("DOMContentLoaded", () => {
   updateLastSync();
 
   /* ==========================================================
-     SIDEBAR MOBILE
-     Abre e fecha a navegação lateral em telas estreitas e mantém o estado acessível.
-  ========================================================== */
-
-  function openSidebar() {
-    if (!sidebar) {
-      return;
-    }
-
-    sidebar.classList.add("open");
-
-    if (sidebarOverlay) {
-      sidebarOverlay.classList.add("active");
-    }
-  }
-
-  function closeSidebar() {
-    if (!sidebar) {
-      return;
-    }
-
-    sidebar.classList.remove("open");
-
-    if (sidebarOverlay) {
-      sidebarOverlay.classList.remove("active");
-    }
-  }
-
-  if (menuButton) {
-    menuButton.addEventListener("click", openSidebar);
-  }
-
-  if (sidebarClose) {
-    sidebarClose.addEventListener("click", closeSidebar);
-  }
-
-  if (sidebarOverlay) {
-    sidebarOverlay.addEventListener("click", closeSidebar);
-  }
-
-  /* ==========================================================
-     MENU DO PERFIL
-     Controla abertura, fechamento e ações do menu da conta administrativa.
-  ========================================================== */
-
-  function closeProfileMenu() {
-    if (!profile) {
-      return;
-    }
-
-    profile.classList.remove("open");
-
-    if (profileButton) {
-      profileButton.setAttribute("aria-expanded", "false");
-    }
-  }
-
-  if (profileButton && profile) {
-    profileButton.addEventListener("click", (event) => {
-      event.stopPropagation();
-
-      closeAllDropdowns();
-
-      const isOpen = profile.classList.toggle("open");
-
-      profileButton.setAttribute("aria-expanded", String(isOpen));
-    });
-  }
-
-  if (profileDropdown) {
-    profileDropdown.addEventListener("click", (event) => {
-      event.stopPropagation();
-    });
-  }
-
-  /* ==========================================================
-     TROCAR CONTA
-     Prepara a troca de conta preservando as demais contas salvas no navegador.
-  ========================================================== */
-
-  if (switchAccountButton) {
-    switchAccountButton.addEventListener("click", () => {
-      /*
-       * Ao integrar a autenticação real, encerrar somente a sessão ativa
-       * e preservar as demais contas salvas no navegador.
-       */
-
-      window.location.href = LOGIN_PAGE;
-    });
-  }
-
-  /* ==========================================================
-     SAIR
-     Encerra a sessão ativa e direciona para a entrada do sistema.
-  ========================================================== */
-
-  if (logoutButton) {
-    logoutButton.addEventListener("click", () => {
-      /*
-       * O fluxo atual limpa a sessão local; a integração real também deverá
-       * invalidar a sessão no serviço de autenticação, se houver.
-       */
-
-      try {
-        sessionStorage.removeItem("alunotecSession");
-      } catch (error) {
-        console.warn("Não foi possível limpar a sessão.", error);
-      }
-
-      window.location.href = LOGIN_PAGE;
-    });
-  }
-
-  /* ==========================================================
      DROPDOWNS PERSONALIZADOS
      Sincroniza campos nativos ocultos com menus visuais, opções e valor selecionado.
   ========================================================== */
@@ -538,7 +410,7 @@ document.addEventListener("DOMContentLoaded", () => {
     trigger.addEventListener("click", (event) => {
       event.stopPropagation();
 
-      closeProfileMenu();
+      window.AlunoTecShell?.closeProfile();
 
       const wasOpen = dropdown.classList.contains("open");
 
@@ -690,101 +562,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderSchoolYearOptions(preferredYear = null) {
-    const dropdown = document.getElementById("yearDropdown");
-    const menu = dropdown?.querySelector(".custom-select-menu");
-    const hiddenInput = document.getElementById("yearSelect");
-    const display = document.getElementById("selectedYear");
-    if (!dropdown || !menu) return;
-
-    let years = getRegisteredSchoolYears();
-    if (!years.length) years = [String(new Date().getFullYear())];
-    let savedYear = preferredYear;
-    if (!savedYear) {
-      try {
-        savedYear = localStorage.getItem("alunotecSchoolYear");
-      } catch (error) {}
-    }
-    const selectedYear = years.includes(String(savedYear))
-      ? String(savedYear)
-      : years[0];
-
-    menu.replaceChildren();
-    years.forEach((year) => {
-      const option = document.createElement("button");
-      option.type = "button";
-      option.className =
-        "custom-option" + (year === selectedYear ? " selected" : "");
-      option.dataset.value = year;
-      option.setAttribute("role", "option");
-      option.setAttribute(
-        "aria-selected",
-        year === selectedYear ? "true" : "false",
-      );
-      const label = document.createElement("span");
-      label.textContent = year;
-      option.append(label);
-      if (year === selectedYear) {
-        const check = document.createElement("span");
-        check.className = "option-check";
-        check.textContent = "✓";
-        option.append(check);
-      }
-      menu.append(option);
-    });
-
-    if (display) display.textContent = selectedYear;
-    if (hiddenInput) hiddenInput.value = selectedYear;
-    try {
-      localStorage.setItem("alunotecSchoolYear", selectedYear);
-    } catch (error) {}
-  }
-
-  function initializeSchoolYearDropdown() {
-    const dropdown = document.getElementById("yearDropdown");
-    const trigger = dropdown?.querySelector(".custom-select-trigger");
-    const menu = dropdown?.querySelector(".custom-select-menu");
-    const hiddenInput = document.getElementById("yearSelect");
-    const display = document.getElementById("selectedYear");
-    if (!dropdown || !trigger || !menu) return;
-
-    trigger.addEventListener("click", (event) => {
-      event.stopPropagation();
-      closeProfileMenu();
-      const wasOpen = dropdown.classList.contains("open");
-      closeAllDropdowns(dropdown);
-      dropdown.classList.toggle("open", !wasOpen);
-      trigger.setAttribute("aria-expanded", String(!wasOpen));
-    });
-
-    menu.addEventListener("click", (event) => {
-      const option = event.target.closest(".custom-option");
-      if (!option || !menu.contains(option)) return;
-      event.stopPropagation();
-      const year = option.dataset.value;
-      menu.querySelectorAll(".custom-option").forEach((item) => {
-        item.classList.remove("selected");
-        item.setAttribute("aria-selected", "false");
-        item.querySelector(".option-check")?.remove();
-      });
-      option.classList.add("selected");
-      option.setAttribute("aria-selected", "true");
-      const check = document.createElement("span");
-      check.className = "option-check";
-      check.textContent = "✓";
-      option.append(check);
-      if (display) display.textContent = year;
-      if (hiddenInput) {
-        hiddenInput.value = year;
-        hiddenInput.dispatchEvent(new Event("change", { bubbles: true }));
-      }
-      dropdown.classList.remove("open");
-      trigger.setAttribute("aria-expanded", "false");
-      changeSchoolYear(year, year);
-    });
+    const years = getRegisteredSchoolYears();
+    const savedYear =
+      preferredYear || localStorage.getItem("alunotecSchoolYear");
+    window.AlunoTecShell?.setYears(years, savedYear);
   }
 
   renderSchoolYearOptions();
-  initializeSchoolYearDropdown();
+  document.addEventListener("alunotec:yearchange", (event) => {
+    const year = event.detail?.year;
+    if (year) changeSchoolYear(year, year);
+  });
 
   /* ==========================================================
      FREQUÊNCIA DE HOJE
@@ -1333,10 +1121,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.addEventListener("click", (event) => {
     closeAllDropdowns();
-
-    if (profile && !profile.contains(event.target)) {
-      closeProfileMenu();
-    }
   });
 
   /* ==========================================================
@@ -1350,20 +1134,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     closeAllDropdowns();
-
-    closeProfileMenu();
-
-    closeSidebar();
   });
 
   /* ==========================================================
      RESPONSIVIDADE
      Atualiza o comportamento dos menus quando a largura da tela muda.
   ========================================================== */
-
-  window.addEventListener("resize", () => {
-    if (window.innerWidth > 1000) {
-      closeSidebar();
-    }
-  });
 });
