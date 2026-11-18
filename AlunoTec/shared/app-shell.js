@@ -189,7 +189,7 @@
           <button class="custom-select-trigger" id="yearPickerButton" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="yearMenu">
             <span class="custom-select-icon">${icon("calendarSmall")}</span>
             <span class="custom-select-content"><small>Ano letivo</small><strong id="selectedYear">2026</strong></span>
-            ${icon("menu", "custom-select-chevron")}
+            ${icon("menu", "custom-select-menu-icon")}
           </button>
           <div class="custom-select-menu" id="yearMenu" role="listbox" hidden></div>
           <input type="hidden" id="yearSelect" value="2026">
@@ -330,30 +330,39 @@
   const studentYearSelect = document.getElementById("yearFilter");
   const schoolYearKey = "alunotecSchoolYear";
 
-  function yearsFromSavedClasses() {
-    const years = new Set([String(new Date().getFullYear())]);
+  function normalizeClassYear(item) {
+    const declaredYear = String(item?.year || "").trim();
+    if (/^\d{4}$/.test(declaredYear)) return declaredYear;
+
+    const dateYear = String(item?.date || "").slice(0, 4);
+    if (/^\d{4}$/.test(dateYear)) return dateYear;
+
+    return String(new Date().getFullYear());
+  }
+
+  function getSavedClasses() {
     try {
       const saved = JSON.parse(
         localStorage.getItem("alunotec_turmas_v2") || "{}",
       );
-      ["base", "electives"].forEach((type) => {
-        (Array.isArray(saved?.[type]) ? saved[type] : []).forEach((item) => {
-          const year = String(item?.year || "");
-          if (/^\d{4}$/.test(year)) years.add(year);
-        });
-      });
-      const selected = localStorage.getItem(schoolYearKey);
-      if (/^\d{4}$/.test(selected || "")) years.add(selected);
-    } catch {}
+      return [
+        ...(Array.isArray(saved?.base) ? saved.base : []),
+        ...(Array.isArray(saved?.electives) ? saved.electives : []),
+      ];
+    } catch {
+      return [];
+    }
+  }
+
+  function yearsFromSavedClasses() {
+    const years = new Set(getSavedClasses().map(normalizeClassYear));
+    if (!years.size) years.add(String(new Date().getFullYear()));
     return [...years].sort((a, b) => Number(b) - Number(a));
   }
 
-  function setYears(values, preferredYear, notify = false) {
-    const years = [
-      ...new Set(
-        (values || []).map(String).filter((year) => /^\d{4}$/.test(year)),
-      ),
-    ].sort((a, b) => Number(b) - Number(a));
+  function setYears(_values, preferredYear, notify = false) {
+    // A lista do topbar sempre vem das turmas salvas, nunca de filtros locais ou chamadas antigas.
+    const years = yearsFromSavedClasses();
     const options = years.length ? years : [String(new Date().getFullYear())];
     let savedYear = "";
     try {
@@ -381,26 +390,13 @@
     });
 
     if (studentYearSelect) {
-      const existing = [...studentYearSelect.options].map(
-        (option) => option.value,
+      const changed = studentYearSelect.value !== selected;
+      studentYearSelect.replaceChildren(
+        ...options.map((year) => new Option(year, year)),
       );
-      if (!existing.length) {
-        options.forEach((year) =>
-          studentYearSelect.add(new Option(year, year)),
-        );
-      }
-      if (
-        [...studentYearSelect.options].some(
-          (option) => option.value === selected,
-        )
-      ) {
-        const changed = studentYearSelect.value !== selected;
-        studentYearSelect.value = selected;
-        if (notify && changed)
-          studentYearSelect.dispatchEvent(
-            new Event("change", { bubbles: true }),
-          );
-      }
+      studentYearSelect.value = selected;
+      if (notify && changed)
+        studentYearSelect.dispatchEvent(new Event("change", { bubbles: true }));
     }
 
     try {
@@ -447,6 +443,23 @@
     initialYear = localStorage.getItem(schoolYearKey) || "";
   } catch {}
   setYears(yearsFromSavedClasses(), initialYear);
+
+  window.addEventListener("storage", (event) => {
+    if (event.key === schoolYearKey) {
+      setYears(yearsFromSavedClasses(), event.newValue || "", true);
+      return;
+    }
+
+    if (event.key === "alunotec_turmas_v2") {
+      const availableYears = yearsFromSavedClasses();
+      const currentYear = yearInput.value;
+      setYears(
+        availableYears,
+        currentYear,
+        !availableYears.includes(currentYear),
+      );
+    }
+  });
 
   /* ==========================================================
      PERFIL E CONEXÃO
@@ -526,6 +539,13 @@
     closeSidebar,
     closeProfile,
     setYears,
+    getYears: yearsFromSavedClasses,
+    getClassYear(classId, fallback = "") {
+      const item = getSavedClasses().find(
+        (entry) => String(entry?.id) === String(classId),
+      );
+      return item ? normalizeClassYear(item) : String(fallback || "");
+    },
     getYear: () => yearInput.value,
   };
 })();

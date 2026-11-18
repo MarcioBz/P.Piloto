@@ -266,9 +266,10 @@
 ========================================================== */
 @media (max-width: 640px) {
   #profileButton {
-    min-height: 40px;
-    padding: 3px 6px 3px 3px;
-    gap: 5px;
+    min-height: 42px;
+    padding: 3px 8px 3px 4px;
+    gap: 6px;
+    border-radius: 999px;
   }
 
   #profileButton > span:not(.avatar):not(.profile-avatar) {
@@ -279,6 +280,8 @@
   #profileButton .profile-avatar {
     width: 36px;
     height: 36px;
+    flex-basis: 36px;
+    aspect-ratio: 1;
   }
 
   #profileButton > svg {
@@ -288,6 +291,30 @@
     flex: 0 0 16px;
     margin-left: 0;
     color: #16834c;
+  }
+}
+
+/* ==========================================================
+   PERFIL EM CELULARES ESTREITOS
+   Reduz o acionador da conta em telas com menos de 380px de largura.
+========================================================== */
+@media (max-width: 380px) {
+  #profileButton {
+    padding-right: 6px;
+    gap: 4px;
+  }
+
+  #profileButton .avatar,
+  #profileButton .profile-avatar {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+  }
+
+  #profileButton > svg {
+    width: 15px;
+    height: 15px;
+    flex-basis: 15px;
   }
 }
 

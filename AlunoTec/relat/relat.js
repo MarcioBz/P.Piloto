@@ -9,7 +9,7 @@
 
 (() => {
   const KEY_ATTENDANCE = "alunotec_frequencia_v1";
-  const KEY_YEAR = "alunotecSchoolYear";
+  const KEY_CLASSES = "alunotec_turmas_v2";
   const yearSelect = document.getElementById("reportYear");
   const monthSelect = document.getElementById("reportMonth");
   const rows = document.getElementById("reportRows");
@@ -55,19 +55,60 @@
       "Os dados locais de frequência estão inválidos. Confira a cópia de segurança antes de substituir dados.";
   }
 
-  const recordYears = Object.values(attendance)
-    .map((call) => String(call?.year || call?.date?.slice?.(0, 4) || ""))
-    .filter((year) => /^\d{4}$/.test(year));
-  const selectedYear =
-    localStorage.getItem(KEY_YEAR) || String(new Date().getFullYear());
-  const years = [...new Set([...recordYears, selectedYear])].sort().reverse();
-  years.forEach((year) => {
-    const option = document.createElement("option");
-    option.value = year;
-    option.textContent = year;
-    option.selected = year === selectedYear;
-    yearSelect.append(option);
-  });
+  function normalizeClassYear(item) {
+    const year = String(item?.year || "").trim();
+    if (/^\d{4}$/.test(year)) return year;
+    const dateYear = String(item?.date || "").slice(0, 4);
+    return /^\d{4}$/.test(dateYear)
+      ? dateYear
+      : String(new Date().getFullYear());
+  }
+
+  function getClassYearIndex() {
+    const index = new Map();
+    try {
+      const saved = JSON.parse(localStorage.getItem(KEY_CLASSES) || "{}");
+      ["base", "electives"].forEach((type) => {
+        (Array.isArray(saved?.[type]) ? saved[type] : []).forEach((item) => {
+          if (item?.id != null)
+            index.set(String(item.id), normalizeClassYear(item));
+        });
+      });
+    } catch {}
+    return index;
+  }
+
+  let classYearById = getClassYearIndex();
+
+  function getCallYear(call) {
+    return String(
+      classYearById.get(String(call?.classId ?? "")) ||
+        call?.year ||
+        call?.date?.slice?.(0, 4) ||
+        "",
+    );
+  }
+
+  function refreshYearOptions(preferredYear = "") {
+    classYearById = getClassYearIndex();
+    const years = window.AlunoTecShell?.getYears?.() || [];
+    const options = years.length ? years : [String(new Date().getFullYear())];
+    const current = String(
+      preferredYear || window.AlunoTecShell?.getYear?.() || options[0],
+    );
+    const selectedYear = options.includes(current) ? current : options[0];
+    yearSelect.replaceChildren(
+      ...options.map((year) => {
+        const option = document.createElement("option");
+        option.value = year;
+        option.textContent = year;
+        option.selected = year === selectedYear;
+        return option;
+      }),
+    );
+  }
+
+  refreshYearOptions();
 
   /* ==========================================================
      SELEÇÃO E CÁLCULO
@@ -76,7 +117,7 @@
   function getFilteredCalls() {
     return Object.values(attendance).filter((call) => {
       if (!call || typeof call !== "object" || !call.date) return false;
-      const year = String(call.year || call.date.slice(0, 4));
+      const year = getCallYear(call);
       return (
         year === yearSelect.value &&
         (monthSelect.value === "all" ||
@@ -172,7 +213,7 @@
       Object.values(call.students || {}).forEach((student) => {
         lines.push([
           call.date,
-          call.year || call.date.slice(0, 4),
+          getCallYear(call),
           call.className || "",
           call.shift || "",
           student.studentName || "",
@@ -197,13 +238,26 @@
      EVENTOS
      Atualiza a consulta quando os filtros mudam e conecta o botão de exportação.
   ========================================================== */
-  yearSelect.addEventListener("change", calculate);
-  document.addEventListener("alunotec:yearchange", (event) => {
-    const year = String(event.detail?.year || "");
-    if ([...yearSelect.options].some((option) => option.value === year)) {
-      yearSelect.value = year;
+  yearSelect.addEventListener("change", () => {
+    if (window.AlunoTecShell?.setYears) {
+      window.AlunoTecShell.setYears(
+        window.AlunoTecShell.getYears(),
+        yearSelect.value,
+        true,
+      );
+    } else {
       calculate();
     }
+  });
+  document.addEventListener("alunotec:yearchange", (event) => {
+    const year = String(event.detail?.year || "");
+    refreshYearOptions(year);
+    calculate();
+  });
+  window.addEventListener("storage", (event) => {
+    if (event.key !== KEY_CLASSES) return;
+    refreshYearOptions();
+    calculate();
   });
   monthSelect.addEventListener("change", calculate);
   document.getElementById("exportReport").addEventListener("click", exportCsv);

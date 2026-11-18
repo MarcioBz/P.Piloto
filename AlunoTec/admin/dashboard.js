@@ -33,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const todayDate = document.getElementById("todayDate");
   const ACTIVITY_KEY = "alunotec_turmas_activity_v1";
+  const ATTENDANCE_ALERTS_KEY = "alunotec_frequencia_alertas_v1";
   const activityBell = document.getElementById("activityBell");
   const todayActivitiesList = document.getElementById("todayActivitiesList");
   let activityDialog = null;
@@ -46,20 +47,51 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function readAttendanceAlerts() {
+    try {
+      const items = JSON.parse(
+        localStorage.getItem(ATTENDANCE_ALERTS_KEY) || "[]",
+      );
+      return Array.isArray(items) ? items : [];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function activeAttendanceAlerts() {
+    const selectedYear = String(
+      window.AlunoTecShell?.getYear?.() ||
+        localStorage.getItem("alunotecSchoolYear") ||
+        new Date().getFullYear(),
+    );
+    return readAttendanceAlerts().filter(
+      (item) =>
+        item.active !== false &&
+        String(item.year || selectedYear) === selectedYear,
+    );
+  }
+
   function updateActivityBell() {
     if (!activityBell) return;
     const badge = document.getElementById("activityBellCount");
+    const alerts = activeAttendanceAlerts();
     const unread = readClassActivities().filter((item) => !item.read).length;
+    const unreadAlerts = alerts.filter((item) => !item.read).length;
+    const notificationCount = unread + unreadAlerts;
     if (badge) {
-      badge.textContent = unread > 99 ? "99+" : String(unread);
-      badge.hidden = unread === 0;
+      badge.textContent =
+        notificationCount > 99 ? "99+" : String(notificationCount);
+      badge.hidden = notificationCount === 0;
     }
-    activityBell.classList.toggle("has-activity", unread > 0);
+    activityBell.classList.toggle("has-activity", notificationCount > 0);
+    activityBell.classList.toggle("urgent", alerts.length > 0);
     activityBell.setAttribute(
       "aria-label",
-      unread
-        ? `Notificações das turmas: ${unread} não lidas`
-        : "Notificações das turmas",
+      alerts.length
+        ? `Alerta de frequência: ${alerts.length} aluno(s) com faltas repetidas`
+        : unread
+          ? `Notificações das turmas: ${unread} não lidas`
+          : "Notificações das turmas",
     );
   }
 
@@ -75,14 +107,34 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderClassActivities(list) {
     if (!list) return;
     const activities = readClassActivities();
+    const alerts = activeAttendanceAlerts();
     list.replaceChildren();
-    if (!activities.length) {
+    if (!activities.length && !alerts.length) {
       const empty = document.createElement("p");
       empty.className = "activity-empty";
       empty.textContent = "Nenhuma notificação por enquanto.";
       list.append(empty);
       return;
     }
+    alerts.forEach((item) => {
+      const row = document.createElement("article");
+      row.className = "activity-item attendance-alert";
+      const dot = document.createElement("span");
+      dot.className = "activity-dot";
+      const content = document.createElement("div");
+      const message = document.createElement("p");
+      message.textContent = item.message || "Alerta de faltas repetidas.";
+      const date = document.createElement("time");
+      const parsedDate = new Date(`${item.date || ""}T12:00:00`);
+      date.textContent = Number.isNaN(parsedDate.getTime())
+        ? ""
+        : new Intl.DateTimeFormat("pt-BR", { dateStyle: "short" }).format(
+            parsedDate,
+          );
+      content.append(message, date);
+      row.append(dot, content);
+      list.append(row);
+    });
     activities.forEach((item) => {
       const row = document.createElement("article");
       row.className = "activity-item";
@@ -153,8 +205,19 @@ document.addEventListener("DOMContentLoaded", () => {
       ...item,
       read: true,
     }));
+    const selectedYear = String(
+      window.AlunoTecShell?.getYear?.() ||
+        localStorage.getItem("alunotecSchoolYear") ||
+        new Date().getFullYear(),
+    );
+    const alerts = readAttendanceAlerts().map((item) =>
+      String(item.year || selectedYear) === selectedYear
+        ? { ...item, read: true }
+        : item,
+    );
     try {
       localStorage.setItem(ACTIVITY_KEY, JSON.stringify(activities));
+      localStorage.setItem(ATTENDANCE_ALERTS_KEY, JSON.stringify(alerts));
     } catch (error) {}
     updateActivityBell();
 
@@ -162,7 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
     dialog.className = "activity-dialog";
     dialog.innerHTML = `<header class="activity-heading">
             <span class="activity-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span>
-            <span><strong>Atividades das turmas</strong><small>Atualizações compartilhadas com a aba Turmas</small></span>
+            <span><strong>Alertas e atividades</strong><small>Frequência e atualizações das turmas</small></span>
         </header>
         <div class="activity-list"></div>
         <footer class="activity-footer"><button type="button" class="activity-clear">Limpar notificações</button></footer>`;
@@ -210,6 +273,11 @@ document.addEventListener("DOMContentLoaded", () => {
       if (activityDialog)
         renderClassActivities(activityDialog.querySelector(".activity-list"));
     }
+    if (event.key === ATTENDANCE_ALERTS_KEY) {
+      updateActivityBell();
+      if (activityDialog)
+        renderClassActivities(activityDialog.querySelector(".activity-list"));
+    }
     if (event.key === "alunotec_turmas_v2") {
       renderSchoolYearOptions();
       populateDashboardClassOptions();
@@ -224,6 +292,12 @@ document.addEventListener("DOMContentLoaded", () => {
       populateDashboardClassOptions();
       updateDashboard();
     }
+  });
+
+  document.addEventListener("alunotec:yearchange", () => {
+    updateActivityBell();
+    if (activityDialog)
+      renderClassActivities(activityDialog.querySelector(".activity-list"));
   });
 
   /* ==========================================================
@@ -642,15 +716,27 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       console.warn("Não foi possível ler os dados locais do painel.", error);
     }
+    const classes = Array.isArray(savedClasses?.base) ? savedClasses.base : [];
     const year =
       localStorage.getItem("alunotecSchoolYear") ||
       String(new Date().getFullYear());
+    const classYear = (item) =>
+      String(
+        item?.year || item?.date?.slice?.(0, 4) || new Date().getFullYear(),
+      );
+    const classYears = new Map(
+      classes.map((item) => [String(item?.id ?? ""), classYear(item)]),
+    );
     const calls = Object.values(
       attendance && typeof attendance === "object" ? attendance : {},
-    ).filter(
-      (call) => call && String(call.year || call.date?.slice?.(0, 4)) === year,
-    );
-    const classes = Array.isArray(savedClasses?.base) ? savedClasses.base : [];
+    ).filter((call) => {
+      if (!call) return false;
+      const callYear =
+        classYears.get(String(call.classId ?? "")) ||
+        call.year ||
+        call.date?.slice?.(0, 4);
+      return String(callYear || "") === year;
+    });
     const now = new Date();
     const today = [
       now.getFullYear(),
@@ -658,9 +744,7 @@ document.addEventListener("DOMContentLoaded", () => {
       String(now.getDate()).padStart(2, "0"),
     ].join("-");
     return classes
-      .filter(
-        (item) => item && item.id != null && String(item.year || year) === year,
-      )
+      .filter((item) => item && item.id != null && classYear(item) === year)
       .map((item) => {
         const records = calls.filter(
           (call) => String(call.classId) === String(item.id),

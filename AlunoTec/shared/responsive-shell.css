@@ -458,7 +458,7 @@ tbody tr:last-child td {
 }
 
 .custom-select-icon svg,
-.custom-select-chevron {
+.custom-select-menu-icon {
   width: 18px;
   height: 18px;
   fill: none;
@@ -476,7 +476,7 @@ tbody tr:last-child td {
    ACIONADOR DO ANO LETIVO COMPARTILHADO
    Isola cor e abertura do menu dos estilos de seletores locais das páginas.
 ========================================================== */
-.year-custom-select .custom-select-chevron {
+.year-custom-select .custom-select-menu-icon {
   color: #16834c;
 }
 
@@ -585,6 +585,26 @@ tbody tr:last-child td {
 .activity-bell:hover {
   border-color: #b9ddc7;
   background: #f1faf4;
+}
+
+.activity-bell.urgent {
+  border-color: #e9a9ad;
+  background: #fff3f4;
+  color: #cf3038;
+  box-shadow: 0 3px 12px rgba(207, 48, 56, 0.13);
+}
+
+.activity-bell.urgent:hover {
+  border-color: #df858b;
+  background: #ffeaec;
+}
+
+.activity-bell:focus-visible,
+.menu-button:focus-visible,
+.profile-button:focus-visible,
+.year-custom-select .custom-select-trigger:focus-visible {
+  outline: 3px solid rgba(22, 131, 76, 0.28);
+  outline-offset: 2px;
 }
 
 .activity-bell svg {
@@ -705,12 +725,16 @@ tbody tr:last-child td {
 .profile-button .avatar,
 .profile-dropdown .avatar,
 .profile-button .profile-avatar {
+  position: relative;
+  box-sizing: border-box;
   display: grid;
   place-items: center;
   width: 42px;
   height: 42px;
   flex: 0 0 42px;
   overflow: hidden;
+  aspect-ratio: 1;
+  isolation: isolate;
   border-radius: 50%;
   background: #32712e;
   color: #fff;
@@ -721,9 +745,12 @@ tbody tr:last-child td {
 .profile-button .avatar img,
 .profile-button .profile-avatar img,
 .profile-dropdown .avatar img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
+  border-radius: inherit;
 }
 
 .profile-text {
@@ -950,23 +977,25 @@ tbody tr:last-child td {
 ========================================================== */
 @media (max-width: 640px) {
   :root {
-    --at-topbar-height: 64px;
+    --at-topbar-height: 66px;
   }
 
   .main > .topbar {
     min-height: var(--at-topbar-height);
-    padding: 8px 12px;
-    gap: 8px;
+    padding: 8px clamp(10px, 2.7vw, 16px);
+    gap: 10px;
     background: rgba(255, 255, 255, 0.98);
     box-shadow: 0 4px 18px rgba(22, 52, 31, 0.07);
   }
 
   .topbar-left {
+    flex: 0 0 auto;
     gap: 8px;
   }
 
   .topbar-right {
-    gap: 7px;
+    flex: 0 0 auto;
+    gap: 8px;
   }
 
   .menu-button,
@@ -974,13 +1003,13 @@ tbody tr:last-child td {
     width: 40px;
     height: 40px;
     flex-basis: 40px;
-    border-radius: 12px;
+    border-radius: 13px;
   }
 
   .year-custom-select {
-    width: 116px;
-    min-width: 116px;
-    flex-basis: 116px;
+    width: 136px;
+    min-width: 136px;
+    flex-basis: 136px;
   }
 
   .year-custom-select .custom-select-trigger {
@@ -990,9 +1019,9 @@ tbody tr:last-child td {
   }
 
   .custom-select-icon {
-    width: 30px;
-    height: 30px;
-    flex-basis: 30px;
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
   }
 
   .custom-select-content small {
@@ -1008,11 +1037,11 @@ tbody tr:last-child td {
   }
 
   .profile-button {
-    min-height: 40px;
-    padding: 3px 6px 3px 3px;
-    gap: 5px;
+    min-height: 42px;
+    padding: 3px 8px 3px 4px;
+    gap: 6px;
     border: 1px solid #e5ece7;
-    border-radius: 12px;
+    border-radius: 999px;
     background: #fff;
     box-shadow: 0 2px 8px rgba(20, 65, 40, 0.035);
   }
@@ -1022,6 +1051,10 @@ tbody tr:last-child td {
     width: 36px;
     height: 36px;
     flex-basis: 36px;
+  }
+
+  .profile {
+    flex: 0 0 auto;
   }
 
   .profile-text {
@@ -1035,13 +1068,20 @@ tbody tr:last-child td {
     flex-basis: 16px;
     color: #16834c;
   }
+
+  .profile-dropdown {
+    top: calc(100% + 8px);
+    width: min(270px, calc(100vw - 20px));
+    max-width: calc(100vw - 20px);
+    border-radius: 16px;
+  }
 }
 
 @media (max-width: 380px) {
   .main > .topbar {
-    gap: 6px;
-    padding-right: 8px;
-    padding-left: 8px;
+    gap: 5px;
+    padding-right: 7px;
+    padding-left: 7px;
   }
 
   .topbar-left {
@@ -1049,9 +1089,9 @@ tbody tr:last-child td {
   }
 
   .year-custom-select {
-    width: 104px;
-    min-width: 104px;
-    flex-basis: 104px;
+    width: 122px;
+    min-width: 122px;
+    flex-basis: 122px;
   }
 
   .year-custom-select .custom-select-trigger {
@@ -1061,9 +1101,9 @@ tbody tr:last-child td {
   }
 
   .year-custom-select .custom-select-icon {
-    width: 26px;
-    height: 26px;
-    flex-basis: 26px;
+    width: 28px;
+    height: 28px;
+    flex-basis: 28px;
   }
 
   .menu-button,
@@ -1073,13 +1113,31 @@ tbody tr:last-child td {
     flex-basis: 38px;
   }
 
-  .custom-select-chevron {
+  .custom-select-menu-icon {
     width: 16px;
     height: 16px;
   }
 
   .topbar-right {
-    gap: 5px;
+    gap: 4px;
+  }
+
+  .profile-button {
+    padding-right: 6px;
+    gap: 4px;
+  }
+
+  .profile-button .avatar,
+  .profile-button .profile-avatar {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+  }
+
+  .profile-menu-icon {
+    width: 15px;
+    height: 15px;
+    flex-basis: 15px;
   }
 }
 

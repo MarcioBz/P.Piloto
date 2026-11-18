@@ -16,26 +16,32 @@
   const yearSelect = document.getElementById("schoolYear");
   const yearStatus = document.getElementById("yearStatus");
   const backupStatus = document.getElementById("backupStatus");
-  const currentYear = new Date().getFullYear();
-  const savedYear =
-    localStorage.getItem("alunotecSchoolYear") || String(currentYear);
-  const years = new Set(
-    Array.from({ length: 9 }, (_, index) => String(currentYear - 3 + index)),
-  );
-  years.add(savedYear);
-  [...years].sort().forEach((year) => {
-    const option = document.createElement("option");
-    option.value = year;
-    option.textContent = year;
-    option.selected = year === savedYear;
-    yearSelect.append(option);
-  });
+  function refreshYearOptions(preferredYear = "") {
+    const currentYear = new Date().getFullYear();
+    const years = window.AlunoTecShell?.getYears?.() || [String(currentYear)];
+    const requested = String(
+      preferredYear ||
+        window.AlunoTecShell?.getYear?.() ||
+        localStorage.getItem("alunotecSchoolYear") ||
+        currentYear,
+    );
+    const selectedYear = years.includes(requested) ? requested : years[0];
+    yearSelect.replaceChildren(
+      ...years.map((year) => {
+        const option = document.createElement("option");
+        option.value = year;
+        option.textContent = year;
+        option.selected = year === selectedYear;
+        return option;
+      }),
+    );
+  }
+
+  refreshYearOptions();
 
   document.addEventListener("alunotec:yearchange", (event) => {
     const year = String(event.detail?.year || "");
-    if ([...yearSelect.options].some((option) => option.value === year)) {
-      yearSelect.value = year;
-    }
+    refreshYearOptions(year);
   });
 
   /* ==========================================================
@@ -44,8 +50,16 @@
   ========================================================== */
   yearForm.addEventListener("submit", (event) => {
     event.preventDefault();
-    localStorage.setItem("alunotecSchoolYear", yearSelect.value);
+    window.AlunoTecShell?.setYears(
+      window.AlunoTecShell.getYears(),
+      yearSelect.value,
+      true,
+    );
     yearStatus.textContent = `Ano letivo ${yearSelect.value} salvo neste navegador.`;
+  });
+
+  window.addEventListener("storage", (event) => {
+    if (event.key === "alunotec_turmas_v2") refreshYearOptions();
   });
 
   /* ==========================================================

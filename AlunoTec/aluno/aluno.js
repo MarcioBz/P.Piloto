@@ -76,12 +76,32 @@
     }
   }
 
-  function allClasses() {
+  function selectedSchoolYear() {
+    return String(
+      window.AlunoTecShell?.getYear?.() ||
+        localStorage.getItem("alunotecSchoolYear") ||
+        new Date().getFullYear(),
+    );
+  }
+
+  function classSchoolYear(classItem) {
+    return String(
+      window.AlunoTecShell?.getClassYear?.(
+        classItem?.id,
+        classItem?.year || classItem?.date?.slice?.(0, 4),
+      ) ||
+        classItem?.year ||
+        classItem?.date?.slice?.(0, 4) ||
+        new Date().getFullYear(),
+    );
+  }
+
+  function allClasses(year = selectedSchoolYear()) {
     const data = readClasses();
     return [
       ...data.base.map((item) => ({ ...item, type: "base" })),
       ...data.electives.map((item) => ({ ...item, type: "elective" })),
-    ];
+    ].filter((item) => classSchoolYear(item) === String(year));
   }
 
   function findClass(id, data = readClasses()) {
@@ -92,11 +112,15 @@
     return null;
   }
 
-  function getStudentGroups() {
+  function getStudentGroups(year = selectedSchoolYear()) {
     const groups = new Map();
     const movements = readMovements();
+    const scopedClasses = allClasses(year);
+    const scopedClassIds = new Set(
+      scopedClasses.map((item) => String(item.id)),
+    );
 
-    for (const classItem of allClasses()) {
+    for (const classItem of scopedClasses) {
       for (const student of Array.isArray(classItem.students)
         ? classItem.students
         : []) {
@@ -118,7 +142,7 @@
           ...student,
           classId: classItem.id,
           className: classItem.name || "Turma sem nome",
-          classYear: classItem.year || "",
+          classYear: classSchoolYear(classItem),
           grade: classItem.grade || "",
           type: classItem.type,
         };
@@ -134,11 +158,18 @@
         ...group.electiveRecords.map((item) => String(item.id)),
       ]);
 
-      group.movements = movements.filter(
-        (item) =>
+      group.movements = movements.filter((item) => {
+        const sameStudent =
           ids.has(String(item.studentId)) ||
-          normalizeName(item.studentName) === group.key,
-      );
+          normalizeName(item.studentName) === group.key;
+        const belongsToYear =
+          scopedClassIds.has(String(item.sourceClassId || "")) ||
+          scopedClassIds.has(String(item.destinationClassId || "")) ||
+          (!item.sourceClassId &&
+            !item.destinationClassId &&
+            String(item.date || "").slice(0, 4) === String(year));
+        return sameStudent && belongsToYear;
+      });
     }
 
     return [...groups.values()]
@@ -338,10 +369,18 @@
   ========================================================== */
   function fillFilters() {
     const data = readClasses();
-    const baseClasses = data.base;
+    const currentYear = selectedSchoolYear();
+    const baseClasses = data.base.filter(
+      (item) => classSchoolYear(item) === currentYear,
+    );
     const oldClass = $("#classFilter").value;
-    const oldListYear = $("#listYearFilter").value;
-    const oldYear = $("#yearFilter").value;
+    const availableYears =
+      window.AlunoTecShell?.getYears?.() ||
+      [...new Set([...data.base, ...data.electives].map(classSchoolYear))].sort(
+        (a, b) => Number(b) - Number(a),
+      );
+    const years = availableYears.length ? availableYears : [currentYear];
+    const selectedYear = years.includes(currentYear) ? currentYear : years[0];
 
     $("#classFilter").innerHTML =
       `<option value="">Todas</option>` +
@@ -352,14 +391,6 @@
         )
         .join("");
 
-    const years = [
-      ...new Set(
-        baseClasses.map((item) => String(item.year || "")).filter(Boolean),
-      ),
-    ]
-      .sort()
-      .reverse();
-
     const yearOptions = years
       .map(
         (year) =>
@@ -367,21 +398,16 @@
       )
       .join("");
 
-    $("#listYearFilter").innerHTML =
-      `<option value="">Todos</option>${yearOptions}`;
+    $("#listYearFilter").innerHTML = yearOptions;
     $("#yearFilter").innerHTML =
-      yearOptions ||
-      `<option value="${new Date().getFullYear()}">${new Date().getFullYear()}</option>`;
+      yearOptions || `<option value="${selectedYear}">${selectedYear}</option>`;
+    $("#listYearFilter").value = selectedYear;
+    $("#yearFilter").value = selectedYear;
 
     if (baseClasses.some((item) => String(item.id) === oldClass))
       $("#classFilter").value = oldClass;
-    if (years.includes(oldListYear)) $("#listYearFilter").value = oldListYear;
-    if (years.includes(oldYear)) $("#yearFilter").value = oldYear;
 
-    window.AlunoTecShell?.setYears(
-      [...$("#yearFilter").options].map((option) => option.value),
-      window.AlunoTecShell?.getYear(),
-    );
+    window.AlunoTecShell?.setYears(years, selectedYear);
 
     enhanceAllSelects();
   }
@@ -756,8 +782,19 @@
 
   $("#searchInput").addEventListener("input", render);
   $("#classFilter").addEventListener("change", render);
-  $("#listYearFilter").addEventListener("change", render);
-  $("#yearFilter").addEventListener("change", render);
+  $("#listYearFilter").addEventListener("change", () => {
+    const year = $("#listYearFilter").value;
+    if (window.AlunoTecShell?.setYears) {
+      window.AlunoTecShell.setYears(
+        window.AlunoTecShell.getYears(),
+        year,
+        true,
+      );
+    } else {
+      render();
+    }
+  });
+  document.addEventListener("alunotec:yearchange", render);
   $("#statusFilter").addEventListener("change", render);
 
   $(".tabs").addEventListener("click", (event) => {

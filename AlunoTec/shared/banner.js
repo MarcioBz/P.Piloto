@@ -31,6 +31,44 @@
     },
   };
 
+  /* Relaciona cada aba ao ícone correspondente da navegação compartilhada. */
+  const bannerIcons = {
+    dashboard: "home",
+    frequency: "calendar",
+    students: "users",
+    classes: "book",
+    reports: "chart",
+    electives: "capelo",
+    institution: "building",
+    settings: "settings",
+  };
+
+  /* Inclui o ícone de cada aba antes do texto do banner. */
+  function ensureBannerIcon(banner) {
+    const copy = banner.querySelector(".hero-copy, .hero-content");
+    if (!copy) return;
+
+    const iconName = bannerIcons[page] || "capelo";
+    let icon = copy.querySelector(":scope > .shared-banner-icon");
+
+    if (icon) {
+      icon.dataset.pageIcon = iconName;
+      icon.innerHTML = `<svg viewBox="0 0 24 24" focusable="false"><use href="#at-icon-${iconName}"></use></svg>`;
+      return;
+    }
+
+    icon = document.createElement("span");
+    icon.className = "shared-banner-icon";
+    icon.dataset.pageIcon = iconName;
+    icon.setAttribute("aria-hidden", "true");
+    icon.innerHTML = `<svg viewBox="0 0 24 24" focusable="false"><use href="#at-icon-${iconName}"></use></svg>`;
+
+    const text = document.createElement("div");
+    text.className = "shared-banner-copy";
+    while (copy.firstChild) text.append(copy.firstChild);
+    copy.append(icon, text);
+  }
+
   /* Constrói o mesmo esqueleto usado pelo banner compartilhado. */
   function createBanner({ title, subtitle, description, quote }) {
     const banner = document.createElement("section");
@@ -61,6 +99,7 @@
     image.setAttribute("aria-hidden", "true");
 
     banner.append(copy, quoteBlock, image);
+    ensureBannerIcon(banner);
     return banner;
   }
 
@@ -115,6 +154,7 @@
   if (currentBanner) {
     currentBanner.classList.remove("hero");
     currentBanner.classList.add("shared-banner");
+    ensureBannerIcon(currentBanner);
     return;
   }
 

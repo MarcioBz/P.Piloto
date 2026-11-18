@@ -13,1057 +13,825 @@
 ========================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
-  /* ==========================================================
+
+    /* ==========================================================
        CONFIGURAÇÕES
        Define chaves, referências de elementos e opções usadas em toda a área de turmas.
     ========================================================== */
 
-  const STORAGE_KEY = "alunotec_turmas_v2";
-  const PENDING_SYNC_KEY = "alunotec_turmas_pending_sync_v1";
-  const SYNC_STATE_KEY = "alunotec_turmas_sync_state_v1";
-  const SUPABASE_URL = "";
-  const SUPABASE_ANON_KEY = "";
-  const SUPABASE_TABLE = "alunotec_turmas";
-  const SUPABASE_SESSION_KEY = "alunotec_supabase_session_v1";
-  let syncInProgress = false;
-  const ACTIVITY_KEY = "alunotec_turmas_activity_v1";
+    const STORAGE_KEY = "alunotec_turmas_v2";
+    const PENDING_SYNC_KEY = "alunotec_turmas_pending_sync_v1";
+    const SYNC_STATE_KEY = "alunotec_turmas_sync_state_v1";
+    const SUPABASE_URL = "";
+    const SUPABASE_ANON_KEY = "";
+    const SUPABASE_TABLE = "alunotec_turmas";
+    const SUPABASE_SESSION_KEY = "alunotec_supabase_session_v1";
+    let syncInProgress = false;
+    const ACTIVITY_KEY = "alunotec_turmas_activity_v1";
 
-  let internetClock = null;
-  const internetTimeReady = (async () => {
-    try {
-      const response = await fetch(
-        "https://worldtimeapi.org/api/timezone/America/Sao_Paulo",
-        { cache: "no-store", signal: AbortSignal.timeout(5000) },
-      );
-      if (!response.ok) throw new Error("Horário indisponível");
-      const result = await response.json();
-      const timestamp = Date.parse(result.datetime);
-      if (!Number.isFinite(timestamp)) throw new Error("Horário inválido");
-      internetClock = { timestamp, elapsed: performance.now() };
-    } catch (error) {
-      console.info("Não foi possível consultar o horário da internet.");
+    let internetClock = null;
+    const internetTimeReady = (async () => {
+        try {
+            const response = await fetch("https://worldtimeapi.org/api/timezone/America/Sao_Paulo", {cache: "no-store", signal: AbortSignal.timeout(5000)});
+            if (!response.ok) throw new Error("Horário indisponível");
+            const result = await response.json();
+            const timestamp = Date.parse(result.datetime);
+            if (!Number.isFinite(timestamp)) throw new Error("Horário inválido");
+            internetClock = {timestamp, elapsed: performance.now()};
+        } catch (error) {
+            console.info("Não foi possível consultar o horário da internet.");
+        }
+    })();
+
+    async function automaticCreationDate() {
+        await internetTimeReady;
+        const current = internetClock
+            ? new Date(internetClock.timestamp + performance.now() - internetClock.elapsed)
+            : new Date();
+        if (!internetClock) showToast("Sem acesso ao horário da internet: usada a data do dispositivo.", "warning");
+        const parts = new Intl.DateTimeFormat("en-US", {timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit"}).formatToParts(current);
+        const value = (type) => parts.find(part => part.type === type).value;
+        return value("year") + "-" + value("month") + "-" + value("day");
     }
-  })();
 
-  async function automaticCreationDate() {
-    await internetTimeReady;
-    const current = internetClock
-      ? new Date(
-          internetClock.timestamp + performance.now() - internetClock.elapsed,
-        )
-      : new Date();
-    if (!internetClock)
-      showToast(
-        "Sem acesso ao horário da internet: usada a data do dispositivo.",
-        "warning",
-      );
-    const parts = new Intl.DateTimeFormat("en-US", {
-      timeZone: "America/Sao_Paulo",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).formatToParts(current);
-    const value = (type) => parts.find((part) => part.type === type).value;
-    return value("year") + "-" + value("month") + "-" + value("day");
-  }
+    const CURRENT_YEAR = String(new Date().getFullYear());
 
-  const CURRENT_YEAR = String(new Date().getFullYear());
+    const state = {
+        activeTab: "base",
+        openedClassId: null,
+        openedClassType: null,
+        editingStudentId: null,
 
-  const state = {
-    activeTab: "base",
-    openedClassId: null,
-    openedClassType: null,
-    editingStudentId: null,
+        data: {
+            base: [],
+            electives: []
+        },
 
-    data: {
-      base: [],
-      electives: [],
-    },
+        calendars: {
+            base: new Date(),
+            elective: new Date()
+        }
+    };
 
-    calendars: {
-      base: new Date(),
-      elective: new Date(),
-    },
-  };
 
-  /* ==========================================================
+    /* ==========================================================
        HELPERS
        Reúne formatação, validação e funções auxiliares compartilhadas pelas operações da tela.
     ========================================================== */
 
-  const $ = (selector) => document.querySelector(selector);
-  const $$ = (selector) => [...document.querySelectorAll(selector)];
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => [...document.querySelectorAll(selector)];
 
-  const byId = (id) => document.getElementById(id);
+    const byId = (id) => document.getElementById(id);
 
-  let internetReachable = null;
-  function getSupabaseSession() {
-    try {
-      return JSON.parse(localStorage.getItem(SUPABASE_SESSION_KEY) || "null");
-    } catch {
-      return null;
+    let internetReachable = null;
+    function getSupabaseSession(){try{return JSON.parse(localStorage.getItem(SUPABASE_SESSION_KEY)||"null")}catch{return null}}
+    function supabaseIsConfigured(){try{const url=new URL(SUPABASE_URL);return url.protocol==="https:"&&url.hostname.endsWith(".supabase.co")&&!!SUPABASE_ANON_KEY}catch{return false}}
+    function updateConnectionStatus(){
+        const title=byId("connectionTitle"),text=byId("connectionSubtitle"),badge=byId("connectionStatus");
+        if(!title||!text)return;
+        const online=navigator.onLine&&internetReachable===true;
+        const checking=navigator.onLine&&internetReachable===null;
+        const pending=!!localStorage.getItem(PENDING_SYNC_KEY);
+        const session=getSupabaseSession();
+        title.textContent=online?"Online":checking?"Verificando":"Offline";
+        if(checking)text.textContent="Verificando acesso à internet…";
+        else if(!online)text.textContent=pending?"Alterações guardadas neste dispositivo":"Trabalhando offline";
+        else if(!supabaseIsConfigured())text.textContent=pending?"Salvo neste dispositivo • Supabase pendente":"Servidor de sincronização não configurado";
+        else if(!session)text.textContent="Conecte a conta para sincronizar";
+        else if(localStorage.getItem(SYNC_STATE_KEY)==="error")text.textContent="Sincronização com erro • clique para tentar";
+        else if(pending)text.textContent="Sincronização pendente";
+        else text.textContent=localStorage.getItem(SYNC_STATE_KEY)==="synced"?"Sincronizado com Supabase":"Conectado • preparando sincronização";
+        badge?.classList.toggle("offline",!online&&!checking);
+        badge?.classList.toggle("checking",checking);
     }
-  }
-  function supabaseIsConfigured() {
-    try {
-      const url = new URL(SUPABASE_URL);
-      return (
-        url.protocol === "https:" &&
-        url.hostname.endsWith(".supabase.co") &&
-        !!SUPABASE_ANON_KEY
-      );
-    } catch {
-      return false;
+    async function checkInternetConnection(){
+        if(!navigator.onLine){internetReachable=false;updateConnectionStatus();return;}
+        internetReachable=null;updateConnectionStatus();
+        try{await fetch("https://www.gstatic.com/generate_204",{mode:"no-cors",cache:"no-store",signal:AbortSignal.timeout(5000)});internetReachable=true;}catch{internetReachable=false;}
+        updateConnectionStatus();
+        if(internetReachable)syncWithSupabase();
     }
-  }
-  function updateConnectionStatus() {
-    const title = byId("connectionTitle"),
-      text = byId("connectionSubtitle"),
-      badge = byId("connectionStatus");
-    if (!title || !text) return;
-    const online = navigator.onLine && internetReachable === true;
-    const checking = navigator.onLine && internetReachable === null;
-    const pending = !!localStorage.getItem(PENDING_SYNC_KEY);
-    const session = getSupabaseSession();
-    title.textContent = online
-      ? "Online"
-      : checking
-        ? "Verificando"
-        : "Offline";
-    if (checking) text.textContent = "Verificando acesso à internet…";
-    else if (!online)
-      text.textContent = pending
-        ? "Alterações guardadas neste dispositivo"
-        : "Trabalhando offline";
-    else if (!supabaseIsConfigured())
-      text.textContent = pending
-        ? "Salvo neste dispositivo • Supabase pendente"
-        : "Servidor de sincronização não configurado";
-    else if (!session) text.textContent = "Conecte a conta para sincronizar";
-    else if (localStorage.getItem(SYNC_STATE_KEY) === "error")
-      text.textContent = "Sincronização com erro • clique para tentar";
-    else if (pending) text.textContent = "Sincronização pendente";
-    else
-      text.textContent =
-        localStorage.getItem(SYNC_STATE_KEY) === "synced"
-          ? "Sincronizado com Supabase"
-          : "Conectado • preparando sincronização";
-    badge?.classList.toggle("offline", !online && !checking);
-    badge?.classList.toggle("checking", checking);
-  }
-  async function checkInternetConnection() {
-    if (!navigator.onLine) {
-      internetReachable = false;
-      updateConnectionStatus();
-      return;
-    }
-    internetReachable = null;
-    updateConnectionStatus();
-    try {
-      await fetch("https://www.gstatic.com/generate_204", {
-        mode: "no-cors",
-        cache: "no-store",
-        signal: AbortSignal.timeout(5000),
-      });
-      internetReachable = true;
-    } catch {
-      internetReachable = false;
-    }
-    updateConnectionStatus();
-    if (internetReachable) syncWithSupabase();
-  }
-  window.addEventListener("online", checkInternetConnection);
-  window.addEventListener("offline", () => {
-    internetReachable = false;
-    updateConnectionStatus();
-  });
-  checkInternetConnection();
+    window.addEventListener("online",checkInternetConnection);
+    window.addEventListener("offline",()=>{internetReachable=false;updateConnectionStatus();});
+    checkInternetConnection();
 
-  function generateId(prefix = "id") {
-    return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-  }
-
-  const escapeHTML = window.AlunoTecUtils.escapeHTML;
-
-  function normalizeText(value = "") {
-    return String(value)
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase()
-      .trim();
-  }
-
-  function formatDateBR(dateString) {
-    if (!dateString) return "—";
-
-    const [year, month, day] = dateString.split("-");
-
-    if (!year || !month || !day) return dateString;
-
-    return `${day}/${month}/${year}`;
-  }
-
-  function dateToInputValue(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
-  }
-
-  function formatWhatsapp(value = "") {
-    const digits = String(value).replace(/\D/g, "").slice(0, 11);
-
-    if (digits.length <= 2) {
-      return digits;
+    function generateId(prefix = "id") {
+        return `${prefix}_${Date.now()}_${Math.random()
+            .toString(36)
+            .slice(2, 9)}`;
     }
 
-    if (digits.length <= 7) {
-      return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    const escapeHTML = window.AlunoTecUtils.escapeHTML;
+
+    function normalizeText(value = "") {
+        return String(value)
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .trim();
     }
 
-    if (digits.length <= 10) {
-      return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+    function formatDateBR(dateString) {
+        if (!dateString) return "—";
+
+        const [year, month, day] = dateString.split("-");
+
+        if (!year || !month || !day) return dateString;
+
+        return `${day}/${month}/${year}`;
     }
 
-    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-  }
+    function dateToInputValue(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
 
-  function whatsappURL(value = "") {
-    const digits = String(value).replace(/\D/g, "");
+        return `${year}-${month}-${day}`;
+    }
 
-    if (!digits) return "#";
+    function formatWhatsapp(value = "") {
+        const digits = String(value).replace(/\D/g, "").slice(0, 11);
 
-    const number = digits.startsWith("55") ? digits : `55${digits}`;
+        if (digits.length <= 2) {
+            return digits;
+        }
 
-    return `https://wa.me/${number}`;
-  }
+        if (digits.length <= 7) {
+            return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+        }
 
-  function getActiveStudents(item) {
-    if (!item || !Array.isArray(item.students)) return [];
+        if (digits.length <= 10) {
+            return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+        }
 
-    return item.students.filter((student) => student.status !== "Inativo");
-  }
+        return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+    }
 
-  /* ==========================================================
+    function whatsappURL(value = "") {
+        const digits = String(value).replace(/\D/g, "");
+
+        if (!digits) return "#";
+
+        const number = digits.startsWith("55")
+            ? digits
+            : `55${digits}`;
+
+        return `https://wa.me/${number}`;
+    }
+
+    function getActiveStudents(item) {
+        if (!item || !Array.isArray(item.students)) return [];
+
+        return item.students.filter(
+            (student) => student.status !== "Inativo"
+        );
+    }
+
+
+    /* ==========================================================
        LOCAL STORAGE
        Lê e grava turmas, estudantes e eletivas no armazenamento local, aplicando a estrutura de dados atual.
     ========================================================== */
 
-  function loadData() {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+    function loadData() {
 
-      /* ==========================================================
+        try {
+
+            const saved = localStorage.getItem(STORAGE_KEY);
+
+            /* ==========================================================
                IMPORTANTE:
                A lista começa vazia quando ainda não existe armazenamento do AlunoTec; exemplos padrão não são criados.
             ========================================================== */
 
-      if (!saved) {
-        state.data = {
-          base: [],
-          electives: [],
-        };
+            if (!saved) {
+
+                state.data = {
+                    base: [],
+                    electives: []
+                };
+
+                saveData();
+
+                return;
+            }
+
+            const parsed = JSON.parse(saved);
+
+            state.data.base = Array.isArray(parsed?.base)
+                ? parsed.base
+                : [];
+
+            state.data.electives = Array.isArray(parsed?.electives)
+                ? parsed.electives
+                : [];
+
+            normalizeSavedData();
+
+        } catch (error) {
+
+            console.error(
+                "Erro ao carregar dados:",
+                error
+            );
+
+            state.data = {
+                base: [],
+                electives: []
+            };
+        }
+    }
+
+    function normalizeSavedData() {
+
+        ["base", "electives"].forEach((type) => {
+
+            state.data[type] = state.data[type].map((item) => ({
+                ...item,
+
+                id:
+                    item.id ||
+                    generateId(type),
+
+                students:
+                    Array.isArray(item.students)
+                        ? item.students.map((student) => ({
+                            ...student,
+
+                            id:
+                                student.id ||
+                                generateId("student"),
+
+                            status:
+                                student.status ||
+                                "Ativo"
+                        }))
+                        : []
+            }));
+
+        });
 
         saveData();
-
-        return;
-      }
-
-      const parsed = JSON.parse(saved);
-
-      state.data.base = Array.isArray(parsed?.base) ? parsed.base : [];
-
-      state.data.electives = Array.isArray(parsed?.electives)
-        ? parsed.electives
-        : [];
-
-      normalizeSavedData();
-    } catch (error) {
-      console.error("Erro ao carregar dados:", error);
-
-      state.data = {
-        base: [],
-        electives: [],
-      };
     }
-  }
 
-  function normalizeSavedData() {
-    ["base", "electives"].forEach((type) => {
-      state.data[type] = state.data[type].map((item) => ({
-        ...item,
-
-        id: item.id || generateId(type),
-
-        students: Array.isArray(item.students)
-          ? item.students.map((student) => ({
-              ...student,
-
-              id: student.id || generateId("student"),
-
-              status: student.status || "Ativo",
-            }))
-          : [],
-      }));
-    });
-
-    saveData();
-  }
-
-  let activityDialog = null;
-  const activityBell = byId("activityBell");
-  function readActivities() {
-    try {
-      const x = JSON.parse(localStorage.getItem(ACTIVITY_KEY) || "[]");
-      return Array.isArray(x) ? x : [];
-    } catch {
-      return [];
+    let activityDialog=null;
+    const activityBell=byId("activityBell");
+    function readActivities(){try{const x=JSON.parse(localStorage.getItem(ACTIVITY_KEY)||"[]");return Array.isArray(x)?x:[]}catch{return []}}
+    function updateActivityBell(){if(!activityBell)return;const count=byId("activityBellCount");const unread=readActivities().filter(x=>!x.read).length;if(count){count.textContent=unread>99?"99+":String(unread);count.hidden=!unread}activityBell.classList.toggle("has-activity",unread>0);activityBell.setAttribute("aria-label",unread?"Notificações das turmas: "+unread+" não lidas":"Notificações das turmas")}
+    function recordActivity(message){const items=readActivities();items.unshift({id:generateId("notice"),message,date:new Date().toISOString(),read:false});localStorage.setItem(ACTIVITY_KEY,JSON.stringify(items.slice(0,100)));updateActivityBell()}
+    function describeChanges(before,after){
+        const messages=[],classes=new Map(),students=new Map();
+        const collect=data=>{const c=new Map(),s=new Map();["base","electives"].forEach(type=>(data?.[type]||[]).forEach(item=>{c.set(item.id,{...item,_type:type});(item.students||[]).forEach(st=>s.set(st.id,{student:st,classId:item.id,className:item.name}))}));return{classes:c,students:s}};
+        const old=collect(before),now=collect(after),label=type=>type==="base"?"turma da Base Comum":"Eletiva";
+        for(const [id,item] of now.classes){const prev=old.classes.get(id);if(!prev)messages.push(label(item._type)+" criada: "+item.name+".");else{const clean=x=>{x={...x};delete x.students;delete x._type;return JSON.stringify(x)};if(clean(prev)!==clean(item))messages.push(label(item._type)+" alterada: "+item.name+".")}}
+        for(const [id,item] of old.classes)if(!now.classes.has(id))messages.push(label(item._type)+" excluída: "+item.name+".");
+        for(const [id,entry] of old.students){const current=now.students.get(id);if(!current)continue;if(entry.classId!==current.classId)messages.push(entry.student.name+" transferido(a) de "+entry.className+" para "+current.className+".");else if(JSON.stringify(entry.student)!==JSON.stringify(current.student))messages.push(entry.student.name+": "+(entry.student.status!==current.student.status?"status alterado para "+current.student.status:"dados atualizados")+" em "+current.className+".")}
+        for(const [id,entry] of now.students)if(!old.students.has(id)){const wasCopied=[...old.students.values()].some(x=>normalizeText(x.student.name)===normalizeText(entry.student.name));messages.push(entry.student.name+(wasCopied?" copiado(a) para ":" cadastrado(a) em ")+entry.className+".")}
+        for(const [id,entry] of old.students)if(!now.students.has(id))messages.push(entry.student.name+" excluído(a) de "+entry.className+".");
+        return messages;
     }
-  }
-  function updateActivityBell() {
-    if (!activityBell) return;
-    const count = byId("activityBellCount");
-    const unread = readActivities().filter((x) => !x.read).length;
-    if (count) {
-      count.textContent = unread > 99 ? "99+" : String(unread);
-      count.hidden = !unread;
-    }
-    activityBell.classList.toggle("has-activity", unread > 0);
-    activityBell.setAttribute(
-      "aria-label",
-      unread
-        ? "Notificações das turmas: " + unread + " não lidas"
-        : "Notificações das turmas",
-    );
-  }
-  function recordActivity(message) {
-    const items = readActivities();
-    items.unshift({
-      id: generateId("notice"),
-      message,
-      date: new Date().toISOString(),
-      read: false,
-    });
-    localStorage.setItem(ACTIVITY_KEY, JSON.stringify(items.slice(0, 100)));
-    updateActivityBell();
-  }
-  function describeChanges(before, after) {
-    const messages = [],
-      classes = new Map(),
-      students = new Map();
-    const collect = (data) => {
-      const c = new Map(),
-        s = new Map();
-      ["base", "electives"].forEach((type) =>
-        (data?.[type] || []).forEach((item) => {
-          c.set(item.id, { ...item, _type: type });
-          (item.students || []).forEach((st) =>
-            s.set(st.id, {
-              student: st,
-              classId: item.id,
-              className: item.name,
-            }),
-          );
-        }),
-      );
-      return { classes: c, students: s };
-    };
-    const old = collect(before),
-      now = collect(after),
-      label = (type) => (type === "base" ? "turma da Base Comum" : "Eletiva");
-    for (const [id, item] of now.classes) {
-      const prev = old.classes.get(id);
-      if (!prev)
-        messages.push(label(item._type) + " criada: " + item.name + ".");
-      else {
-        const clean = (x) => {
-          x = { ...x };
-          delete x.students;
-          delete x._type;
-          return JSON.stringify(x);
-        };
-        if (clean(prev) !== clean(item))
-          messages.push(label(item._type) + " alterada: " + item.name + ".");
-      }
-    }
-    for (const [id, item] of old.classes)
-      if (!now.classes.has(id))
-        messages.push(label(item._type) + " excluída: " + item.name + ".");
-    for (const [id, entry] of old.students) {
-      const current = now.students.get(id);
-      if (!current) continue;
-      if (entry.classId !== current.classId)
-        messages.push(
-          entry.student.name +
-            " transferido(a) de " +
-            entry.className +
-            " para " +
-            current.className +
-            ".",
-        );
-      else if (
-        JSON.stringify(entry.student) !== JSON.stringify(current.student)
-      )
-        messages.push(
-          entry.student.name +
-            ": " +
-            (entry.student.status !== current.student.status
-              ? "status alterado para " + current.student.status
-              : "dados atualizados") +
-            " em " +
-            current.className +
-            ".",
-        );
-    }
-    for (const [id, entry] of now.students)
-      if (!old.students.has(id)) {
-        const wasCopied = [...old.students.values()].some(
-          (x) =>
-            normalizeText(x.student.name) === normalizeText(entry.student.name),
-        );
-        messages.push(
-          entry.student.name +
-            (wasCopied ? " copiado(a) para " : " cadastrado(a) em ") +
-            entry.className +
-            ".",
-        );
-      }
-    for (const [id, entry] of old.students)
-      if (!now.students.has(id))
-        messages.push(
-          entry.student.name + " excluído(a) de " + entry.className + ".",
-        );
-    return messages;
-  }
 
-  function openSupabaseLogin() {
-    if (!supabaseIsConfigured()) {
-      appDialog({
-        title: "Supabase ainda não configurado",
-        type: "warning",
-        message:
-          "O modo offline já guarda as alterações neste dispositivo. Para ativar a sincronização, crie o projeto Supabase, execute o arquivo supabase-schema.sql e informe aqui a URL e a chave pública do projeto no início do script.js.",
-      });
-      return;
-    }
-    const dialog = document.createElement("dialog");
-    dialog.className = "alunotec-notice sync-login-dialog";
-    dialog.innerHTML =
-      '<div class="notice-symbol">↻</div><h2>Conectar sincronização</h2><p>Entre com a conta administradora do Supabase.</p><form><label>E-mail<input name="email" type="email" autocomplete="username" required></label><label>Senha<input name="password" type="password" autocomplete="current-password" required></label><p class="sync-error" aria-live="polite"></p><div class="notice-actions"><button type="button" class="notice-cancel">Cancelar</button><button type="submit" class="notice-confirm">Conectar</button></div></form>';
-    const form = dialog.querySelector("form"),
-      error = dialog.querySelector(".sync-error");
-    dialog.querySelector(".notice-cancel").onclick = () => {
-      dialog.close();
-      dialog.remove();
-    };
-    dialog.addEventListener("cancel", (event) => {
-      event.preventDefault();
-      dialog.close();
-      dialog.remove();
-    });
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const button = form.querySelector('[type="submit"]');
-      button.disabled = true;
-      button.textContent = "Conectando…";
-      error.textContent = "";
-      try {
-        const response = await fetch(
-          SUPABASE_URL + "/auth/v1/token?grant_type=password",
-          {
-            method: "POST",
-            headers: {
-              apikey: SUPABASE_ANON_KEY,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email: form.elements.email.value.trim(),
-              password: form.elements.password.value,
-            }),
-          },
-        );
-        const result = await response.json();
-        if (!response.ok)
-          throw new Error(
-            result.msg || result.message || "Confira o e-mail e a senha.",
-          );
-        localStorage.setItem(
-          SUPABASE_SESSION_KEY,
-          JSON.stringify({
-            access_token: result.access_token,
-            refresh_token: result.refresh_token,
-            user: result.user,
-            expires_at: Date.now() + result.expires_in * 1000,
-          }),
-        );
-        dialog.close();
-        dialog.remove();
-        await syncWithSupabase();
-      } catch (e) {
-        error.textContent = e.message || "Não foi possível conectar.";
-        button.disabled = false;
-        button.textContent = "Conectar";
-      }
-    });
-    document.body.append(dialog);
-    dialog.showModal();
-    form.elements.email.focus();
-  }
-
-  async function refreshSupabaseSession() {
-    let session = getSupabaseSession();
-    if (!session) return null;
-    if (session.expires_at > Date.now() + 60000) return session;
-    if (!session.refresh_token) return null;
-    const response = await fetch(
-      SUPABASE_URL + "/auth/v1/token?grant_type=refresh_token",
-      {
-        method: "POST",
-        headers: {
-          apikey: SUPABASE_ANON_KEY,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ refresh_token: session.refresh_token }),
-      },
-    );
-    const next = await response.json();
-    if (!response.ok) throw new Error("A sessão expirou. Conecte novamente.");
-    session = {
-      access_token: next.access_token,
-      refresh_token: next.refresh_token,
-      user: next.user,
-      expires_at: Date.now() + next.expires_in * 1000,
-    };
-    localStorage.setItem(SUPABASE_SESSION_KEY, JSON.stringify(session));
-    return session;
-  }
-
-  async function syncWithSupabase() {
-    if (
-      syncInProgress ||
-      !navigator.onLine ||
-      internetReachable !== true ||
-      !supabaseIsConfigured()
-    )
-      return;
-    syncInProgress = true;
-    updateConnectionStatus();
-    try {
-      const session = await refreshSupabaseSession();
-      if (!session) {
-        updateConnectionStatus();
-        return;
-      }
-      const headers = {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: "Bearer " + session.access_token,
-        "Content-Type": "application/json",
-      };
-      const endpoint =
-        SUPABASE_URL +
-        "/rest/v1/" +
-        SUPABASE_TABLE +
-        "?owner_id=eq." +
-        encodeURIComponent(session.user.id) +
-        "&select=payload,updated_at";
-      const response = await fetch(endpoint, { headers, cache: "no-store" });
-      const rows = await response.json();
-      if (!response.ok)
-        throw new Error(rows.message || "Falha ao consultar os dados online.");
-      const pending = JSON.parse(
-        localStorage.getItem(PENDING_SYNC_KEY) || "null",
-      );
-      if (
-        pending &&
-        rows[0] &&
-        Date.parse(rows[0].updated_at) > Date.parse(pending.savedAt)
-      ) {
-        localStorage.setItem(
-          "alunotec_turmas_remote_conflict_v1",
-          JSON.stringify({ remote: rows[0], local: pending }),
-        );
-        appDialog({
-          title: "Alterações online mais recentes",
-          type: "warning",
-          message:
-            "Há alterações feitas por outro dispositivo depois destas alterações offline. Seus dados locais foram preservados e a sincronização foi pausada para evitar apagar informações. Quando houver uma versão mais nova do aplicativo, você poderá comparar as versões.",
+    function openSupabaseLogin(){
+        if(!supabaseIsConfigured()){appDialog({title:"Supabase ainda não configurado",type:"warning",message:"O modo offline já guarda as alterações neste dispositivo. Para ativar a sincronização, crie o projeto Supabase, execute o arquivo supabase-schema.sql e informe aqui a URL e a chave pública do projeto no início do script.js."});return}
+        const dialog=document.createElement("dialog");dialog.className="alunotec-notice sync-login-dialog";
+        dialog.innerHTML='<div class="notice-symbol">↻</div><h2>Conectar sincronização</h2><p>Entre com a conta administradora do Supabase.</p><form><label>E-mail<input name="email" type="email" autocomplete="username" required></label><label>Senha<input name="password" type="password" autocomplete="current-password" required></label><p class="sync-error" aria-live="polite"></p><div class="notice-actions"><button type="button" class="notice-cancel">Cancelar</button><button type="submit" class="notice-confirm">Conectar</button></div></form>';
+        const form=dialog.querySelector("form"),error=dialog.querySelector(".sync-error");
+        dialog.querySelector(".notice-cancel").onclick=()=>{dialog.close();dialog.remove()};
+        dialog.addEventListener("cancel",event=>{event.preventDefault();dialog.close();dialog.remove()});
+        form.addEventListener("submit",async event=>{
+            event.preventDefault();const button=form.querySelector('[type="submit"]');button.disabled=true;button.textContent="Conectando…";error.textContent="";
+            try{
+                const response=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",{method:"POST",headers:{"apikey":SUPABASE_ANON_KEY,"Content-Type":"application/json"},body:JSON.stringify({email:form.elements.email.value.trim(),password:form.elements.password.value})});
+                const result=await response.json();if(!response.ok)throw new Error(result.msg||result.message||"Confira o e-mail e a senha.");
+                localStorage.setItem(SUPABASE_SESSION_KEY,JSON.stringify({access_token:result.access_token,refresh_token:result.refresh_token,user:result.user,expires_at:Date.now()+result.expires_in*1000}));
+                dialog.close();dialog.remove();await syncWithSupabase();
+            }catch(e){error.textContent=e.message||"Não foi possível conectar.";button.disabled=false;button.textContent="Conectar"}
         });
-        return;
-      }
-      if (pending) {
-        const upload = await fetch(
-          SUPABASE_URL + "/rest/v1/" + SUPABASE_TABLE + "?on_conflict=owner_id",
-          {
-            method: "POST",
-            headers: {
-              ...headers,
-              Prefer: "resolution=merge-duplicates,return=minimal",
-            },
-            body: JSON.stringify({
-              owner_id: session.user.id,
-              payload: pending.data,
-              updated_at: new Date().toISOString(),
-            }),
-          },
-        );
-        if (!upload.ok) {
-          const error = await upload.json();
-          throw new Error(error.message || "Não foi possível enviar os dados.");
-        }
-        localStorage.removeItem(PENDING_SYNC_KEY);
-        localStorage.removeItem("alunotec_turmas_remote_conflict_v1");
-      } else if (rows[0]?.payload) {
-        state.data = {
-          base: Array.isArray(rows[0].payload.base) ? rows[0].payload.base : [],
-          electives: Array.isArray(rows[0].payload.electives)
-            ? rows[0].payload.electives
-            : [],
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
-        normalizeSavedData();
-        renderTables();
-        updateSummary();
-      } else {
-        const seed = await fetch(
-          SUPABASE_URL + "/rest/v1/" + SUPABASE_TABLE + "?on_conflict=owner_id",
-          {
-            method: "POST",
-            headers: {
-              ...headers,
-              Prefer: "resolution=merge-duplicates,return=minimal",
-            },
-            body: JSON.stringify({
-              owner_id: session.user.id,
-              payload: state.data,
-              updated_at: new Date().toISOString(),
-            }),
-          },
-        );
-        if (!seed.ok)
-          throw new Error(
-            "Não foi possível criar os dados iniciais no Supabase.",
-          );
-      }
-      localStorage.setItem(SYNC_STATE_KEY, "synced");
-    } catch (error) {
-      localStorage.setItem(SYNC_STATE_KEY, "error");
-      console.warn("Sincronização AlunoTec:", error);
-      if (navigator.onLine)
-        showToast(
-          "Os dados continuam salvos neste dispositivo. A sincronização será tentada novamente quando a conexão voltar.",
-          "warning",
-        );
-    } finally {
-      syncInProgress = false;
-      updateConnectionStatus();
+        document.body.append(dialog);dialog.showModal();form.elements.email.focus();
     }
-  }
 
-  function saveData() {
-    let before = null;
-    try {
-      before = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-    } catch {}
-    const serialized = JSON.stringify(state.data);
-    if (before && JSON.stringify(before) !== serialized) {
-      describeChanges(before, state.data).forEach(recordActivity);
-      localStorage.setItem(
-        PENDING_SYNC_KEY,
-        JSON.stringify({ savedAt: new Date().toISOString(), data: state.data }),
-      );
+    async function refreshSupabaseSession(){
+        let session=getSupabaseSession();if(!session)return null;
+        if(session.expires_at>Date.now()+60000)return session;
+        if(!session.refresh_token)return null;
+        const response=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{"apikey":SUPABASE_ANON_KEY,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:session.refresh_token})});
+        const next=await response.json();if(!response.ok)throw new Error("A sessão expirou. Conecte novamente.");
+        session={access_token:next.access_token,refresh_token:next.refresh_token,user:next.user,expires_at:Date.now()+next.expires_in*1000};
+        localStorage.setItem(SUPABASE_SESSION_KEY,JSON.stringify(session));return session;
     }
-    localStorage.setItem(STORAGE_KEY, serialized);
-    updateConnectionStatus();
-    if (internetReachable === true && navigator.onLine)
-      queueMicrotask(syncWithSupabase);
-  }
 
-  /* ==========================================================
+    async function syncWithSupabase(){
+        if(syncInProgress||!navigator.onLine||internetReachable!==true||!supabaseIsConfigured())return;
+        syncInProgress=true;updateConnectionStatus();
+        try{
+            const session=await refreshSupabaseSession();if(!session){updateConnectionStatus();return}
+            const headers={"apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+session.access_token,"Content-Type":"application/json"};
+            const endpoint=SUPABASE_URL+"/rest/v1/"+SUPABASE_TABLE+"?owner_id=eq."+encodeURIComponent(session.user.id)+"&select=payload,updated_at";
+            const response=await fetch(endpoint,{headers,cache:"no-store"});const rows=await response.json();
+            if(!response.ok)throw new Error(rows.message||"Falha ao consultar os dados online.");
+            const pending=JSON.parse(localStorage.getItem(PENDING_SYNC_KEY)||"null");
+            if(pending&&rows[0]&&Date.parse(rows[0].updated_at)>Date.parse(pending.savedAt)){
+                localStorage.setItem("alunotec_turmas_remote_conflict_v1",JSON.stringify({remote:rows[0],local:pending}));
+                appDialog({title:"Alterações online mais recentes",type:"warning",message:"Há alterações feitas por outro dispositivo depois destas alterações offline. Seus dados locais foram preservados e a sincronização foi pausada para evitar apagar informações. Quando houver uma versão mais nova do aplicativo, você poderá comparar as versões."});
+                return;
+            }
+            if(pending){
+                const upload=await fetch(SUPABASE_URL+"/rest/v1/"+SUPABASE_TABLE+"?on_conflict=owner_id",{method:"POST",headers:{...headers,"Prefer":"resolution=merge-duplicates,return=minimal"},body:JSON.stringify({owner_id:session.user.id,payload:pending.data,updated_at:new Date().toISOString()})});
+                if(!upload.ok){const error=await upload.json();throw new Error(error.message||"Não foi possível enviar os dados.");}
+                localStorage.removeItem(PENDING_SYNC_KEY);localStorage.removeItem("alunotec_turmas_remote_conflict_v1");
+            }else if(rows[0]?.payload){
+                state.data={base:Array.isArray(rows[0].payload.base)?rows[0].payload.base:[],electives:Array.isArray(rows[0].payload.electives)?rows[0].payload.electives:[]};
+                localStorage.setItem(STORAGE_KEY,JSON.stringify(state.data));normalizeSavedData();renderTables();updateSummary();
+            }else{
+                const seed=await fetch(SUPABASE_URL+"/rest/v1/"+SUPABASE_TABLE+"?on_conflict=owner_id",{method:"POST",headers:{...headers,"Prefer":"resolution=merge-duplicates,return=minimal"},body:JSON.stringify({owner_id:session.user.id,payload:state.data,updated_at:new Date().toISOString()})});
+                if(!seed.ok)throw new Error("Não foi possível criar os dados iniciais no Supabase.");
+            }
+            localStorage.setItem(SYNC_STATE_KEY,"synced");
+        }catch(error){localStorage.setItem(SYNC_STATE_KEY,"error");console.warn("Sincronização AlunoTec:",error);if(navigator.onLine)showToast("Os dados continuam salvos neste dispositivo. A sincronização será tentada novamente quando a conexão voltar.","warning")}
+        finally{syncInProgress=false;updateConnectionStatus()}
+    }
+
+    function saveData(){
+        let before=null;try{before=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null")}catch{}
+        const serialized=JSON.stringify(state.data);
+        if(before&&JSON.stringify(before)!==serialized){describeChanges(before,state.data).forEach(recordActivity);localStorage.setItem(PENDING_SYNC_KEY,JSON.stringify({savedAt:new Date().toISOString(),data:state.data}));}
+        localStorage.setItem(STORAGE_KEY,serialized);
+        updateConnectionStatus();
+        if(internetReachable===true&&navigator.onLine)queueMicrotask(syncWithSupabase);
+    }
+
+
+    /* ==========================================================
        ELEMENTOS PRINCIPAIS
        Guarda referências aos componentes da página para reutilizá-las nas ações seguintes.
     ========================================================== */
 
-  const classesView = byId("managementView");
-  const classDetailsView = byId("classDetailsView");
+    const classesView = byId("managementView");
+    const classDetailsView = byId("classDetailsView");
 
-  const basePanel = byId("basePanel");
-  const electivesPanel = byId("electivesPanel");
+    const basePanel = byId("basePanel");
+    const electivesPanel = byId("electivesPanel");
 
-  const baseTableBody = byId("baseTableBody");
-  const electivesTableBody = byId("electivesTableBody");
+    const baseTableBody = byId("baseTableBody");
+    const electivesTableBody = byId("electivesTableBody");
 
-  const baseCount = byId("baseCount");
-  const electiveCount = byId("electiveCount");
+    const baseCount = byId("baseCount");
+    const electiveCount = byId("electiveCount");
 
-  const totalClasses = byId("totalClasses");
-  const totalBaseStudents = byId("totalBaseStudents");
-  const totalElectives = byId("totalElectives");
-  const totalElectiveStudents = byId("totalElectiveStudents");
+    const totalClasses = byId("totalClasses");
+    const totalBaseStudents = byId("totalBaseStudents");
+    const totalElectives = byId("totalElectives");
+    const totalElectiveStudents = byId("totalElectiveStudents");
 
-  const newButton = byId("newButton");
-  const newButtonText = byId("newButtonText");
+    const newButton = byId("newButton");
+    const newButtonText = byId("newButtonText");
 
-  const managementDescription = byId("managementDescription");
+    const managementDescription =
+        byId("managementDescription");
 
-  const searchInput = byId("searchInput");
+    const searchInput = byId("searchInput");
 
-  const filterYear = byId("filterYear");
-  const filterShift = byId("filterShift");
-  const filterGrade = byId("filterGrade");
-  const filterStatus = byId("filterStatus");
+    const filterYear = byId("filterYear");
+    const filterShift = byId("filterShift");
+    const filterGrade = byId("filterGrade");
+    const filterStatus = byId("filterStatus");
 
-  const filterYearOptions = byId("filterYearOptions");
+    const filterYearOptions =
+        byId("filterYearOptions");
 
-  const shiftFilterContainer = byId("shiftFilterContainer");
+    const shiftFilterContainer =
+        byId("shiftFilterContainer");
 
-  const gradeFilterContainer = byId("gradeFilterContainer");
+    const gradeFilterContainer =
+        byId("gradeFilterContainer");
 
-  /* ==========================================================
+
+    /* ==========================================================
        MODAL TURMA / ELETIVA
        Declara os elementos e os estados usados para cadastrar ou editar turmas e eletivas.
     ========================================================== */
 
-  const modalOverlay = byId("modalOverlay");
-  const modalClose = byId("modalClose");
+    const modalOverlay = byId("modalOverlay");
+    const modalClose = byId("modalClose");
 
-  const modalTag = byId("modalTag");
-  const modalTitle = byId("modalTitle");
-  const modalSubtitle = byId("modalSubtitle");
+    const modalTag = byId("modalTag");
+    const modalTitle = byId("modalTitle");
+    const modalSubtitle = byId("modalSubtitle");
 
-  const baseForm = byId("baseForm");
-  const electiveForm = byId("electiveForm");
+    const baseForm = byId("baseForm");
+    const electiveForm = byId("electiveForm");
 
-  const baseEditId = byId("baseEditId");
-  const electiveEditId = byId("electiveEditId");
+    const baseEditId = byId("baseEditId");
+    const electiveEditId = byId("electiveEditId");
 
-  /* ==========================================================
+
+    /* ==========================================================
        BASE COMUM - CAMPOS
        Mapeia campos que existem tanto no formulário de turma regular quanto no de eletiva.
     ========================================================== */
 
-  const className = byId("className");
-  const classGrade = byId("classGrade");
-  const classShift = byId("classShift");
-  const classYear = byId("classYear");
-  const classStatus = byId("classStatus");
-  const classTeacher = byId("classTeacher");
-  const classDate = byId("classDate");
-  const classDateLabel = byId("classDateLabel");
+    const className = byId("className");
+    const classGrade = byId("classGrade");
+    const classShift = byId("classShift");
+    const classYear = byId("classYear");
+    const classStatus = byId("classStatus");
+    const classTeacher = byId("classTeacher");
+    const classDate = byId("classDate");
+    const classDateLabel = byId("classDateLabel");
 
-  /* ==========================================================
+
+    /* ==========================================================
        ELETIVA - CAMPOS
        Mapeia campos exclusivos do formulário de eletivas.
     ========================================================== */
 
-  const electiveName = byId("electiveName");
-  const electiveShift = byId("electiveShift");
-  const electiveYear = byId("electiveYear");
-  const electiveStatus = byId("electiveStatus");
-  const electiveTeacher = byId("electiveTeacher");
-  const electiveDate = byId("electiveDate");
-  const electiveDateLabel = byId("electiveDateLabel");
+    const electiveName = byId("electiveName");
+    const electiveShift = byId("electiveShift");
+    const electiveYear = byId("electiveYear");
+    const electiveStatus = byId("electiveStatus");
+    const electiveTeacher = byId("electiveTeacher");
+    const electiveDate = byId("electiveDate");
+    const electiveDateLabel =
+        byId("electiveDateLabel");
 
-  /* ==========================================================
+
+    /* ==========================================================
        DETALHES DA TURMA
        Prepara os elementos da tela com informações completas de uma turma selecionada.
     ========================================================== */
 
-  const backToClasses = byId("backToClasses");
+    const backToClasses = byId("backToClasses");
 
-  const openedClassType = byId("openedClassType");
+    const openedClassType =
+        byId("openedClassType");
 
-  const openedClassName = byId("openedClassName");
+    const openedClassName =
+        byId("openedClassName");
 
-  const openedClassInformation = byId("openedClassInformation");
+    const openedClassInformation =
+        byId("openedClassInformation");
 
-  const openedClassStatus = byId("openedClassStatus");
+    const openedClassStatus =
+        byId("openedClassStatus");
 
-  const openedClassStudents = byId("openedClassStudents");
+    const openedClassStudents =
+        byId("openedClassStudents");
 
-  const openedClassYear = byId("openedClassYear");
+    const openedClassYear =
+        byId("openedClassYear");
 
-  const studentsDescription = byId("studentsDescription");
+    const studentsDescription =
+        byId("studentsDescription");
 
-  const studentsTableBody = byId("studentsTableBody");
+    const studentsTableBody =
+        byId("studentsTableBody");
 
-  const studentSearch = byId("studentSearch");
+    const studentSearch =
+        byId("studentSearch");
 
-  /* ==========================================================
+
+    /* ==========================================================
        MODAL ALUNO
        Declara os campos e controles usados para cadastrar ou editar estudantes.
     ========================================================== */
 
-  const studentModalOverlay = byId("studentModalOverlay");
+    const studentModalOverlay =
+        byId("studentModalOverlay");
 
-  const studentModalClose = byId("studentModalClose");
+    const studentModalClose =
+        byId("studentModalClose");
 
-  const cancelStudentButton = byId("cancelStudentButton");
+    const cancelStudentButton =
+        byId("cancelStudentButton");
 
-  const studentForm = byId("studentForm");
+    const studentForm =
+        byId("studentForm");
 
-  const studentName = byId("studentName");
+    const studentName =
+        byId("studentName");
 
-  const studentWhatsapp = byId("studentWhatsapp");
+    const studentWhatsapp =
+        byId("studentWhatsapp");
 
-  const addStudentButton = byId("addStudentButton");
+    const addStudentButton =
+        byId("addStudentButton");
 
-  /* ==========================================================
+
+    /* ==========================================================
        TRANSFERÊNCIA
        Prepara os dados necessários para transferir estudantes entre turmas.
     ========================================================== */
 
-  const transferModalOverlay = byId("transferModalOverlay");
+    const transferModalOverlay =
+        byId("transferModalOverlay");
 
-  const transferModalClose = byId("transferModalClose");
+    const transferModalClose =
+        byId("transferModalClose");
 
-  const cancelTransferButton = byId("cancelTransferButton");
+    const cancelTransferButton =
+        byId("cancelTransferButton");
 
-  const transferForm = byId("transferForm");
+    const transferForm =
+        byId("transferForm");
 
-  const transferStudentId = byId("transferStudentId");
+    const transferStudentId =
+        byId("transferStudentId");
 
-  const transferClassId = byId("transferClassId");
+    const transferClassId =
+        byId("transferClassId");
 
-  const transferClassOptions = byId("transferClassOptions");
+    const transferClassOptions =
+        byId("transferClassOptions");
 
-  const transferStudentText = byId("transferStudentText");
+    const transferStudentText =
+        byId("transferStudentText");
 
-  /* ==========================================================
+
+    /* ==========================================================
        IMPORTAÇÃO / EXPORTAÇÃO
        Agrupa configurações e elementos usados para importar ou exportar dados em arquivo.
     ========================================================== */
 
-  const importStudentsButton = byId("importStudentsButton");
+    const importStudentsButton =
+        byId("importStudentsButton");
 
-  const exportStudentsButton = byId("exportStudentsButton");
+    const exportStudentsButton =
+        byId("exportStudentsButton");
 
-  const studentImportInput = byId("studentImportInput");
+    const studentImportInput =
+        byId("studentImportInput");
 
-  /* ==========================================================
+
+    /* ==========================================================
        TOAST
        Apresenta mensagens breves de confirmação ou erro após uma ação.
     ========================================================== */
 
-  const toast = byId("toast");
+    const toast = byId("toast");
 
-  let toastTimer = null;
+    let toastTimer = null;
 
-  function appDialog({
-    title,
-    message,
-    type = "success",
-    confirmation = false,
-    confirmText = "Entendi",
-    icon = "",
-  }) {
-    return new Promise((resolve) => {
-      const dialog = document.createElement("dialog");
-      dialog.className = "alunotec-notice " + type;
-      const fallback = type === "success" ? "✓" : "!";
-      dialog.innerHTML =
-        '<div class="notice-symbol">' +
-        (icon || fallback) +
-        '</div><h2></h2><p></p><div class="notice-actions"></div>';
-      dialog.querySelector("h2").textContent = title || "AlunoTec";
-      dialog.querySelector("p").textContent = message;
-      const actions = dialog.querySelector(".notice-actions");
-      let closed = false,
-        timer;
-      const finish = (value) => {
-        if (closed) return;
-        closed = true;
-        clearTimeout(timer);
-        dialog.close();
-        dialog.remove();
-        resolve(value);
-      };
-      if (confirmation) {
-        const cancel = document.createElement("button");
-        cancel.type = "button";
-        cancel.className = "notice-cancel";
-        cancel.textContent = "Cancelar";
-        cancel.onclick = () => finish(false);
-        actions.append(cancel);
-      }
-      const ok = document.createElement("button");
-      ok.type = "button";
-      ok.className = "notice-confirm";
-      ok.textContent = confirmText;
-      ok.onclick = () => finish(true);
-      actions.append(ok);
-      dialog.addEventListener("cancel", (e) => {
-        e.preventDefault();
-        finish(false);
-      });
-      document.body.append(dialog);
-      dialog.showModal();
-      ok.focus();
-      if (!confirmation)
-        timer = setTimeout(
-          () => finish(true),
-          type === "success" ? 3200 : 5500,
-        );
-    });
-  }
-  function showToast(message, type = "success") {
-    appDialog({
-      title:
-        type === "success"
-          ? "Tudo certo!"
-          : type === "error"
-            ? "Não foi possível concluir"
-            : "Atenção",
-      message,
-      type,
-    });
-  }
+    function appDialog({title,message,type="success",confirmation=false,confirmText="Entendi",icon=""}){
+        return new Promise(resolve=>{
+            const dialog=document.createElement("dialog");dialog.className="alunotec-notice "+type;
+            const fallback=type==="success"?"✓":"!";
+            dialog.innerHTML='<div class="notice-symbol">'+(icon||fallback)+'</div><h2></h2><p></p><div class="notice-actions"></div>';
+            dialog.querySelector("h2").textContent=title||"AlunoTec";dialog.querySelector("p").textContent=message;
+            const actions=dialog.querySelector(".notice-actions");let closed=false,timer;
+            const finish=value=>{if(closed)return;closed=true;clearTimeout(timer);dialog.close();dialog.remove();resolve(value)};
+            if(confirmation){const cancel=document.createElement("button");cancel.type="button";cancel.className="notice-cancel";cancel.textContent="Cancelar";cancel.onclick=()=>finish(false);actions.append(cancel)}
+            const ok=document.createElement("button");ok.type="button";ok.className="notice-confirm";ok.textContent=confirmText;ok.onclick=()=>finish(true);actions.append(ok);
+            dialog.addEventListener("cancel",e=>{e.preventDefault();finish(false)});document.body.append(dialog);dialog.showModal();ok.focus();
+            if(!confirmation)timer=setTimeout(()=>finish(true),type==="success"?3200:5500);
+        });
+    }
+    function showToast(message,type="success"){appDialog({title:type==="success"?"Tudo certo!":type==="error"?"Não foi possível concluir":"Atenção",message,type})}
 
-  /* ==========================================================
+
+
+    /* ==========================================================
        SELECT PERSONALIZADO
        Sincroniza os seletores visuais com seus campos nativos e opções de escolha.
     ========================================================== */
 
-  function setCustomSelectValue(selectId, value, fallback = "Selecione") {
-    const container = byId(selectId);
+    function setCustomSelectValue(
+        selectId,
+        value,
+        fallback = "Selecione"
+    ) {
 
-    if (!container) return;
+        const container = byId(selectId);
 
-    const hidden = container.querySelector('input[type="hidden"]');
+        if (!container) return;
 
-    const label = container.querySelector("[data-select-label]");
+        const hidden =
+            container.querySelector(
+                'input[type="hidden"]'
+            );
 
-    const options = container.querySelectorAll(".custom-select-option");
+        const label =
+            container.querySelector(
+                "[data-select-label]"
+            );
 
-    if (hidden) {
-      hidden.value = value || "";
-    }
-
-    let selectedText = fallback;
-
-    options.forEach((option) => {
-      const selected = option.dataset.value === value;
-
-      option.classList.toggle("selected", selected);
-
-      if (selected) {
-        selectedText =
-          option.querySelector("span")?.textContent?.trim() ||
-          option.dataset.value;
-      }
-    });
-
-    if (label) {
-      label.textContent = selectedText;
-    }
-  }
-
-  function initializeCustomSelects() {
-    $$(".custom-select").forEach((select) => {
-      const trigger = select.querySelector(".custom-select-trigger");
-
-      if (!trigger) return;
-
-      trigger.addEventListener("click", (event) => {
-        event.stopPropagation();
-
-        $$(".custom-select.open")
-          .filter((item) => item !== select)
-          .forEach((item) => item.classList.remove("open"));
-
-        select.classList.toggle("open");
-      });
-
-      select.addEventListener("click", (event) => {
-        const option = event.target.closest(".custom-select-option");
-
-        if (!option) return;
-
-        const value = option.dataset.value;
-
-        const hidden = select.querySelector('input[type="hidden"]');
-
-        const label = select.querySelector("[data-select-label]");
+        const options =
+            container.querySelectorAll(
+                ".custom-select-option"
+            );
 
         if (hidden) {
-          hidden.value = value;
+            hidden.value = value || "";
         }
 
-        select
-          .querySelectorAll(".custom-select-option")
-          .forEach((item) => item.classList.remove("selected"));
+        let selectedText = fallback;
 
-        option.classList.add("selected");
+        options.forEach((option) => {
+
+            const selected =
+                option.dataset.value === value;
+
+            option.classList.toggle(
+                "selected",
+                selected
+            );
+
+            if (selected) {
+
+                selectedText =
+                    option
+                        .querySelector("span")
+                        ?.textContent
+                        ?.trim() ||
+                    option.dataset.value;
+
+            }
+
+        });
 
         if (label) {
-          label.textContent =
-            option.querySelector("span")?.textContent?.trim() || value;
+            label.textContent = selectedText;
         }
+    }
 
-        select.classList.remove("open");
+    function initializeCustomSelects() {
 
-        if (
-          [
-            "filterYearSelect",
-            "filterShiftSelect",
-            "filterGradeSelect",
-            "filterStatusSelect",
-          ].includes(select.id)
-        ) {
-          renderTables();
-        }
-      });
-    });
+        $$(".custom-select").forEach((select) => {
 
-    document.addEventListener("click", () => {
-      $$(".custom-select.open").forEach((select) =>
-        select.classList.remove("open"),
-      );
-    });
-  }
+            const trigger =
+                select.querySelector(
+                    ".custom-select-trigger"
+                );
 
-  /* ==========================================================
+            if (!trigger) return;
+
+            trigger.addEventListener(
+                "click",
+                (event) => {
+
+                    event.stopPropagation();
+
+                    $$(".custom-select.open")
+                        .filter(
+                            (item) =>
+                                item !== select
+                        )
+                        .forEach(
+                            (item) =>
+                                item.classList.remove(
+                                    "open"
+                                )
+                        );
+
+                    select.classList.toggle(
+                        "open"
+                    );
+
+                }
+            );
+
+            select.addEventListener(
+                "click",
+                (event) => {
+
+                    const option =
+                        event.target.closest(
+                            ".custom-select-option"
+                        );
+
+                    if (!option) return;
+
+                    const value =
+                        option.dataset.value;
+
+                    const hidden =
+                        select.querySelector(
+                            'input[type="hidden"]'
+                        );
+
+                    const label =
+                        select.querySelector(
+                            "[data-select-label]"
+                        );
+
+                    if (hidden) {
+                        hidden.value = value;
+                    }
+
+                    select
+                        .querySelectorAll(
+                            ".custom-select-option"
+                        )
+                        .forEach((item) =>
+                            item.classList.remove(
+                                "selected"
+                            )
+                        );
+
+                    option.classList.add(
+                        "selected"
+                    );
+
+                    if (label) {
+
+                        label.textContent =
+                            option
+                                .querySelector("span")
+                                ?.textContent
+                                ?.trim() ||
+                            value;
+
+                    }
+
+                    select.classList.remove(
+                        "open"
+                    );
+
+                    if (select.id === "filterYearSelect") {
+                        const years = window.AlunoTecShell?.getYears() || [value];
+                        if (window.AlunoTecShell?.setYears) {
+                            window.AlunoTecShell.setYears(years, value, true);
+                        } else {
+                            renderTables();
+                        }
+                    } else if (
+                        ["filterShiftSelect", "filterGradeSelect", "filterStatusSelect"].includes(select.id)
+                    ) {
+                        renderTables();
+                    }
+
+                }
+            );
+
+        });
+
+        document.addEventListener(
+            "click",
+            () => {
+
+                $$(".custom-select.open")
+                    .forEach(
+                        (select) =>
+                            select.classList.remove(
+                                "open"
+                            )
+                    );
+
+            }
+        );
+    }
+
+
+    /* ==========================================================
        FILTRO DE ANOS
        Preenche e aplica o filtro de ano letivo aos registros da página.
     ========================================================== */
 
-  function updateYearFilter() {
-    if (!filterYearOptions) return;
+    function updateYearFilter() {
 
-    const years = [...state.data.base, ...state.data.electives]
-      .map((item) => String(item.year || ""))
-      .filter(Boolean);
+        if (!filterYearOptions) return;
 
-    years.push(CURRENT_YEAR);
+        const classYears = [
+            ...state.data.base,
+            ...state.data.electives
+        ]
+            .map((item) => String(item.year || item.date?.slice?.(0, 4) || ""))
+            .filter((year) => /^\d{4}$/.test(year));
 
-    const uniqueYears = [...new Set(years)].sort(
-      (a, b) => Number(b) - Number(a),
-    );
+        const uniqueYears =
+            [...new Set(classYears.length ? classYears : [CURRENT_YEAR])]
+                .sort(
+                    (a, b) =>
+                        Number(b) - Number(a)
+                );
 
-    const selected = filterYear?.value || "all";
+        const requestedYear =
+            window.AlunoTecShell?.getYear() ||
+            localStorage.getItem("alunotecSchoolYear") ||
+            CURRENT_YEAR;
 
-    filterYearOptions.innerHTML = `
-            <button
-                type="button"
-                class="custom-select-option ${
-                  selected === "all" ? "selected" : ""
-                }"
-                data-value="all"
-            >
-                <span>Todos</span>
+        const selected =
+            uniqueYears.includes(String(requestedYear))
+                ? String(requestedYear)
+                : uniqueYears[0];
 
-                <svg class="option-check">
-                    <use href="#icon-check"></use>
-                </svg>
-            </button>
+        if (filterYear) filterYear.value = selected;
+        window.AlunoTecShell?.setYears(
+            uniqueYears,
+            selected,
+            String(requestedYear) !== selected
+        );
 
+        filterYearOptions.innerHTML = `
             ${uniqueYears
-              .map(
-                (year) => `
+                .map(
+                    (year) => `
                         <button
                             type="button"
                             class="custom-select-option ${
-                              selected === year ? "selected" : ""
+                                selected === year
+                                    ? "selected"
+                                    : ""
                             }"
                             data-value="${escapeHTML(year)}"
                         >
@@ -1073,115 +841,172 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <use href="#icon-check"></use>
                             </svg>
                         </button>
-                    `,
-              )
-              .join("")}
+                    `
+                )
+                .join("")}
         `;
 
-    setCustomSelectValue("filterYearSelect", selected, "Todos");
-  }
+        setCustomSelectValue(
+            "filterYearSelect",
+            selected,
+            selected
+        );
+    }
 
-  /* ==========================================================
+
+    /* ==========================================================
        CONTADORES
        Calcula totais que aparecem nos cartões e nas guias da tela.
     ========================================================== */
 
-  function updateSummary() {
-    const baseStudents = state.data.base.reduce(
-      (total, item) => total + getActiveStudents(item).length,
-      0,
-    );
+    function updateSummary() {
 
-    const electiveStudents = state.data.electives.reduce(
-      (total, item) => total + getActiveStudents(item).length,
-      0,
-    );
+        const selectedYear =
+            filterYear?.value ||
+            window.AlunoTecShell?.getYear() ||
+            CURRENT_YEAR;
 
-    if (totalClasses) {
-      totalClasses.textContent = state.data.base.length;
+        const baseClasses = state.data.base.filter(
+            (item) => String(item.year || item.date?.slice?.(0, 4) || CURRENT_YEAR) === String(selectedYear)
+        );
+
+        const electiveClasses = state.data.electives.filter(
+            (item) => String(item.year || item.date?.slice?.(0, 4) || CURRENT_YEAR) === String(selectedYear)
+        );
+
+        const baseStudents =
+            baseClasses.reduce(
+                (total, item) =>
+                    total +
+                    getActiveStudents(item).length,
+                0
+            );
+
+        const electiveStudents =
+            electiveClasses.reduce(
+                (total, item) =>
+                    total +
+                    getActiveStudents(item).length,
+                0
+            );
+
+        if (totalClasses) {
+            totalClasses.textContent =
+                baseClasses.length;
+        }
+
+        if (totalBaseStudents) {
+            totalBaseStudents.textContent =
+                baseStudents;
+        }
+
+        if (totalElectives) {
+            totalElectives.textContent =
+                electiveClasses.length;
+        }
+
+        if (totalElectiveStudents) {
+            totalElectiveStudents.textContent =
+                electiveStudents;
+        }
+
+        if (baseCount) {
+            baseCount.textContent =
+                baseClasses.length;
+        }
+
+        if (electiveCount) {
+            electiveCount.textContent =
+                electiveClasses.length;
+        }
     }
 
-    if (totalBaseStudents) {
-      totalBaseStudents.textContent = baseStudents;
-    }
 
-    if (totalElectives) {
-      totalElectives.textContent = state.data.electives.length;
-    }
-
-    if (totalElectiveStudents) {
-      totalElectiveStudents.textContent = electiveStudents;
-    }
-
-    if (baseCount) {
-      baseCount.textContent = state.data.base.length;
-    }
-
-    if (electiveCount) {
-      electiveCount.textContent = state.data.electives.length;
-    }
-  }
-
-  /* ==========================================================
+    /* ==========================================================
        FILTROS
        Aplica pesquisa e filtros de turma ou estudante sem alterar os dados armazenados.
     ========================================================== */
 
-  function getFilteredItems(type) {
-    const source = type === "base" ? state.data.base : state.data.electives;
+    function getFilteredItems(type) {
 
-    const year = filterYear?.value || "all";
+        const source =
+            type === "base"
+                ? state.data.base
+                : state.data.electives;
 
-    const shift = filterShift?.value || "all";
+        const year =
+            filterYear?.value ||
+            window.AlunoTecShell?.getYear() ||
+            CURRENT_YEAR;
 
-    const grade = filterGrade?.value || "all";
+        const shift =
+            filterShift?.value || "all";
 
-    const status = filterStatus?.value || "all";
+        const grade =
+            filterGrade?.value || "all";
 
-    const search = normalizeText(searchInput?.value || "");
+        const status =
+            filterStatus?.value || "all";
 
-    return source.filter((item) => {
-      const matchesYear = year === "all" || String(item.year) === year;
+        const search =
+            normalizeText(
+                searchInput?.value || ""
+            );
 
-      const matchesShift = shift === "all" || item.shift === shift;
+        return source.filter((item) => {
 
-      const matchesStatus = status === "all" || item.status === status;
+            const matchesYear =
+                String(item.year || item.date?.slice?.(0, 4) || CURRENT_YEAR) === String(year);
 
-      const matchesGrade =
-        type !== "base" || grade === "all" || item.grade === grade;
+            const matchesShift =
+                shift === "all" ||
+                item.shift === shift;
 
-      const searchable = normalizeText(
-        [
-          item.name,
-          item.grade,
-          item.shift,
-          item.year,
-          item.teacher,
-          item.status,
-        ]
-          .filter(Boolean)
-          .join(" "),
-      );
+            const matchesStatus =
+                status === "all" ||
+                item.status === status;
 
-      const matchesSearch = !search || searchable.includes(search);
+            const matchesGrade =
+                type !== "base" ||
+                grade === "all" ||
+                item.grade === grade;
 
-      return (
-        matchesYear &&
-        matchesShift &&
-        matchesStatus &&
-        matchesGrade &&
-        matchesSearch
-      );
-    });
-  }
+            const searchable = normalizeText(
+                [
+                    item.name,
+                    item.grade,
+                    item.shift,
+                    item.year,
+                    item.teacher,
+                    item.status
+                ]
+                    .filter(Boolean)
+                    .join(" ")
+            );
 
-  /* ==========================================================
+            const matchesSearch =
+                !search ||
+                searchable.includes(search);
+
+            return (
+                matchesYear &&
+                matchesShift &&
+                matchesStatus &&
+                matchesGrade &&
+                matchesSearch
+            );
+        });
+    }
+
+
+    /* ==========================================================
        ÍCONES DE AÇÕES
        Define os símbolos usados nos comandos de editar, abrir, transferir e remover.
     ========================================================== */
 
-  function actionButtons(type, id) {
-    return `
+    function actionButtons(type, id) {
+
+        return `
             <div class="table-actions">
 
                 <button
@@ -1228,20 +1053,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
             </div>
         `;
-  }
+    }
 
-  /* ==========================================================
+
+    /* ==========================================================
        BASE COMUM
        Implementa as operações compartilhadas de criação e atualização de turmas regulares.
     ========================================================== */
 
-  function renderBaseTable() {
-    if (!baseTableBody) return;
+    function renderBaseTable() {
 
-    const items = getFilteredItems("base");
+        if (!baseTableBody) return;
 
-    if (!items.length) {
-      baseTableBody.innerHTML = `
+        const items =
+            getFilteredItems("base");
+
+        if (!items.length) {
+
+            baseTableBody.innerHTML = `
                 <tr>
                     <td
                         colspan="8"
@@ -1266,14 +1095,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
 
-      return;
-    }
+            return;
+        }
 
-    baseTableBody.innerHTML = items
-      .map((item, index) => {
-        const activeStudents = getActiveStudents(item).length;
+        baseTableBody.innerHTML =
+            items
+                .map((item, index) => {
 
-        return `
+                    const activeStudents =
+                        getActiveStudents(item).length;
+
+                    return `
                         <tr class="class-clickable-row" data-class-id="${escapeHTML(item.id)}" data-type="base">
 
                             <td>
@@ -1295,7 +1127,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             </td>
 
                             <td>
-                                ${escapeHTML(item.year || "—")}
+                                ${escapeHTML(item.year || item.date?.slice?.(0, 4) || "—")}
                             </td>
 
                             <td>
@@ -1304,36 +1136,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             <td>
                                 <span class="status ${
-                                  item.status === "Ativa"
-                                    ? "active"
-                                    : "inactive"
+                                    item.status === "Ativa"
+                                        ? "active"
+                                        : "inactive"
                                 }">
                                     ${escapeHTML(item.status || "Ativa")}
                                 </span>
                             </td>
 
                             <td>
-                                ${actionButtons("base", item.id)}
+                                ${actionButtons(
+                                    "base",
+                                    item.id
+                                )}
                             </td>
 
                         </tr>
                     `;
-      })
-      .join("");
-  }
+                })
+                .join("");
+    }
 
-  /* ==========================================================
+
+    /* ==========================================================
        ELETIVAS
        Implementa as operações e regras específicas de cadastro e edição das eletivas.
     ========================================================== */
 
-  function renderElectivesTable() {
-    if (!electivesTableBody) return;
+    function renderElectivesTable() {
 
-    const items = getFilteredItems("electives");
+        if (!electivesTableBody) return;
 
-    if (!items.length) {
-      electivesTableBody.innerHTML = `
+        const items =
+            getFilteredItems("electives");
+
+        if (!items.length) {
+
+            electivesTableBody.innerHTML = `
                 <tr>
                     <td
                         colspan="8"
@@ -1358,14 +1197,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
 
-      return;
-    }
+            return;
+        }
 
-    electivesTableBody.innerHTML = items
-      .map((item, index) => {
-        const activeStudents = getActiveStudents(item).length;
+        electivesTableBody.innerHTML =
+            items
+                .map((item, index) => {
 
-        return `
+                    const activeStudents =
+                        getActiveStudents(item).length;
+
+                    return `
                         <tr class="class-clickable-row" data-class-id="${escapeHTML(item.id)}" data-type="electives">
 
                             <td>
@@ -1387,7 +1229,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             </td>
 
                             <td>
-                                ${escapeHTML(item.year || "—")}
+                                ${escapeHTML(item.year || item.date?.slice?.(0, 4) || "—")}
                             </td>
 
                             <td>
@@ -1396,733 +1238,1101 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             <td>
                                 <span class="status ${
-                                  item.status === "Ativa"
-                                    ? "active"
-                                    : "inactive"
+                                    item.status === "Ativa"
+                                        ? "active"
+                                        : "inactive"
                                 }">
                                     ${escapeHTML(item.status || "Ativa")}
                                 </span>
                             </td>
 
                             <td>
-                                ${actionButtons("electives", item.id)}
+                                ${actionButtons(
+                                    "electives",
+                                    item.id
+                                )}
                             </td>
 
                         </tr>
                     `;
-      })
-      .join("");
-  }
+                })
+                .join("");
+    }
 
-  /* ==========================================================
+
+    /* ==========================================================
        RENDER GERAL
        Atualiza tabelas, indicadores e detalhes depois de mudanças nos dados.
     ========================================================== */
 
-  function renderTables() {
-    updateSummary();
-    updateYearFilter();
+    function renderTables() {
 
-    renderBaseTable();
-    renderElectivesTable();
+        updateYearFilter();
+        updateSummary();
 
-    if (state.openedClassId) {
-      renderOpenedClass();
+        renderBaseTable();
+        renderElectivesTable();
+
+        if (state.openedClassId) {
+            renderOpenedClass();
+        }
     }
-  }
 
-  /* ==========================================================
+
+    /* ==========================================================
        ABAS
        Alterna entre as visões de turmas regulares e eletivas e atualiza os itens exibidos.
     ========================================================== */
 
-  function changeTab(tab) {
-    state.activeTab = tab;
+    function changeTab(tab) {
+
+        state.activeTab = tab;
+
+        $$(".tab").forEach((button) => {
+
+            button.classList.toggle(
+                "active",
+                button.dataset.tab === tab
+            );
+
+        });
+
+        const baseActive =
+            tab === "base";
+
+        basePanel?.classList.toggle(
+            "hidden",
+            !baseActive
+        );
+
+        electivesPanel?.classList.toggle(
+            "hidden",
+            baseActive
+        );
+
+        gradeFilterContainer?.classList.toggle(
+            "hidden",
+            !baseActive
+        );
+
+        if (newButtonText) {
+
+            newButtonText.textContent =
+                baseActive
+                    ? "Nova turma"
+                    : "Nova eletiva";
+
+        }
+
+        if (managementDescription) {
+
+            managementDescription.textContent =
+                baseActive
+                    ? "Visualize, cadastre e gerencie as turmas da Base Comum."
+                    : "Visualize, cadastre e gerencie as Eletivas.";
+
+        }
+
+        if (!baseActive) {
+
+            setCustomSelectValue(
+                "filterGradeSelect",
+                "all",
+                "Todos"
+            );
+
+        }
+
+        renderTables();
+    }
 
     $$(".tab").forEach((button) => {
-      button.classList.toggle("active", button.dataset.tab === tab);
+
+        button.addEventListener(
+            "click",
+            () => changeTab(
+                button.dataset.tab
+            )
+        );
+
     });
 
-    const baseActive = tab === "base";
 
-    basePanel?.classList.toggle("hidden", !baseActive);
-
-    electivesPanel?.classList.toggle("hidden", baseActive);
-
-    gradeFilterContainer?.classList.toggle("hidden", !baseActive);
-
-    if (newButtonText) {
-      newButtonText.textContent = baseActive ? "Nova turma" : "Nova eletiva";
-    }
-
-    if (managementDescription) {
-      managementDescription.textContent = baseActive
-        ? "Visualize, cadastre e gerencie as turmas da Base Comum."
-        : "Visualize, cadastre e gerencie as Eletivas.";
-    }
-
-    if (!baseActive) {
-      setCustomSelectValue("filterGradeSelect", "all", "Todos");
-    }
-
-    renderTables();
-  }
-
-  $$(".tab").forEach((button) => {
-    button.addEventListener("click", () => changeTab(button.dataset.tab));
-  });
-
-  /* ==========================================================
+    /* ==========================================================
        ABRIR MODAL NOVO
        Limpa e abre o formulário para criar uma nova turma ou eletiva.
     ========================================================== */
 
-  function resetBaseForm() {
-    baseForm?.reset();
+    function resetBaseForm() {
 
-    if (baseEditId) {
-      baseEditId.value = "";
+        baseForm?.reset();
+
+        if (baseEditId) {
+            baseEditId.value = "";
+        }
+
+        if (classYear) {
+            classYear.value =
+                window.AlunoTecShell?.getYear() || CURRENT_YEAR;
+        }
+
+        if (classDate) {
+            classDate.value = "";
+        }
+
+        if (classDateLabel) {
+            classDateLabel.textContent =
+                "Selecione uma data";
+        }
+
+        setCustomSelectValue(
+            "classGradeSelect",
+            "",
+            "Selecione"
+        );
+
+        setCustomSelectValue(
+            "classShiftSelect",
+            "",
+            "Selecione"
+        );
+
+        setCustomSelectValue(
+            "classStatusSelect",
+            "Ativa",
+            "Ativa"
+        );
     }
 
-    if (classYear) {
-      classYear.value = CURRENT_YEAR;
+    function resetElectiveForm() {
+
+        electiveForm?.reset();
+
+        if (electiveEditId) {
+            electiveEditId.value = "";
+        }
+
+        if (electiveYear) {
+            electiveYear.value =
+                window.AlunoTecShell?.getYear() || CURRENT_YEAR;
+        }
+
+        if (electiveDate) {
+            electiveDate.value = "";
+        }
+
+        if (electiveDateLabel) {
+            electiveDateLabel.textContent =
+                "Selecione uma data";
+        }
+
+        setCustomSelectValue(
+            "electiveShiftSelect",
+            "",
+            "Selecione"
+        );
+
+        setCustomSelectValue(
+            "electiveStatusSelect",
+            "Ativa",
+            "Ativa"
+        );
     }
 
-    if (classDate) {
-      classDate.value = "";
+    function openCreateModal(type) {
+
+        closeAllDropdowns();
+
+        if (type === "base") {
+
+            resetBaseForm();
+
+            baseForm?.classList.remove(
+                "hidden"
+            );
+
+            electiveForm?.classList.add(
+                "hidden"
+            );
+
+            if (modalTag) {
+                modalTag.textContent =
+                    "BASE COMUM";
+            }
+
+            if (modalTitle) {
+                modalTitle.textContent =
+                    "Nova turma";
+            }
+
+            if (modalSubtitle) {
+                modalSubtitle.textContent =
+                    "Cadastre uma nova turma.";
+            }
+
+            const button =
+                baseForm?.querySelector(
+                    ".save-button"
+                );
+
+            if (button) {
+                button.textContent =
+                    "Cadastrar turma";
+            }
+
+        } else {
+
+            resetElectiveForm();
+
+            electiveForm?.classList.remove(
+                "hidden"
+            );
+
+            baseForm?.classList.add(
+                "hidden"
+            );
+
+            if (modalTag) {
+                modalTag.textContent =
+                    "ELETIVA";
+            }
+
+            if (modalTitle) {
+                modalTitle.textContent =
+                    "Nova eletiva";
+            }
+
+            if (modalSubtitle) {
+                modalSubtitle.textContent =
+                    "Cadastre uma nova eletiva.";
+            }
+
+            const button =
+                electiveForm?.querySelector(
+                    ".save-button"
+                );
+
+            if (button) {
+                button.textContent =
+                    "Cadastrar eletiva";
+            }
+        }
+
+        modalOverlay?.classList.add(
+            "open"
+        );
     }
 
-    if (classDateLabel) {
-      classDateLabel.textContent = "Selecione uma data";
-    }
+    newButton?.addEventListener(
+        "click",
+        () => openCreateModal(
+            state.activeTab
+        )
+    );
 
-    setCustomSelectValue("classGradeSelect", "", "Selecione");
 
-    setCustomSelectValue("classShiftSelect", "", "Selecione");
-
-    setCustomSelectValue("classStatusSelect", "Ativa", "Ativa");
-  }
-
-  function resetElectiveForm() {
-    electiveForm?.reset();
-
-    if (electiveEditId) {
-      electiveEditId.value = "";
-    }
-
-    if (electiveYear) {
-      electiveYear.value = CURRENT_YEAR;
-    }
-
-    if (electiveDate) {
-      electiveDate.value = "";
-    }
-
-    if (electiveDateLabel) {
-      electiveDateLabel.textContent = "Selecione uma data";
-    }
-
-    setCustomSelectValue("electiveShiftSelect", "", "Selecione");
-
-    setCustomSelectValue("electiveStatusSelect", "Ativa", "Ativa");
-  }
-
-  function openCreateModal(type) {
-    closeAllDropdowns();
-
-    if (type === "base") {
-      resetBaseForm();
-
-      baseForm?.classList.remove("hidden");
-
-      electiveForm?.classList.add("hidden");
-
-      if (modalTag) {
-        modalTag.textContent = "BASE COMUM";
-      }
-
-      if (modalTitle) {
-        modalTitle.textContent = "Nova turma";
-      }
-
-      if (modalSubtitle) {
-        modalSubtitle.textContent = "Cadastre uma nova turma.";
-      }
-
-      const button = baseForm?.querySelector(".save-button");
-
-      if (button) {
-        button.textContent = "Cadastrar turma";
-      }
-    } else {
-      resetElectiveForm();
-
-      electiveForm?.classList.remove("hidden");
-
-      baseForm?.classList.add("hidden");
-
-      if (modalTag) {
-        modalTag.textContent = "ELETIVA";
-      }
-
-      if (modalTitle) {
-        modalTitle.textContent = "Nova eletiva";
-      }
-
-      if (modalSubtitle) {
-        modalSubtitle.textContent = "Cadastre uma nova eletiva.";
-      }
-
-      const button = electiveForm?.querySelector(".save-button");
-
-      if (button) {
-        button.textContent = "Cadastrar eletiva";
-      }
-    }
-
-    modalOverlay?.classList.add("open");
-  }
-
-  newButton?.addEventListener("click", () => openCreateModal(state.activeTab));
-
-  /* ==========================================================
+    /* ==========================================================
        EDITAR BASE COMUM
        Preenche o formulário com os dados da turma regular selecionada.
     ========================================================== */
 
-  function editBase(id) {
-    const item = state.data.base.find((classItem) => classItem.id === id);
+    function editBase(id) {
 
-    if (!item) return;
+        const item =
+            state.data.base.find(
+                (classItem) =>
+                    classItem.id === id
+            );
 
-    resetBaseForm();
+        if (!item) return;
 
-    baseForm?.classList.remove("hidden");
+        resetBaseForm();
 
-    electiveForm?.classList.add("hidden");
+        baseForm?.classList.remove(
+            "hidden"
+        );
 
-    baseEditId.value = item.id;
+        electiveForm?.classList.add(
+            "hidden"
+        );
 
-    className.value = item.name || "";
+        baseEditId.value = item.id;
 
-    classYear.value = item.year || CURRENT_YEAR;
+        className.value =
+            item.name || "";
 
-    classTeacher.value = item.teacher || "";
+        classYear.value =
+            item.year || item.date?.slice?.(0, 4) || window.AlunoTecShell?.getYear() || CURRENT_YEAR;
 
-    classDate.value = item.date || "";
+        classTeacher.value =
+            item.teacher || "";
 
-    classDateLabel.textContent = item.date
-      ? formatDateBR(item.date)
-      : "Selecione uma data";
+        classDate.value =
+            item.date || "";
 
-    setCustomSelectValue("classGradeSelect", item.grade || "", "Selecione");
+        classDateLabel.textContent =
+            item.date
+                ? formatDateBR(item.date)
+                : "Selecione uma data";
 
-    setCustomSelectValue("classShiftSelect", item.shift || "", "Selecione");
+        setCustomSelectValue(
+            "classGradeSelect",
+            item.grade || "",
+            "Selecione"
+        );
 
-    setCustomSelectValue("classStatusSelect", item.status || "Ativa", "Ativa");
+        setCustomSelectValue(
+            "classShiftSelect",
+            item.shift || "",
+            "Selecione"
+        );
 
-    modalTag.textContent = "BASE COMUM";
+        setCustomSelectValue(
+            "classStatusSelect",
+            item.status || "Ativa",
+            "Ativa"
+        );
 
-    modalTitle.textContent = "Editar turma";
+        modalTag.textContent =
+            "BASE COMUM";
 
-    modalSubtitle.textContent = "Atualize as informações da turma.";
+        modalTitle.textContent =
+            "Editar turma";
 
-    const button = baseForm.querySelector(".save-button");
+        modalSubtitle.textContent =
+            "Atualize as informações da turma.";
 
-    if (button) {
-      button.textContent = "Salvar alterações";
+        const button =
+            baseForm.querySelector(
+                ".save-button"
+            );
+
+        if (button) {
+            button.textContent =
+                "Salvar alterações";
+        }
+
+        modalOverlay.classList.add(
+            "open"
+        );
     }
 
-    modalOverlay.classList.add("open");
-  }
 
-  /* ==========================================================
+    /* ==========================================================
        EDITAR ELETIVA
        Preenche o formulário com os dados da eletiva selecionada.
     ========================================================== */
 
-  function editElective(id) {
-    const item = state.data.electives.find((elective) => elective.id === id);
+    function editElective(id) {
 
-    if (!item) return;
+        const item =
+            state.data.electives.find(
+                (elective) =>
+                    elective.id === id
+            );
 
-    resetElectiveForm();
+        if (!item) return;
 
-    electiveForm?.classList.remove("hidden");
+        resetElectiveForm();
 
-    baseForm?.classList.add("hidden");
+        electiveForm?.classList.remove(
+            "hidden"
+        );
 
-    electiveEditId.value = item.id;
+        baseForm?.classList.add(
+            "hidden"
+        );
 
-    electiveName.value = item.name || "";
+        electiveEditId.value =
+            item.id;
 
-    electiveYear.value = item.year || CURRENT_YEAR;
+        electiveName.value =
+            item.name || "";
 
-    electiveTeacher.value = item.teacher || "";
+        electiveYear.value =
+            item.year || item.date?.slice?.(0, 4) || window.AlunoTecShell?.getYear() || CURRENT_YEAR;
 
-    electiveDate.value = item.date || "";
+        electiveTeacher.value =
+            item.teacher || "";
 
-    electiveDateLabel.textContent = item.date
-      ? formatDateBR(item.date)
-      : "Selecione uma data";
+        electiveDate.value =
+            item.date || "";
 
-    setCustomSelectValue("electiveShiftSelect", item.shift || "", "Selecione");
+        electiveDateLabel.textContent =
+            item.date
+                ? formatDateBR(item.date)
+                : "Selecione uma data";
 
-    setCustomSelectValue(
-      "electiveStatusSelect",
-      item.status || "Ativa",
-      "Ativa",
-    );
+        setCustomSelectValue(
+            "electiveShiftSelect",
+            item.shift || "",
+            "Selecione"
+        );
 
-    modalTag.textContent = "ELETIVA";
+        setCustomSelectValue(
+            "electiveStatusSelect",
+            item.status || "Ativa",
+            "Ativa"
+        );
 
-    modalTitle.textContent = "Editar eletiva";
+        modalTag.textContent =
+            "ELETIVA";
 
-    modalSubtitle.textContent = "Atualize as informações da eletiva.";
+        modalTitle.textContent =
+            "Editar eletiva";
 
-    const button = electiveForm.querySelector(".save-button");
+        modalSubtitle.textContent =
+            "Atualize as informações da eletiva.";
 
-    if (button) {
-      button.textContent = "Salvar alterações";
+        const button =
+            electiveForm.querySelector(
+                ".save-button"
+            );
+
+        if (button) {
+            button.textContent =
+                "Salvar alterações";
+        }
+
+        modalOverlay.classList.add(
+            "open"
+        );
     }
 
-    modalOverlay.classList.add("open");
-  }
 
-  /* ==========================================================
+    /* ==========================================================
        CADASTRAR / SALVAR BASE
        Valida e persiste a criação ou edição de uma turma regular.
     ========================================================== */
 
-  baseForm?.addEventListener("submit", async (event) => {
-    event.preventDefault();
+    baseForm?.addEventListener(
+        "submit",
+        async (event) => {
 
-    const name = className.value.trim();
+            event.preventDefault();
 
-    const grade = classGrade.value;
+            const name =
+                className.value.trim();
 
-    const shift = classShift.value;
+            const grade =
+                classGrade.value;
 
-    const year = classYear.value.trim();
+            const shift =
+                classShift.value;
 
-    const status = classStatus.value || "Ativa";
+            const year =
+                classYear.value.trim();
 
-    const teacher = classTeacher.value.trim();
+            const status =
+                classStatus.value || "Ativa";
 
-    const date = classDate.value || (await automaticCreationDate());
+            const teacher =
+                classTeacher.value.trim();
 
-    if (!name) {
-      showToast("Informe o nome da turma.", "warning");
+            const date =
+                classDate.value || await automaticCreationDate();
 
-      className.focus();
+            if (!name) {
 
-      return;
-    }
+                showToast(
+                    "Informe o nome da turma.",
+                    "warning"
+                );
 
-    if (!grade) {
-      showToast("Selecione a série/ano.", "warning");
+                className.focus();
 
-      return;
-    }
+                return;
+            }
 
-    if (!shift) {
-      showToast("Selecione o turno.", "warning");
+            if (!grade) {
 
-      return;
-    }
+                showToast(
+                    "Selecione a série/ano.",
+                    "warning"
+                );
 
-    if (!/^\d{4}$/.test(year)) {
-      showToast("Informe um ano letivo válido.", "warning");
+                return;
+            }
 
-      classYear.focus();
+            if (!shift) {
 
-      return;
-    }
+                showToast(
+                    "Selecione o turno.",
+                    "warning"
+                );
 
-    const editId = baseEditId.value;
+                return;
+            }
 
-    if (editId) {
-      const index = state.data.base.findIndex((item) => item.id === editId);
+            if (
+                !/^\d{4}$/.test(year)
+            ) {
 
-      if (index !== -1) {
-        const old = state.data.base[index];
+                showToast(
+                    "Informe um ano letivo válido.",
+                    "warning"
+                );
 
-        state.data.base[index] = {
-          ...old,
-          name,
-          grade,
-          shift,
-          year,
-          status,
-          teacher,
-          date,
-        };
+                classYear.focus();
 
-        showToast("Turma atualizada com sucesso.");
-      }
-    } else {
-      state.data.base.push({
-        id: generateId("base"),
+                return;
+            }
 
-        name,
-        grade,
-        shift,
-        year,
-        status,
-        teacher,
-        date,
+            const editId =
+                baseEditId.value;
 
-        students: [],
-      });
+            if (editId) {
 
-      showToast("Turma cadastrada com sucesso.");
-    }
+                const index =
+                    state.data.base.findIndex(
+                        (item) =>
+                            item.id === editId
+                    );
 
-    saveData();
-    closeMainModal();
-    renderTables();
-  });
+                if (index !== -1) {
 
-  /* ==========================================================
+                    const old =
+                        state.data.base[index];
+
+                    state.data.base[index] = {
+                        ...old,
+                        name,
+                        grade,
+                        shift,
+                        year,
+                        status,
+                        teacher,
+                        date
+                    };
+
+                    showToast(
+                        "Turma atualizada com sucesso."
+                    );
+                }
+
+            } else {
+
+                state.data.base.push({
+                    id:
+                        generateId("base"),
+
+                    name,
+                    grade,
+                    shift,
+                    year,
+                    status,
+                    teacher,
+                    date,
+
+                    students: []
+                });
+
+                showToast(
+                    "Turma cadastrada com sucesso."
+                );
+            }
+
+            saveData();
+            closeMainModal();
+            renderTables();
+
+        }
+    );
+
+
+    /* ==========================================================
        CADASTRAR / SALVAR ELETIVA
        Valida e persiste a criação ou edição de uma eletiva.
     ========================================================== */
 
-  electiveForm?.addEventListener("submit", async (event) => {
-    event.preventDefault();
+    electiveForm?.addEventListener(
+        "submit",
+        async (event) => {
 
-    const name = electiveName.value.trim();
+            event.preventDefault();
 
-    const shift = electiveShift.value;
+            const name =
+                electiveName.value.trim();
 
-    const year = electiveYear.value.trim();
+            const shift =
+                electiveShift.value;
 
-    const status = electiveStatus.value || "Ativa";
+            const year =
+                electiveYear.value.trim();
 
-    const teacher = electiveTeacher.value.trim();
+            const status =
+                electiveStatus.value || "Ativa";
 
-    const date = electiveDate.value || (await automaticCreationDate());
+            const teacher =
+                electiveTeacher.value.trim();
 
-    if (!name) {
-      showToast("Informe o nome da eletiva.", "warning");
+            const date =
+                electiveDate.value || await automaticCreationDate();
 
-      electiveName.focus();
+            if (!name) {
 
-      return;
-    }
+                showToast(
+                    "Informe o nome da eletiva.",
+                    "warning"
+                );
 
-    if (!shift) {
-      showToast("Selecione o turno.", "warning");
+                electiveName.focus();
 
-      return;
-    }
+                return;
+            }
 
-    if (!/^\d{4}$/.test(year)) {
-      showToast("Informe um ano letivo válido.", "warning");
+            if (!shift) {
 
-      electiveYear.focus();
+                showToast(
+                    "Selecione o turno.",
+                    "warning"
+                );
 
-      return;
-    }
+                return;
+            }
 
-    const editId = electiveEditId.value;
+            if (
+                !/^\d{4}$/.test(year)
+            ) {
 
-    if (editId) {
-      const index = state.data.electives.findIndex(
-        (item) => item.id === editId,
-      );
+                showToast(
+                    "Informe um ano letivo válido.",
+                    "warning"
+                );
 
-      if (index !== -1) {
-        const old = state.data.electives[index];
+                electiveYear.focus();
 
-        state.data.electives[index] = {
-          ...old,
-          name,
-          shift,
-          year,
-          status,
-          teacher,
-          date,
-        };
+                return;
+            }
 
-        showToast("Eletiva atualizada com sucesso.");
-      }
-    } else {
-      state.data.electives.push({
-        id: generateId("elective"),
+            const editId =
+                electiveEditId.value;
 
-        name,
-        shift,
-        year,
-        status,
-        teacher,
-        date,
+            if (editId) {
 
-        students: [],
-      });
+                const index =
+                    state.data.electives.findIndex(
+                        (item) =>
+                            item.id === editId
+                    );
 
-      showToast("Eletiva cadastrada com sucesso.");
-    }
+                if (index !== -1) {
 
-    saveData();
-    closeMainModal();
-    renderTables();
-  });
+                    const old =
+                        state.data.electives[index];
 
-  /* ==========================================================
+                    state.data.electives[index] = {
+                        ...old,
+                        name,
+                        shift,
+                        year,
+                        status,
+                        teacher,
+                        date
+                    };
+
+                    showToast(
+                        "Eletiva atualizada com sucesso."
+                    );
+                }
+
+            } else {
+
+                state.data.electives.push({
+                    id:
+                        generateId("elective"),
+
+                    name,
+                    shift,
+                    year,
+                    status,
+                    teacher,
+                    date,
+
+                    students: []
+                });
+
+                showToast(
+                    "Eletiva cadastrada com sucesso."
+                );
+            }
+
+            saveData();
+            closeMainModal();
+            renderTables();
+
+        }
+    );
+
+
+    /* ==========================================================
        EXCLUIR TURMA / ELETIVA
        Confirma e remove o registro selecionado, preservando as regras de vínculo dos estudantes.
     ========================================================== */
 
-  async function deleteItem(type, id) {
-    const collection = type === "base" ? state.data.base : state.data.electives;
+    async function deleteItem(type, id) {
 
-    const item = collection.find((entry) => entry.id === id);
+        const collection =
+            type === "base"
+                ? state.data.base
+                : state.data.electives;
 
-    if (!item) return;
+        const item =
+            collection.find(
+                (entry) =>
+                    entry.id === id
+            );
 
-    const label = type === "base" ? "turma" : "eletiva";
+        if (!item) return;
 
-    const trash =
-      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m-9 0 1 14h10l1-14M10 11v6m4-6v6"/></svg>';
-    const confirmed = await appDialog({
-      title: "Excluir " + label,
-      type: "warning",
-      confirmation: true,
-      confirmText: "Excluir",
-      message:
-        "Deseja realmente excluir a " +
-        label +
-        ' "' +
-        item.name +
-        '"?\\n\\nOs alunos vinculados a ela também serão removidos desta ' +
-        label +
-        ".",
-      icon: trash,
-    });
+        const label =
+            type === "base"
+                ? "turma"
+                : "eletiva";
 
-    if (!confirmed) return;
+        const trash='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m-9 0 1 14h10l1-14M10 11v6m4-6v6"/></svg>';
+        const confirmed=await appDialog({title:"Excluir "+label,type:"warning",confirmation:true,confirmText:"Excluir",message:"Deseja realmente excluir a "+label+" \""+item.name+"\"?\\n\\nOs alunos vinculados a ela também serão removidos desta "+label+".",icon:trash});
 
-    if (type === "base") {
-      state.data.base = state.data.base.filter((entry) => entry.id !== id);
-    } else {
-      state.data.electives = state.data.electives.filter(
-        (entry) => entry.id !== id,
-      );
+        if (!confirmed) return;
+
+        if (type === "base") {
+
+            state.data.base =
+                state.data.base.filter(
+                    (entry) =>
+                        entry.id !== id
+                );
+
+        } else {
+
+            state.data.electives =
+                state.data.electives.filter(
+                    (entry) =>
+                        entry.id !== id
+                );
+        }
+
+        if (
+            state.openedClassId === id &&
+            state.openedClassType === type
+        ) {
+
+            state.openedClassId = null;
+            state.openedClassType = null;
+
+            showClassesView();
+        }
+
+        saveData();
+        renderTables();
+
+        showToast(
+            type === "base"
+                ? "Turma excluída."
+                : "Eletiva excluída."
+        );
     }
 
-    if (state.openedClassId === id && state.openedClassType === type) {
-      state.openedClassId = null;
-      state.openedClassType = null;
 
-      showClassesView();
-    }
-
-    saveData();
-    renderTables();
-
-    showToast(type === "base" ? "Turma excluída." : "Eletiva excluída.");
-  }
-
-  /* ==========================================================
+    /* ==========================================================
        AÇÕES DAS TABELAS
        Conecta comandos exibidos em cada linha das listas de turmas e eletivas.
     ========================================================== */
 
-  function handleTableAction(event) {
-    const button = event.target.closest("[data-action], tr[data-class-id]");
+    function handleTableAction(event) {
 
-    if (!button) return;
+        const button =
+            event.target.closest(
+                "[data-action], tr[data-class-id]"
+            );
 
-    const action = button.dataset.action || "view";
+        if (!button) return;
 
-    const type = button.dataset.type;
+        const action =
+            button.dataset.action || "view";
 
-    const id = button.dataset.id || button.dataset.classId;
+        const type =
+            button.dataset.type;
 
-    if (action === "view") {
-      openClassDetails(type, id);
+        const id =
+            button.dataset.id || button.dataset.classId;
 
-      return;
+        if (action === "view") {
+
+            openClassDetails(
+                type,
+                id
+            );
+
+            return;
+        }
+
+        if (action === "edit") {
+
+            if (type === "base") {
+                editBase(id);
+            } else {
+                editElective(id);
+            }
+
+            return;
+        }
+
+        if (action === "delete") {
+
+            deleteItem(
+                type,
+                id
+            );
+        }
     }
 
-    if (action === "edit") {
-      if (type === "base") {
-        editBase(id);
-      } else {
-        editElective(id);
-      }
+    baseTableBody?.addEventListener(
+        "click",
+        handleTableAction
+    );
 
-      return;
-    }
+    electivesTableBody?.addEventListener(
+        "click",
+        handleTableAction
+    );
 
-    if (action === "delete") {
-      deleteItem(type, id);
-    }
-  }
 
-  baseTableBody?.addEventListener("click", handleTableAction);
-
-  electivesTableBody?.addEventListener("click", handleTableAction);
-
-  /* ==========================================================
+    /* ==========================================================
        MODAL PRINCIPAL
        Controla abertura, fechamento, validação e envio dos formulários principais.
     ========================================================== */
 
-  function closeMainModal() {
-    modalOverlay?.classList.remove("open");
+    function closeMainModal() {
 
-    closeAllDropdowns();
-  }
+        modalOverlay?.classList.remove(
+            "open"
+        );
 
-  modalClose?.addEventListener("click", closeMainModal);
-
-  $$("[data-close-modal]").forEach((button) => {
-    button.addEventListener("click", closeMainModal);
-  });
-
-  modalOverlay?.addEventListener("click", (event) => {
-    if (event.target === modalOverlay) {
-      closeMainModal();
+        closeAllDropdowns();
     }
-  });
 
-  /* ==========================================================
+    modalClose?.addEventListener(
+        "click",
+        closeMainModal
+    );
+
+    $$("[data-close-modal]")
+        .forEach((button) => {
+
+            button.addEventListener(
+                "click",
+                closeMainModal
+            );
+
+        });
+
+    modalOverlay?.addEventListener(
+        "click",
+        (event) => {
+
+            if (
+                event.target === modalOverlay
+            ) {
+                closeMainModal();
+            }
+
+        }
+    );
+
+
+    /* ==========================================================
        LOCALIZAR TURMA ABERTA
        Encontra a turma selecionada no armazenamento para montar sua área de detalhes.
     ========================================================== */
 
-  function getOpenedClass() {
-    if (!state.openedClassId || !state.openedClassType) {
-      return null;
+    function getOpenedClass() {
+
+        if (
+            !state.openedClassId ||
+            !state.openedClassType
+        ) {
+            return null;
+        }
+
+        const collection =
+            state.openedClassType === "base"
+                ? state.data.base
+                : state.data.electives;
+
+        return collection.find(
+            (item) =>
+                item.id ===
+                state.openedClassId
+        ) || null;
     }
 
-    const collection =
-      state.openedClassType === "base" ? state.data.base : state.data.electives;
 
-    return collection.find((item) => item.id === state.openedClassId) || null;
-  }
-
-  /* ==========================================================
+    /* ==========================================================
        VISUALIZAR TURMA
        Abre a visualização de uma turma a partir da linha ou do nome selecionado.
     ========================================================== */
 
-  function openClassDetails(type, id) {
-    const url = new URL(location.href);
-    url.searchParams.set("turma", id);
-    url.searchParams.set("tipo", type);
-    history.pushState({ turmas: true }, "", url.href);
-    showClassInCurrentTab(type, id);
-  }
+    function openClassDetails(type,id){const url=new URL(location.href);url.searchParams.set("turma",id);url.searchParams.set("tipo",type);history.pushState({turmas:true},"",url.href);showClassInCurrentTab(type,id)}
 
-  function showClassInCurrentTab(type, id) {
-    state.openedClassType = type;
-    state.openedClassId = id;
-    if (!getOpenedClass()) {
-      state.openedClassType = null;
-      state.openedClassId = null;
-      showClassesView();
-      showToast("Esta turma não está mais disponível.", "warning");
-      return;
+    function showClassInCurrentTab(type, id) {
+        state.openedClassType = type;
+        state.openedClassId = id;
+        const openedClass = getOpenedClass();
+        if (!openedClass) {
+            state.openedClassType = null;
+            state.openedClassId = null;
+            showClassesView();
+            showToast("Esta turma não está mais disponível.", "warning");
+            return;
+        }
+        const openedClassYear = String(
+            openedClass.year || openedClass.date?.slice?.(0, 4) || CURRENT_YEAR
+        );
+        const selectedYear = String(
+            window.AlunoTecShell?.getYear() || localStorage.getItem("alunotecSchoolYear") || CURRENT_YEAR
+        );
+        if (openedClassYear !== selectedYear) {
+            state.openedClassType = null;
+            state.openedClassId = null;
+            showClassesView();
+            showToast(`Esta turma pertence ao ano ${openedClassYear}. Selecione esse ano no topo para visualizá-la.`, "warning");
+            return;
+        }
+        if (studentSearch) studentSearch.value = "";
+        classesView?.classList.add("hidden");
+        classDetailsView?.classList.remove("hidden");
+        renderOpenedClass();
+        document.title = getOpenedClass().name + " — AlunoTec";
+        window.scrollTo({top: 0, behavior: "smooth"});
     }
-    if (studentSearch) studentSearch.value = "";
-    classesView?.classList.add("hidden");
-    classDetailsView?.classList.remove("hidden");
-    renderOpenedClass();
-    document.title = getOpenedClass().name + " — AlunoTec";
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
 
-  function showClassesView() {
-    state.openedClassId = null;
-    state.openedClassType = null;
-    const url = new URL(location.href);
-    url.searchParams.delete("turma");
-    url.searchParams.delete("tipo");
-    history.replaceState(null, "", url.href);
-    document.title = "Turmas | AlunoTec";
+    function showClassesView() {
+        state.openedClassId=null;state.openedClassType=null;const url=new URL(location.href);url.searchParams.delete("turma");url.searchParams.delete("tipo");history.replaceState(null,"",url.href);document.title="Turmas | AlunoTec";
 
-    classDetailsView?.classList.add("hidden");
+        classDetailsView?.classList.add(
+            "hidden"
+        );
 
-    classesView?.classList.remove("hidden");
+        classesView?.classList.remove(
+            "hidden"
+        );
 
-    renderTables();
-  }
+        renderTables();
+    }
 
-  backToClasses?.addEventListener("click", showClassesView);
+    backToClasses?.addEventListener(
+        "click",
+        showClassesView
+    );
 
-  /* ==========================================================
+
+    /* ==========================================================
        DETALHES DA TURMA
        Prepara os elementos da tela com informações completas de uma turma selecionada.
     ========================================================== */
 
-  function renderOpenedClass() {
-    const item = getOpenedClass();
+    function renderOpenedClass() {
 
-    if (!item) return;
+        const item =
+            getOpenedClass();
 
-    const isBase = state.openedClassType === "base";
+        if (!item) return;
 
-    const activeStudents = getActiveStudents(item).length;
+        const isBase =
+            state.openedClassType === "base";
 
-    openedClassType.textContent = isBase ? "BASE COMUM" : "ELETIVA";
+        const activeStudents =
+            getActiveStudents(item).length;
 
-    openedClassName.textContent = item.name;
+        openedClassType.textContent =
+            isBase
+                ? "BASE COMUM"
+                : "ELETIVA";
 
-    openedClassInformation.textContent = isBase
-      ? [
-          item.grade,
-          item.shift,
-          item.teacher ? `Professor: ${item.teacher}` : null,
-        ]
-          .filter(Boolean)
-          .join(" • ")
-      : [item.shift, item.teacher ? `Professor: ${item.teacher}` : null]
-          .filter(Boolean)
-          .join(" • ");
+        openedClassName.textContent =
+            item.name;
 
-    openedClassStatus.textContent = item.status || "Ativa";
+        openedClassInformation.textContent =
+            isBase
+                ? [
+                    item.grade,
+                    item.shift,
+                    item.teacher
+                        ? `Professor: ${item.teacher}`
+                        : null
+                ]
+                    .filter(Boolean)
+                    .join(" • ")
+                : [
+                    item.shift,
+                    item.teacher
+                        ? `Professor: ${item.teacher}`
+                        : null
+                ]
+                    .filter(Boolean)
+                    .join(" • ");
 
-    openedClassStatus.className = `status ${
-      item.status === "Ativa" ? "active" : "inactive"
-    }`;
+        openedClassStatus.textContent =
+            item.status || "Ativa";
 
-    openedClassStudents.textContent = activeStudents;
+        openedClassStatus.className =
+            `status ${
+                item.status === "Ativa"
+                    ? "active"
+                    : "inactive"
+            }`;
 
-    openedClassYear.textContent = item.year || "—";
+        openedClassStudents.textContent =
+            activeStudents;
 
-    if (studentsDescription)
-      studentsDescription.textContent = `Gerencie os alunos cadastrados em ${item.name}.`;
+        openedClassYear.textContent =
+            item.year || item.date?.slice?.(0, 4) || "—";
 
-    renderStudents();
-  }
+        if (studentsDescription) studentsDescription.textContent =
+            `Gerencie os alunos cadastrados em ${item.name}.`;
 
-  /* ==========================================================
+        renderStudents();
+    }
+
+
+    /* ==========================================================
        ALUNOS
        Renderiza a relação de estudantes e suas informações na tela de detalhes da turma.
     ========================================================== */
 
-  function renderStudents() {
-    const item = getOpenedClass();
+    function renderStudents() {
 
-    if (!item || !studentsTableBody) {
-      return;
-    }
+        const item =
+            getOpenedClass();
 
-    const search = normalizeText(studentSearch?.value || "");
+        if (!item || !studentsTableBody) {
+            return;
+        }
 
-    const students = (item.students || []).filter((student) => {
-      if (!search) return true;
+        const search =
+            normalizeText(
+                studentSearch?.value || ""
+            );
 
-      return normalizeText([student.name, student.whatsapp].join(" ")).includes(
-        search,
-      );
-    });
+        const students =
+            (item.students || [])
+                .filter((student) => {
 
-    if (!students.length) {
-      studentsTableBody.innerHTML = `
+                    if (!search) return true;
+
+                    return normalizeText(
+                        [
+                            student.name,
+                            student.whatsapp
+                        ].join(" ")
+                    ).includes(search);
+
+                });
+
+        if (!students.length) {
+
+            studentsTableBody.innerHTML = `
                 <tr>
                     <td
                         colspan="4"
@@ -2140,9 +2350,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             <span>
                                 ${
-                                  search
-                                    ? "Nenhum aluno corresponde à pesquisa."
-                                    : "Cadastre o primeiro aluno desta turma."
+                                    search
+                                        ? "Nenhum aluno corresponde à pesquisa."
+                                        : "Cadastre o primeiro aluno desta turma."
                                 }
                             </span>
 
@@ -2151,15 +2361,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
 
-      return;
-    }
+            return;
+        }
 
-    studentsTableBody.innerHTML = students
-      .map((student, index) => {
-        const inactive = student.status === "Inativo";
+        studentsTableBody.innerHTML =
+            students
+                .map((student, index) => {
 
-        return `
-                        <tr class="${inactive ? "student-inactive" : ""}">
+                    const inactive =
+                        student.status === "Inativo";
+
+                    return `
+                        <tr class="${
+                            inactive
+                                ? "student-inactive"
+                                : ""
+                        }">
 
                             <td>
                                 ${index + 1}
@@ -2173,8 +2390,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             <td>
                                 ${
-                                  student.whatsapp
-                                    ? `
+                                    student.whatsapp
+                                        ? `
                                             <a
                                                 class="whatsapp-link"
                                                 href="${whatsappURL(student.whatsapp)}"
@@ -2184,7 +2401,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                                 ${escapeHTML(student.whatsapp)}
                                             </a>
                                         `
-                                    : `
+                                        : `
                                             <span class="no-whatsapp">
                                                 Não informado
                                             </span>
@@ -2211,8 +2428,8 @@ document.addEventListener("DOMContentLoaded", () => {
                                     </button>
 
                                     ${
-                                      state.openedClassType === "base"
-                                        ? `
+                                        state.openedClassType === "base"
+                                            ? `
                                                 <button
                                                     type="button"
                                                     class="student-action-button transfer"
@@ -2231,7 +2448,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                                     Eletiva
                                                 </button>
                                             `
-                                        : `
+                                            : `
                                                 <button type="button" class="student-action-button transfer" data-student-action="transfer" data-student-id="${student.id}">Transferir</button>
                                             `
                                     }
@@ -2247,7 +2464,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                     <div
                                         class="student-status-select ${
-                                          inactive ? "inactive" : ""
+                                            inactive
+                                                ? "inactive"
+                                                : ""
                                         }"
                                         data-student-status="${student.id}"
                                     >
@@ -2255,10 +2474,14 @@ document.addEventListener("DOMContentLoaded", () => {
                                         <button
                                             type="button"
                                             class="student-status-trigger ${
-                                              inactive ? "inactive" : ""
+                                                inactive
+                                                    ? "inactive"
+                                                    : ""
                                             }"
                                         >
-                                            ${inactive ? "Inativo" : "Ativo"}
+                                            ${inactive
+                                                ? "Inativo"
+                                                : "Ativo"}
 
                                             <svg>
                                                 <use href="#icon-chevron-down"></use>
@@ -2298,295 +2521,469 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         </tr>
                     `;
-      })
-      .join("");
-  }
+                })
+                .join("");
+    }
 
-  /* ==========================================================
+
+    /* ==========================================================
        MODAL ALUNO
        Declara os campos e controles usados para cadastrar ou editar estudantes.
     ========================================================== */
 
-  function openStudentModal(studentId = null) {
-    const item = getOpenedClass();
+    function openStudentModal(studentId = null) {
 
-    if (!item) return;
+        const item =
+            getOpenedClass();
 
-    state.editingStudentId = studentId;
+        if (!item) return;
 
-    studentForm.reset();
+        state.editingStudentId =
+            studentId;
 
-    const title = studentModalOverlay?.querySelector(".modal-header h2");
+        studentForm.reset();
 
-    const subtitle = studentModalOverlay?.querySelector(".modal-header p");
+        const title =
+            studentModalOverlay
+                ?.querySelector(
+                    ".modal-header h2"
+                );
 
-    const submit = studentForm?.querySelector('button[type="submit"]');
+        const subtitle =
+            studentModalOverlay
+                ?.querySelector(
+                    ".modal-header p"
+                );
 
-    if (studentId) {
-      const student = item.students.find((entry) => entry.id === studentId);
+        const submit =
+            studentForm
+                ?.querySelector(
+                    'button[type="submit"]'
+                );
 
-      if (!student) return;
+        if (studentId) {
 
-      studentName.value = student.name || "";
+            const student =
+                item.students.find(
+                    (entry) =>
+                        entry.id === studentId
+                );
 
-      studentWhatsapp.value = student.whatsapp || "";
+            if (!student) return;
 
-      if (title) {
-        title.textContent = "Editar aluno";
-      }
+            studentName.value =
+                student.name || "";
 
-      if (subtitle) {
-        subtitle.textContent = "Atualize os dados do aluno.";
-      }
+            studentWhatsapp.value =
+                student.whatsapp || "";
 
-      if (submit) {
-        submit.textContent = "Salvar alterações";
-      }
-    } else {
-      if (title) {
-        title.textContent = "Cadastrar aluno";
-      }
+            if (title) {
+                title.textContent =
+                    "Editar aluno";
+            }
 
-      if (subtitle) {
-        subtitle.textContent = "Adicione um aluno à turma selecionada.";
-      }
+            if (subtitle) {
+                subtitle.textContent =
+                    "Atualize os dados do aluno.";
+            }
 
-      if (submit) {
-        submit.textContent = "Cadastrar aluno";
-      }
+            if (submit) {
+                submit.textContent =
+                    "Salvar alterações";
+            }
+
+        } else {
+
+            if (title) {
+                title.textContent =
+                    "Cadastrar aluno";
+            }
+
+            if (subtitle) {
+                subtitle.textContent =
+                    "Adicione um aluno à turma selecionada.";
+            }
+
+            if (submit) {
+                submit.textContent =
+                    "Cadastrar aluno";
+            }
+        }
+
+        studentModalOverlay
+            ?.classList.add("open");
+
+        setTimeout(
+            () => studentName?.focus(),
+            100
+        );
     }
 
-    studentModalOverlay?.classList.add("open");
+    function closeStudentModal() {
 
-    setTimeout(() => studentName?.focus(), 100);
-  }
+        studentModalOverlay
+            ?.classList.remove("open");
 
-  function closeStudentModal() {
-    studentModalOverlay?.classList.remove("open");
-
-    state.editingStudentId = null;
-  }
-
-  addStudentButton?.addEventListener("click", () => openStudentModal());
-
-  studentModalClose?.addEventListener("click", closeStudentModal);
-
-  cancelStudentButton?.addEventListener("click", closeStudentModal);
-
-  studentModalOverlay?.addEventListener("click", (event) => {
-    if (event.target === studentModalOverlay) {
-      closeStudentModal();
-    }
-  });
-
-  studentWhatsapp?.addEventListener("input", () => {
-    studentWhatsapp.value = formatWhatsapp(studentWhatsapp.value);
-  });
-
-  studentForm?.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const item = getOpenedClass();
-
-    if (!item) return;
-
-    const name = studentName.value.trim();
-
-    const whatsapp = formatWhatsapp(studentWhatsapp.value);
-
-    if (!name) {
-      showToast("Informe o nome do aluno.", "warning");
-
-      studentName.focus();
-
-      return;
+        state.editingStudentId =
+            null;
     }
 
-    if (state.editingStudentId) {
-      const index = item.students.findIndex(
-        (student) => student.id === state.editingStudentId,
-      );
+    addStudentButton?.addEventListener(
+        "click",
+        () => openStudentModal()
+    );
 
-      if (index !== -1) {
-        item.students[index] = {
-          ...item.students[index],
-          name,
-          whatsapp,
-        };
+    studentModalClose?.addEventListener(
+        "click",
+        closeStudentModal
+    );
 
-        showToast("Aluno atualizado com sucesso.");
-      }
-    } else {
-      item.students.push({
-        id: generateId("student"),
+    cancelStudentButton?.addEventListener(
+        "click",
+        closeStudentModal
+    );
 
-        name,
-        whatsapp,
-        status: "Ativo",
-      });
+    studentModalOverlay?.addEventListener(
+        "click",
+        (event) => {
 
-      showToast("Aluno cadastrado com sucesso.");
-    }
+            if (
+                event.target ===
+                studentModalOverlay
+            ) {
+                closeStudentModal();
+            }
 
-    saveData();
-    if (studentSearch) studentSearch.value = "";
-    closeStudentModal();
-    renderOpenedClass();
-    updateSummary();
-  });
+        }
+    );
 
-  /* ==========================================================
+    studentWhatsapp?.addEventListener(
+        "input",
+        () => {
+
+            studentWhatsapp.value =
+                formatWhatsapp(
+                    studentWhatsapp.value
+                );
+
+        }
+    );
+
+    studentForm?.addEventListener(
+        "submit",
+        (event) => {
+
+            event.preventDefault();
+
+            const item =
+                getOpenedClass();
+
+            if (!item) return;
+
+            const name =
+                studentName.value.trim();
+
+            const whatsapp =
+                formatWhatsapp(
+                    studentWhatsapp.value
+                );
+
+            if (!name) {
+
+                showToast(
+                    "Informe o nome do aluno.",
+                    "warning"
+                );
+
+                studentName.focus();
+
+                return;
+            }
+
+            if (
+                state.editingStudentId
+            ) {
+
+                const index =
+                    item.students.findIndex(
+                        (student) =>
+                            student.id ===
+                            state.editingStudentId
+                    );
+
+                if (index !== -1) {
+
+                    item.students[index] = {
+                        ...item.students[index],
+                        name,
+                        whatsapp
+                    };
+
+                    showToast(
+                        "Aluno atualizado com sucesso."
+                    );
+                }
+
+            } else {
+
+                item.students.push({
+                    id:
+                        generateId("student"),
+
+                    name,
+                    whatsapp,
+                    status: "Ativo"
+                });
+
+                showToast(
+                    "Aluno cadastrado com sucesso."
+                );
+            }
+
+            saveData();
+            if (studentSearch) studentSearch.value = "";
+            closeStudentModal();
+            renderOpenedClass();
+            updateSummary();
+
+        }
+    );
+
+
+    /* ==========================================================
        AÇÕES DO ALUNO
        Conecta edição, exclusão, transferência e demais comandos de cada estudante.
     ========================================================== */
 
-  studentsTableBody?.addEventListener("click", (event) => {
-    const statusTrigger = event.target.closest(".student-status-trigger");
+    studentsTableBody?.addEventListener(
+        "click",
+        (event) => {
 
-    if (statusTrigger) {
-      event.stopPropagation();
+            const statusTrigger =
+                event.target.closest(
+                    ".student-status-trigger"
+                );
 
-      const wrapper = statusTrigger.closest(".student-status-select");
+            if (statusTrigger) {
 
-      $$(".student-status-select.open")
-        .filter((item) => item !== wrapper)
-        .forEach((item) => item.classList.remove("open"));
+                event.stopPropagation();
 
-      wrapper?.classList.toggle("open");
+                const wrapper =
+                    statusTrigger.closest(
+                        ".student-status-select"
+                    );
 
-      return;
-    }
+                $$(".student-status-select.open")
+                    .filter(
+                        (item) =>
+                            item !== wrapper
+                    )
+                    .forEach(
+                        (item) =>
+                            item.classList.remove(
+                                "open"
+                            )
+                    );
 
-    const button = event.target.closest("[data-student-action]");
+                wrapper?.classList.toggle(
+                    "open"
+                );
 
-    if (!button) return;
+                return;
+            }
 
-    const action = button.dataset.studentAction;
+            const button =
+                event.target.closest(
+                    "[data-student-action]"
+                );
 
-    const studentId = button.dataset.studentId;
+            if (!button) return;
 
-    if (action === "edit") {
-      openStudentModal(studentId);
+            const action =
+                button.dataset.studentAction;
 
-      return;
-    }
+            const studentId =
+                button.dataset.studentId;
 
-    if (action === "remove") {
-      removeStudent(studentId);
+            if (action === "edit") {
 
-      return;
-    }
+                openStudentModal(
+                    studentId
+                );
 
-    if (action === "status") {
-      updateStudentStatus(studentId, button.dataset.status);
+                return;
+            }
 
-      return;
-    }
+            if (action === "remove") {
 
-    if (action === "transfer") {
-      openTransferModal(studentId);
+                removeStudent(
+                    studentId
+                );
 
-      return;
-    }
+                return;
+            }
 
-    if (action === "copy") {
-      copyStudentToElective(studentId);
-    }
-  });
+            if (action === "status") {
 
-  document.addEventListener("click", () => {
-    $$(".student-status-select.open").forEach((item) =>
-      item.classList.remove("open"),
+                updateStudentStatus(
+                    studentId,
+                    button.dataset.status
+                );
+
+                return;
+            }
+
+            if (action === "transfer") {
+
+                openTransferModal(
+                    studentId
+                );
+
+                return;
+            }
+
+            if (action === "copy") {
+
+                copyStudentToElective(
+                    studentId
+                );
+            }
+
+        }
     );
-  });
 
-  function updateStudentStatus(studentId, status) {
-    const item = getOpenedClass();
+    document.addEventListener(
+        "click",
+        () => {
 
-    if (!item) return;
+            $$(".student-status-select.open")
+                .forEach(
+                    (item) =>
+                        item.classList.remove(
+                            "open"
+                        )
+                );
 
-    const student = item.students.find((entry) => entry.id === studentId);
+        }
+    );
 
-    if (!student) return;
+    function updateStudentStatus(
+        studentId,
+        status
+    ) {
 
-    student.status = status;
+        const item =
+            getOpenedClass();
 
-    saveData();
+        if (!item) return;
 
-    renderOpenedClass();
-    updateSummary();
+        const student =
+            item.students.find(
+                (entry) =>
+                    entry.id === studentId
+            );
 
-    showToast(`Aluno marcado como ${status.toLowerCase()}.`);
-  }
+        if (!student) return;
 
-  async function removeStudent(studentId) {
-    const item = getOpenedClass();
+        student.status = status;
 
-    if (!item) return;
+        saveData();
 
-    const student = item.students.find((entry) => entry.id === studentId);
+        renderOpenedClass();
+        updateSummary();
 
-    if (!student) return;
+        showToast(
+            `Aluno marcado como ${status.toLowerCase()}.`
+        );
+    }
 
-    const confirmed = await appDialog({
-      title: "Excluir aluno",
-      type: "warning",
-      confirmation: true,
-      confirmText: "Excluir",
-      message: 'Deseja remover "' + student.name + '" desta turma?',
-      icon: '<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3m-9 0 1 14h10l1-14M10 11v6m4-6v6"/></svg>',
-    });
+    async function removeStudent(studentId) {
 
-    if (!confirmed) return;
+        const item =
+            getOpenedClass();
 
-    item.students = item.students.filter((entry) => entry.id !== studentId);
+        if (!item) return;
 
-    saveData();
+        const student =
+            item.students.find(
+                (entry) =>
+                    entry.id === studentId
+            );
 
-    renderOpenedClass();
-    updateSummary();
+        if (!student) return;
 
-    showToast("Aluno removido da turma.");
-  }
+        const confirmed =
+            await appDialog({title:"Excluir aluno",type:"warning",confirmation:true,confirmText:"Excluir",message:"Deseja remover \""+student.name+"\" desta turma?",icon:'<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3m-9 0 1 14h10l1-14M10 11v6m4-6v6"/></svg>'});
 
-  /* ==========================================================
+        if (!confirmed) return;
+
+        item.students =
+            item.students.filter(
+                (entry) =>
+                    entry.id !== studentId
+            );
+
+        saveData();
+
+        renderOpenedClass();
+        updateSummary();
+
+        showToast(
+            "Aluno removido da turma."
+        );
+    }
+
+
+    /* ==========================================================
        TRANSFERÊNCIA
        Prepara os dados necessários para transferir estudantes entre turmas.
     ========================================================== */
 
-  function openTransferModal(studentId) {
-    const source = getOpenedClass();
+    function openTransferModal(
+        studentId
+    ) {
 
-    if (!source) return;
+        const source =
+            getOpenedClass();
 
-    const student = source.students.find((entry) => entry.id === studentId);
+        if (!source) return;
 
-    if (!student) return;
+        const student =
+            source.students.find(
+                (entry) =>
+                    entry.id === studentId
+            );
 
-    const destinations = state.data[state.openedClassType].filter(
-      (item) => item.id !== source.id,
-    );
+        if (!student) return;
 
-    if (!destinations.length) {
-      showToast(
-        state.openedClassType === "base"
-          ? "Cadastre outra turma da Base Comum para realizar a transferência."
-          : "Cadastre outra Eletiva para realizar a transferência.",
-        "warning",
-      );
+        const destinations =
+            state.data[state.openedClassType].filter(
+                (item) =>
+                    item.id !== source.id
+            );
 
-      return;
-    }
+        if (!destinations.length) {
 
-    transferStudentId.value = studentId;
+            showToast(
+                state.openedClassType === "base" ? "Cadastre outra turma da Base Comum para realizar a transferência." : "Cadastre outra Eletiva para realizar a transferência.",
+                "warning"
+            );
 
-    transferClassId.value = "";
+            return;
+        }
 
-    transferStudentText.textContent = `Selecione a turma de destino para ${student.name}.`;
+        transferStudentId.value =
+            studentId;
 
-    transferClassOptions.innerHTML = destinations
-      .map(
-        (item) => `
+        transferClassId.value = "";
+
+        transferStudentText.textContent =
+            `Selecione a turma de destino para ${student.name}.`;
+
+        transferClassOptions.innerHTML =
+            destinations
+                .map(
+                    (item) => `
                         <button
                             type="button"
                             class="custom-select-option"
@@ -2600,672 +2997,987 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <use href="#icon-check"></use>
                             </svg>
                         </button>
-                    `,
-      )
-      .join("");
+                    `
+                )
+                .join("");
 
-    setCustomSelectValue("transferClassSelect", "", "Selecione a turma");
+        setCustomSelectValue(
+            "transferClassSelect",
+            "",
+            "Selecione a turma"
+        );
 
-    transferModalOverlay?.classList.add("open");
-  }
-
-  function closeTransferModal() {
-    transferModalOverlay?.classList.remove("open");
-
-    transferStudentId.value = "";
-    transferClassId.value = "";
-  }
-
-  transferModalClose?.addEventListener("click", closeTransferModal);
-
-  cancelTransferButton?.addEventListener("click", closeTransferModal);
-
-  transferModalOverlay?.addEventListener("click", (event) => {
-    if (event.target === transferModalOverlay) {
-      closeTransferModal();
-    }
-  });
-
-  transferForm?.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const source = getOpenedClass();
-
-    if (!source) return;
-
-    const studentId = transferStudentId.value;
-
-    const destinationId = transferClassId.value;
-
-    if (!destinationId) {
-      showToast("Selecione a turma de destino.", "warning");
-
-      return;
+        transferModalOverlay
+            ?.classList.add("open");
     }
 
-    const student = source.students.find((entry) => entry.id === studentId);
+    function closeTransferModal() {
 
-    const destination = state.data[state.openedClassType].find(
-      (item) => item.id === destinationId,
+        transferModalOverlay
+            ?.classList.remove("open");
+
+        transferStudentId.value = "";
+        transferClassId.value = "";
+    }
+
+    transferModalClose?.addEventListener(
+        "click",
+        closeTransferModal
     );
 
-    if (!student || !destination || destination.id === source.id) {
-      return;
-    }
+    cancelTransferButton?.addEventListener(
+        "click",
+        closeTransferModal
+    );
 
-    destination.students.push(student);
+    transferModalOverlay?.addEventListener(
+        "click",
+        (event) => {
 
-    source.students = source.students.filter((entry) => entry.id !== studentId);
+            if (
+                event.target ===
+                transferModalOverlay
+            ) {
+                closeTransferModal();
+            }
 
-    saveData();
+        }
+    );
 
-    closeTransferModal();
-    renderOpenedClass();
-    updateSummary();
+    transferForm?.addEventListener(
+        "submit",
+        (event) => {
 
-    showToast(`Aluno transferido para ${destination.name}.`);
-  });
+            event.preventDefault();
 
-  /* ==========================================================
+            const source =
+                getOpenedClass();
+
+            if (!source) return;
+
+            const studentId =
+                transferStudentId.value;
+
+            const destinationId =
+                transferClassId.value;
+
+            if (!destinationId) {
+
+                showToast(
+                    "Selecione a turma de destino.",
+                    "warning"
+                );
+
+                return;
+            }
+
+            const student =
+                source.students.find(
+                    (entry) =>
+                        entry.id === studentId
+                );
+
+            const destination =
+                state.data[state.openedClassType].find(
+                    (item) =>
+                        item.id ===
+                        destinationId
+                );
+
+            if (
+                !student ||
+                !destination ||
+                destination.id === source.id
+            ) {
+                return;
+            }
+
+            destination.students.push(
+                student
+            );
+
+            source.students =
+                source.students.filter(
+                    (entry) =>
+                        entry.id !== studentId
+                );
+
+            saveData();
+
+            closeTransferModal();
+            renderOpenedClass();
+            updateSummary();
+
+            showToast(
+                `Aluno transferido para ${destination.name}.`
+            );
+        }
+    );
+
+
+    /* ==========================================================
        COPIAR ALUNO PARA ELETIVA
        Inclui o estudante em uma eletiva sem removê-lo da turma regular.
     ========================================================== */
 
-  async function chooseElective(electives) {
-    return new Promise((resolve) => {
-      const dialog = document.createElement("dialog");
-      dialog.className = "alunotec-notice selector-dialog";
-      dialog.innerHTML =
-        '<div class="notice-symbol">↗</div><h2>Escolha a Eletiva</h2><div class="selector-list"></div><div class="notice-actions"><button type="button" class="notice-cancel">Cancelar</button></div>';
-      const list = dialog.querySelector(".selector-list");
-      let closed = false;
-      const finish = (value) => {
-        if (closed) return;
-        closed = true;
-        dialog.close();
-        dialog.remove();
-        resolve(value);
-      };
-      electives.forEach((item) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "select-option";
-        button.textContent = item.name;
-        button.onclick = () => finish(item);
-        list.append(button);
-      });
-      dialog.querySelector(".notice-cancel").onclick = () => finish(null);
-      dialog.addEventListener("cancel", (e) => {
-        e.preventDefault();
-        finish(null);
-      });
-      document.body.append(dialog);
-      dialog.showModal();
-    });
-  }
-  async function copyStudentToElective(studentId) {
-    const source = getOpenedClass();
+    async function chooseElective(electives){
+        return new Promise(resolve=>{
+            const dialog=document.createElement("dialog");dialog.className="alunotec-notice selector-dialog";
+            dialog.innerHTML='<div class="notice-symbol">↗</div><h2>Escolha a Eletiva</h2><div class="selector-list"></div><div class="notice-actions"><button type="button" class="notice-cancel">Cancelar</button></div>';
+            const list=dialog.querySelector(".selector-list");let closed=false;
+            const finish=value=>{if(closed)return;closed=true;dialog.close();dialog.remove();resolve(value)};
+            electives.forEach(item=>{const button=document.createElement("button");button.type="button";button.className="select-option";button.textContent=item.name;button.onclick=()=>finish(item);list.append(button)});
+            dialog.querySelector(".notice-cancel").onclick=()=>finish(null);dialog.addEventListener("cancel",e=>{e.preventDefault();finish(null)});document.body.append(dialog);dialog.showModal();
+        });
+    }
+    async function copyStudentToElective(
+        studentId
+    ) {
 
-    if (!source) return;
+        const source =
+            getOpenedClass();
 
-    const student = source.students.find((entry) => entry.id === studentId);
+        if (!source) return;
 
-    if (!student) return;
+        const student =
+            source.students.find(
+                (entry) =>
+                    entry.id === studentId
+            );
 
-    const electives = state.data.electives;
+        if (!student) return;
 
-    if (!electives.length) {
-      showToast("Cadastre uma eletiva primeiro.", "warning");
+        const electives = state.data.electives;
 
-      return;
+        if (!electives.length) {
+
+            showToast(
+                "Cadastre uma eletiva primeiro.",
+                "warning"
+            );
+
+            return;
+        }
+
+        const elective=await chooseElective(electives);
+        if(!elective)return;
+
+        const alreadyExists =
+            elective.students.some(
+                (entry) =>
+                    normalizeText(entry.name) ===
+                    normalizeText(student.name)
+            );
+
+        if (alreadyExists) {
+
+            showToast(
+                "Este aluno já está cadastrado nessa eletiva.",
+                "warning"
+            );
+
+            return;
+        }
+
+        elective.students.push({
+            ...student,
+            id:
+                generateId("student")
+        });
+
+        saveData();
+        updateSummary();
+
+        showToast(
+            `${student.name} foi adicionado à eletiva ${elective.name}.`
+        );
     }
 
-    const elective = await chooseElective(electives);
-    if (!elective) return;
 
-    const alreadyExists = elective.students.some(
-      (entry) => normalizeText(entry.name) === normalizeText(student.name),
-    );
-
-    if (alreadyExists) {
-      showToast("Este aluno já está cadastrado nessa eletiva.", "warning");
-
-      return;
-    }
-
-    elective.students.push({
-      ...student,
-      id: generateId("student"),
-    });
-
-    saveData();
-    updateSummary();
-
-    showToast(`${student.name} foi adicionado à eletiva ${elective.name}.`);
-  }
-
-  /* ==========================================================
+    /* ==========================================================
        PESQUISA
        Filtra a lista de estudantes pelo texto digitado no campo de busca.
     ========================================================== */
 
-  searchInput?.addEventListener("input", renderTables);
+    searchInput?.addEventListener(
+        "input",
+        renderTables
+    );
 
-  studentSearch?.addEventListener("input", renderStudents);
+    studentSearch?.addEventListener(
+        "input",
+        renderStudents
+    );
 
-  /* ==========================================================
+
+    /* ==========================================================
        IMPORTAR ALUNOS CSV
        Lê o arquivo CSV, valida as colunas e adiciona os estudantes reconhecidos.
     ========================================================== */
 
-  importStudentsButton?.addEventListener("click", () => {
-    studentImportInput?.click();
-  });
+    importStudentsButton?.addEventListener(
+        "click",
+        () => {
 
-  studentImportInput?.addEventListener("change", (event) => {
-    const file = event.target.files?.[0];
+            studentImportInput?.click();
 
-    if (!file) return;
-
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      const item = getOpenedClass();
-
-      if (!item) return;
-
-      const content = String(reader.result || "");
-
-      const lines = content
-        .split(/\r?\n/)
-        .map((line) => line.trim())
-        .filter(Boolean);
-
-      if (!lines.length) {
-        showToast("O arquivo CSV está vazio.", "warning");
-
-        return;
-      }
-
-      let imported = 0;
-
-      lines.forEach((line, index) => {
-        const separator = line.includes(";") ? ";" : ",";
-
-        const columns = line
-          .split(separator)
-          .map((value) => value.replace(/^"|"$/g, "").trim());
-
-        const name = columns[0];
-
-        const whatsapp = columns[1] || "";
-
-        if (!name) return;
-
-        if (index === 0 && normalizeText(name).includes("nome")) {
-          return;
         }
+    );
 
-        item.students.push({
-          id: generateId("student"),
+    studentImportInput?.addEventListener(
+        "change",
+        (event) => {
 
-          name,
+            const file =
+                event.target.files?.[0];
 
-          whatsapp: formatWhatsapp(whatsapp),
+            if (!file) return;
 
-          status: "Ativo",
-        });
+            const reader =
+                new FileReader();
 
-        imported++;
-      });
+            reader.onload = () => {
 
-      saveData();
-      renderOpenedClass();
-      updateSummary();
+                const item =
+                    getOpenedClass();
 
-      showToast(`${imported} aluno(s) importado(s).`);
+                if (!item) return;
 
-      event.target.value = "";
-    };
+                const content =
+                    String(reader.result || "");
 
-    reader.readAsText(file, "UTF-8");
-  });
+                const lines =
+                    content
+                        .split(/\r?\n/)
+                        .map(
+                            (line) =>
+                                line.trim()
+                        )
+                        .filter(Boolean);
 
-  /* ==========================================================
+                if (!lines.length) {
+
+                    showToast(
+                        "O arquivo CSV está vazio.",
+                        "warning"
+                    );
+
+                    return;
+                }
+
+                let imported = 0;
+
+                lines.forEach(
+                    (line, index) => {
+
+                        const separator =
+                            line.includes(";")
+                                ? ";"
+                                : ",";
+
+                        const columns =
+                            line
+                                .split(separator)
+                                .map(
+                                    (value) =>
+                                        value
+                                            .replace(/^"|"$/g, "")
+                                            .trim()
+                                );
+
+                        const name =
+                            columns[0];
+
+                        const whatsapp =
+                            columns[1] || "";
+
+                        if (!name) return;
+
+                        if (
+                            index === 0 &&
+                            normalizeText(name).includes(
+                                "nome"
+                            )
+                        ) {
+                            return;
+                        }
+
+                        item.students.push({
+                            id:
+                                generateId(
+                                    "student"
+                                ),
+
+                            name,
+
+                            whatsapp:
+                                formatWhatsapp(
+                                    whatsapp
+                                ),
+
+                            status: "Ativo"
+                        });
+
+                        imported++;
+                    }
+                );
+
+                saveData();
+                renderOpenedClass();
+                updateSummary();
+
+                showToast(
+                    `${imported} aluno(s) importado(s).`
+                );
+
+                event.target.value = "";
+            };
+
+            reader.readAsText(
+                file,
+                "UTF-8"
+            );
+
+        }
+    );
+
+
+    /* ==========================================================
        EXPORTAR CSV
        Monta e baixa um arquivo CSV com os dados de estudantes escolhidos.
     ========================================================== */
 
-  exportStudentsButton?.addEventListener("click", () => {
-    const item = getOpenedClass();
+    exportStudentsButton?.addEventListener(
+        "click",
+        () => {
 
-    if (!item) return;
+            const item =
+                getOpenedClass();
 
-    if (!item.students.length) {
-      showToast("Não há alunos para exportar.", "warning");
+            if (!item) return;
 
-      return;
-    }
+            if (!item.students.length) {
 
-    const rows = [
-      ["Nome do aluno", "WhatsApp do responsável", "Status"],
+                showToast(
+                    "Não há alunos para exportar.",
+                    "warning"
+                );
 
-      ...item.students.map((student) => [
-        student.name,
-        student.whatsapp || "",
-        student.status || "Ativo",
-      ]),
-    ];
+                return;
+            }
 
-    const csv = rows
-      .map((row) =>
-        row
-          .map((value) => `"${String(value).replaceAll('"', '""')}"`)
-          .join(";"),
-      )
-      .join("\r\n");
+            const rows = [
+                [
+                    "Nome do aluno",
+                    "WhatsApp do responsável",
+                    "Status"
+                ],
 
-    const blob = new Blob(["\uFEFF" + csv], {
-      type: "text/csv;charset=utf-8;",
-    });
+                ...item.students.map(
+                    (student) => [
+                        student.name,
+                        student.whatsapp || "",
+                        student.status || "Ativo"
+                    ]
+                )
+            ];
 
-    const url = URL.createObjectURL(blob);
+            const csv =
+                rows
+                    .map(
+                        (row) =>
+                            row
+                                .map(
+                                    (value) =>
+                                        `"${String(value)
+                                            .replaceAll(
+                                                '"',
+                                                '""'
+                                            )}"`
+                                )
+                                .join(";")
+                    )
+                    .join("\r\n");
 
-    const link = document.createElement("a");
+            const blob =
+                new Blob(
+                    [
+                        "\uFEFF" + csv
+                    ],
+                    {
+                        type:
+                            "text/csv;charset=utf-8;"
+                    }
+                );
 
-    link.href = url;
+            const url =
+                URL.createObjectURL(
+                    blob
+                );
 
-    link.download = `${item.name
-      .replace(/[^a-z0-9áàâãéèêíïóôõöúçñ _-]/gi, "")
-      .replace(/\s+/g, "_")
-      .toLowerCase()}_alunos.csv`;
+            const link =
+                document.createElement(
+                    "a"
+                );
 
-    document.body.appendChild(link);
+            link.href = url;
 
-    link.click();
-    link.remove();
+            link.download =
+                `${item.name
+                    .replace(
+                        /[^a-z0-9áàâãéèêíïóôõöúçñ _-]/gi,
+                        ""
+                    )
+                    .replace(/\s+/g, "_")
+                    .toLowerCase()}_alunos.csv`;
 
-    URL.revokeObjectURL(url);
+            document.body.appendChild(
+                link
+            );
 
-    showToast("Lista de alunos exportada.");
-  });
+            link.click();
+            link.remove();
 
-  /* ==========================================================
+            URL.revokeObjectURL(url);
+
+            showToast(
+                "Lista de alunos exportada."
+            );
+
+        }
+    );
+
+
+    /* ==========================================================
        CALENDÁRIO
        Controla navegação, seleção de datas e registros associados ao calendário da turma.
     ========================================================== */
 
-  const MONTHS = [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro",
-  ];
+    const MONTHS = [
+        "Janeiro",
+        "Fevereiro",
+        "Março",
+        "Abril",
+        "Maio",
+        "Junho",
+        "Julho",
+        "Agosto",
+        "Setembro",
+        "Outubro",
+        "Novembro",
+        "Dezembro"
+    ];
 
-  function initializeCalendar(config) {
-    const button = byId(config.button);
+    function initializeCalendar(config) {
 
-    const picker = byId(config.picker);
+        const button =
+            byId(config.button);
 
-    const monthLabel = byId(config.month);
+        const picker =
+            byId(config.picker);
 
-    const daysContainer = byId(config.days);
+        const monthLabel =
+            byId(config.month);
 
-    const previous = byId(config.previous);
+        const daysContainer =
+            byId(config.days);
 
-    const next = byId(config.next);
+        const previous =
+            byId(config.previous);
 
-    const todayButton = byId(config.today);
+        const next =
+            byId(config.next);
 
-    const input = byId(config.input);
+        const todayButton =
+            byId(config.today);
 
-    const dateLabel = byId(config.label);
+        const input =
+            byId(config.input);
 
-    if (!button || !picker || !monthLabel || !daysContainer) {
-      return;
-    }
+        const dateLabel =
+            byId(config.label);
 
-    let viewDate = new Date();
+        if (
+            !button ||
+            !picker ||
+            !monthLabel ||
+            !daysContainer
+        ) {
+            return;
+        }
 
-    function renderCalendar() {
-      const year = viewDate.getFullYear();
+        let viewDate =
+            new Date();
 
-      const month = viewDate.getMonth();
+        function renderCalendar() {
 
-      monthLabel.textContent = `${MONTHS[month]} ${year}`;
+            const year =
+                viewDate.getFullYear();
 
-      const firstDay = new Date(year, month, 1);
+            const month =
+                viewDate.getMonth();
 
-      const start = new Date(year, month, 1 - firstDay.getDay());
+            monthLabel.textContent =
+                `${MONTHS[month]} ${year}`;
 
-      const today = new Date();
+            const firstDay =
+                new Date(
+                    year,
+                    month,
+                    1
+                );
 
-      const selected = input.value;
+            const start =
+                new Date(
+                    year,
+                    month,
+                    1 - firstDay.getDay()
+                );
 
-      let html = "";
+            const today =
+                new Date();
 
-      for (let index = 0; index < 42; index++) {
-        const date = new Date(start);
+            const selected =
+                input.value;
 
-        date.setDate(start.getDate() + index);
+            let html = "";
 
-        const value = dateToInputValue(date);
+            for (
+                let index = 0;
+                index < 42;
+                index++
+            ) {
 
-        const otherMonth = date.getMonth() !== month;
+                const date =
+                    new Date(start);
 
-        const isToday = date.toDateString() === today.toDateString();
+                date.setDate(
+                    start.getDate() +
+                    index
+                );
 
-        const isSelected = selected === value;
+                const value =
+                    dateToInputValue(date);
 
-        html += `
+                const otherMonth =
+                    date.getMonth() !== month;
+
+                const isToday =
+                    date.toDateString() ===
+                    today.toDateString();
+
+                const isSelected =
+                    selected === value;
+
+                html += `
                     <button
                         type="button"
                         class="calendar-day
-                            ${otherMonth ? "other-month" : ""}
-                            ${isToday ? "today" : ""}
-                            ${isSelected ? "selected" : ""}
+                            ${
+                                otherMonth
+                                    ? "other-month"
+                                    : ""
+                            }
+                            ${
+                                isToday
+                                    ? "today"
+                                    : ""
+                            }
+                            ${
+                                isSelected
+                                    ? "selected"
+                                    : ""
+                            }
                         "
                         data-date="${value}"
                     >
                         ${date.getDate()}
                     </button>
                 `;
-      }
+            }
 
-      daysContainer.innerHTML = html;
+            daysContainer.innerHTML =
+                html;
+        }
+
+        button.addEventListener(
+            "click",
+            (event) => {
+
+                event.stopPropagation();
+
+                $$(".date-picker.open")
+                    .filter(
+                        (item) =>
+                            item !== picker
+                    )
+                    .forEach(
+                        (item) =>
+                            item.classList.remove(
+                                "open"
+                            )
+                    );
+
+                picker.classList.toggle(
+                    "open"
+                );
+
+                renderCalendar();
+            }
+        );
+
+        previous?.addEventListener(
+            "click",
+            (event) => {
+
+                event.stopPropagation();
+
+                viewDate =
+                    new Date(
+                        viewDate.getFullYear(),
+                        viewDate.getMonth() - 1,
+                        1
+                    );
+
+                renderCalendar();
+            }
+        );
+
+        next?.addEventListener(
+            "click",
+            (event) => {
+
+                event.stopPropagation();
+
+                viewDate =
+                    new Date(
+                        viewDate.getFullYear(),
+                        viewDate.getMonth() + 1,
+                        1
+                    );
+
+                renderCalendar();
+            }
+        );
+
+        daysContainer.addEventListener(
+            "click",
+            (event) => {
+
+                event.stopPropagation();
+
+                const day =
+                    event.target.closest(
+                        ".calendar-day"
+                    );
+
+                if (!day) return;
+
+                input.value =
+                    day.dataset.date;
+
+                dateLabel.textContent =
+                    formatDateBR(
+                        day.dataset.date
+                    );
+
+                picker.classList.remove(
+                    "open"
+                );
+
+                renderCalendar();
+            }
+        );
+
+        todayButton?.addEventListener(
+            "click",
+            (event) => {
+
+                event.stopPropagation();
+
+                const today =
+                    new Date();
+
+                input.value =
+                    dateToInputValue(
+                        today
+                    );
+
+                dateLabel.textContent =
+                    formatDateBR(
+                        input.value
+                    );
+
+                viewDate =
+                    new Date(today);
+
+                picker.classList.remove(
+                    "open"
+                );
+
+                renderCalendar();
+            }
+        );
+
+        picker.addEventListener(
+            "click",
+            (event) =>
+                event.stopPropagation()
+        );
+
+        renderCalendar();
     }
 
-    button.addEventListener("click", (event) => {
-      event.stopPropagation();
+    initializeCalendar({
+        button:
+            "classDateButton",
 
-      $$(".date-picker.open")
-        .filter((item) => item !== picker)
-        .forEach((item) => item.classList.remove("open"));
+        picker:
+            "classDatePicker",
 
-      picker.classList.toggle("open");
+        month:
+            "calendarMonth",
 
-      renderCalendar();
+        days:
+            "calendarDays",
+
+        previous:
+            "calendarPrevious",
+
+        next:
+            "calendarNext",
+
+        today:
+            "calendarToday",
+
+        input:
+            "classDate",
+
+        label:
+            "classDateLabel"
     });
 
-    previous?.addEventListener("click", (event) => {
-      event.stopPropagation();
+    initializeCalendar({
+        button:
+            "electiveDateButton",
 
-      viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1);
+        picker:
+            "electiveDatePicker",
 
-      renderCalendar();
+        month:
+            "electiveCalendarMonth",
+
+        days:
+            "electiveCalendarDays",
+
+        previous:
+            "electiveCalendarPrevious",
+
+        next:
+            "electiveCalendarNext",
+
+        today:
+            "electiveCalendarToday",
+
+        input:
+            "electiveDate",
+
+        label:
+            "electiveDateLabel"
     });
 
-    next?.addEventListener("click", (event) => {
-      event.stopPropagation();
 
-      viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
-
-      renderCalendar();
-    });
-
-    daysContainer.addEventListener("click", (event) => {
-      event.stopPropagation();
-
-      const day = event.target.closest(".calendar-day");
-
-      if (!day) return;
-
-      input.value = day.dataset.date;
-
-      dateLabel.textContent = formatDateBR(day.dataset.date);
-
-      picker.classList.remove("open");
-
-      renderCalendar();
-    });
-
-    todayButton?.addEventListener("click", (event) => {
-      event.stopPropagation();
-
-      const today = new Date();
-
-      input.value = dateToInputValue(today);
-
-      dateLabel.textContent = formatDateBR(input.value);
-
-      viewDate = new Date(today);
-
-      picker.classList.remove("open");
-
-      renderCalendar();
-    });
-
-    picker.addEventListener("click", (event) => event.stopPropagation());
-
-    renderCalendar();
-  }
-
-  initializeCalendar({
-    button: "classDateButton",
-
-    picker: "classDatePicker",
-
-    month: "calendarMonth",
-
-    days: "calendarDays",
-
-    previous: "calendarPrevious",
-
-    next: "calendarNext",
-
-    today: "calendarToday",
-
-    input: "classDate",
-
-    label: "classDateLabel",
-  });
-
-  initializeCalendar({
-    button: "electiveDateButton",
-
-    picker: "electiveDatePicker",
-
-    month: "electiveCalendarMonth",
-
-    days: "electiveCalendarDays",
-
-    previous: "electiveCalendarPrevious",
-
-    next: "electiveCalendarNext",
-
-    today: "electiveCalendarToday",
-
-    input: "electiveDate",
-
-    label: "electiveDateLabel",
-  });
-
-  /* ==========================================================
+    /* ==========================================================
        FECHAR DROPDOWNS
        Fecha seletores personalizados abertos ao clicar fora ou iniciar outra ação.
     ========================================================== */
 
-  function closeAllDropdowns() {
-    $$(".custom-select.open").forEach((item) => item.classList.remove("open"));
+    function closeAllDropdowns() {
 
-    $$(".date-picker.open").forEach((item) => item.classList.remove("open"));
+        $$(".custom-select.open")
+            .forEach(
+                (item) =>
+                    item.classList.remove(
+                        "open"
+                    )
+            );
 
-    $$(".student-status-select.open").forEach((item) =>
-      item.classList.remove("open"),
+        $$(".date-picker.open")
+            .forEach(
+                (item) =>
+                    item.classList.remove(
+                        "open"
+                    )
+            );
+
+        $$(".student-status-select.open")
+            .forEach(
+                (item) =>
+                    item.classList.remove(
+                        "open"
+                    )
+            );
+    }
+
+    document.addEventListener(
+        "click",
+        () => {
+
+            $$(".date-picker.open")
+                .forEach(
+                    (item) =>
+                        item.classList.remove(
+                            "open"
+                        )
+                );
+
+        }
     );
-  }
 
-  document.addEventListener("click", () => {
-    $$(".date-picker.open").forEach((item) => item.classList.remove("open"));
-  });
 
-  /* ==========================================================
+    /* ==========================================================
        ANO LETIVO - APENAS NÚMEROS
        Normaliza o campo de ano letivo para aceitar somente algarismos.
     ========================================================== */
 
-  [classYear, electiveYear].forEach((input) => {
-    input?.addEventListener("input", () => {
-      input.value = input.value.replace(/\D/g, "").slice(0, 4);
-    });
-  });
+    [
+        classYear,
+        electiveYear
+    ].forEach((input) => {
 
-  /* ==========================================================
+        input?.addEventListener(
+            "input",
+            () => {
+
+                input.value =
+                    input.value
+                        .replace(/\D/g, "")
+                        .slice(0, 4);
+
+            }
+        );
+
+    });
+
+
+        /* ==========================================================
        PERFIL COMPARTILHADO
        A abertura e o fechamento do menu são controlados por app-shell.js.
     ========================================================== */
 
-  /* ==========================================================
+/* ==========================================================
        ESC
        Fecha diálogos e menus compatíveis quando a tecla Escape é pressionada.
     ========================================================== */
 
-  document.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape") {
-      return;
-    }
+    document.addEventListener(
+        "keydown",
+        (event) => {
 
-    closeAllDropdowns();
+            if (event.key !== "Escape") {
+                return;
+            }
 
-    if (transferModalOverlay?.classList.contains("open")) {
-      closeTransferModal();
+            closeAllDropdowns();
 
-      return;
-    }
+            if (
+                transferModalOverlay
+                    ?.classList.contains(
+                        "open"
+                    )
+            ) {
 
-    if (studentModalOverlay?.classList.contains("open")) {
-      closeStudentModal();
+                closeTransferModal();
 
-      return;
-    }
+                return;
+            }
 
-    if (modalOverlay?.classList.contains("open")) {
-      closeMainModal();
-    }
-  });
+            if (
+                studentModalOverlay
+                    ?.classList.contains(
+                        "open"
+                    )
+            ) {
 
-  /* ==========================================================
+                closeStudentModal();
+
+                return;
+            }
+
+            if (
+                modalOverlay
+                    ?.classList.contains(
+                        "open"
+                    )
+            ) {
+
+                closeMainModal();
+            }
+
+        }
+    );
+
+
+    /* ==========================================================
        INICIALIZAÇÃO
        Carrega os dados existentes, monta a interface inicial e ativa os eventos da página.
     ========================================================== */
 
-  window.addEventListener("popstate", () => {
-    const q = new URLSearchParams(location.search),
-      id = q.get("turma"),
-      type = q.get("tipo");
-    if (id && ["base", "electives"].includes(type))
-      showClassInCurrentTab(type, id);
-    else showClassesView();
-  });
-  loadData();
-  const startParams = new URLSearchParams(location.search);
-  if (
-    startParams.get("turma") &&
-    ["base", "electives"].includes(startParams.get("tipo"))
-  )
-    showClassInCurrentTab(startParams.get("tipo"), startParams.get("turma"));
+    window.addEventListener("popstate",()=>{
+        const q=new URLSearchParams(location.search),id=q.get("turma"),type=q.get("tipo");
+        if(id&&["base","electives"].includes(type))showClassInCurrentTab(type,id);else showClassesView();
+    });
+    loadData();
+    const startParams=new URLSearchParams(location.search);
+    if(startParams.get("turma")&&["base","electives"].includes(startParams.get("tipo")))showClassInCurrentTab(startParams.get("tipo"),startParams.get("turma"));
 
-  initializeCustomSelects();
 
-  /* ==========================================================
+    initializeCustomSelects();
+
+    document.addEventListener("alunotec:yearchange", (event) => {
+        const year = String(event.detail?.year || "");
+        if (!/^\d{4}$/.test(year) || !filterYear) return;
+
+        filterYear.value = year;
+        const openedClass = getOpenedClass();
+        const openedClassYear = openedClass
+            ? String(openedClass.year || openedClass.date?.slice?.(0, 4) || CURRENT_YEAR)
+            : "";
+
+        if (openedClass && openedClassYear !== year) {
+            showClassesView();
+            return;
+        }
+
+        renderTables();
+    });
+
+    /* ==========================================================
        Nenhuma turma ou eletiva é criada aqui.
        A página começa sem cadastros de exemplo; o usuário cria turmas e eletivas pela interface.
     ========================================================== */
 
-  changeTab("base");
+    changeTab("base");
 
-  updateSummary();
-  updateYearFilter();
-  renderTables();
-
-  byId("connectionStatus")?.addEventListener("click", () => {
-    if (!navigator.onLine) {
-      showToast(
-        "Sem internet. As alterações ficam guardadas neste dispositivo.",
-        "warning",
-      );
-      return;
-    }
-    if (!supabaseIsConfigured() || !getSupabaseSession()) openSupabaseLogin();
-    else syncWithSupabase();
-  });
-  activityBell?.addEventListener("click", () => {
-    if (activityDialog) {
-      activityDialog.close();
-      activityDialog.remove();
-      activityDialog = null;
-      activityBell.setAttribute("aria-expanded", "false");
-      return;
-    }
-    const items = readActivities().map((item) => ({ ...item, read: true }));
-    localStorage.setItem(ACTIVITY_KEY, JSON.stringify(items));
-    updateActivityBell();
-    activityDialog = document.createElement("dialog");
-    activityDialog.className = "alunotec-notice activity-dialog";
-    activityDialog.innerHTML =
-      '<div class="activity-heading"><div class="notice-symbol"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></div><div><h2>Atividades das turmas</h2><p>Alterações recentes</p></div></div><div class="activity-list"></div><div class="notice-actions"><button type="button" class="notice-clear">Limpar notificações</button></div>';
-    const list = activityDialog.querySelector(".activity-list");
-    const render = () => {
-      const data = readActivities();
-      list.innerHTML = data.length
-        ? data
-            .map(
-              (item) =>
-                '<article class="activity-item"><span class="activity-dot"></span><div><p>' +
-                escapeHTML(item.message) +
-                "</p><time>" +
-                new Intl.DateTimeFormat("pt-BR", {
-                  dateStyle: "short",
-                  timeStyle: "short",
-                }).format(new Date(item.date)) +
-                "</time></div></article>",
-            )
-            .join("")
-        : '<p class="activity-empty">Nenhuma notificação por enquanto.</p>';
-    };
-    render();
-    activityDialog.querySelector(".notice-clear").onclick = () => {
-      localStorage.setItem(ACTIVITY_KEY, "[]");
-      render();
-      updateActivityBell();
-    };
-    activityDialog.addEventListener("cancel", (e) => e.preventDefault());
-    activityDialog.addEventListener("click", (e) => {
-      if (e.target !== activityDialog) return;
-      const r = activityDialog.getBoundingClientRect();
-      if (
-        e.clientX < r.left ||
-        e.clientX > r.right ||
-        e.clientY < r.top ||
-        e.clientY > r.bottom
-      ) {
-        activityDialog.close();
-        activityDialog.remove();
-        activityDialog = null;
-        activityBell.setAttribute("aria-expanded", "false");
-      }
-    });
-    document.body.append(activityDialog);
-    activityDialog.showModal();
-    activityBell.setAttribute("aria-expanded", "true");
-  });
-  window.addEventListener("storage", (event) => {
-    if (event.key === ACTIVITY_KEY) updateActivityBell();
-    if (event.key !== STORAGE_KEY) return;
-    const previous = JSON.parse(JSON.stringify(state.data));
-    loadData();
-    describeChanges(previous, state.data).forEach(recordActivity);
+    updateSummary();
+    updateYearFilter();
     renderTables();
-  });
-  updateActivityBell();
-  updateConnectionStatus();
-  if (internetReachable === true) syncWithSupabase();
+
+    byId("connectionStatus")?.addEventListener("click",()=>{if(!navigator.onLine){showToast("Sem internet. As alterações ficam guardadas neste dispositivo.","warning");return}if(!supabaseIsConfigured()||!getSupabaseSession())openSupabaseLogin();else syncWithSupabase()});
+    activityBell?.addEventListener("click",()=>{
+        if(activityDialog){activityDialog.close();activityDialog.remove();activityDialog=null;activityBell.setAttribute("aria-expanded","false");return}
+        const items=readActivities().map(item=>({...item,read:true}));localStorage.setItem(ACTIVITY_KEY,JSON.stringify(items));updateActivityBell();
+        activityDialog=document.createElement("dialog");activityDialog.className="alunotec-notice activity-dialog";activityDialog.innerHTML='<div class="activity-heading"><div class="notice-symbol"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></div><div><h2>Atividades das turmas</h2><p>Alterações recentes</p></div></div><div class="activity-list"></div><div class="notice-actions"><button type="button" class="notice-clear">Limpar notificações</button></div>';
+        const list=activityDialog.querySelector(".activity-list");
+        const render=()=>{const data=readActivities();list.innerHTML=data.length?data.map(item=>'<article class="activity-item"><span class="activity-dot"></span><div><p>'+escapeHTML(item.message)+'</p><time>'+new Intl.DateTimeFormat("pt-BR",{dateStyle:"short",timeStyle:"short"}).format(new Date(item.date))+'</time></div></article>').join(""):'<p class="activity-empty">Nenhuma notificação por enquanto.</p>'};
+        render();activityDialog.querySelector(".notice-clear").onclick=()=>{localStorage.setItem(ACTIVITY_KEY,"[]");render();updateActivityBell()};
+        activityDialog.addEventListener("cancel",e=>e.preventDefault());
+        activityDialog.addEventListener("click",e=>{if(e.target!==activityDialog)return;const r=activityDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom){activityDialog.close();activityDialog.remove();activityDialog=null;activityBell.setAttribute("aria-expanded","false")}});
+        document.body.append(activityDialog);activityDialog.showModal();activityBell.setAttribute("aria-expanded","true");
+    });
+    window.addEventListener("storage",event=>{if(event.key===ACTIVITY_KEY)updateActivityBell();if(event.key!==STORAGE_KEY)return;const previous=JSON.parse(JSON.stringify(state.data));loadData();describeChanges(previous,state.data).forEach(recordActivity);renderTables()});
+    updateActivityBell();
+    updateConnectionStatus();
+    if(internetReachable===true)syncWithSupabase();
+
 });

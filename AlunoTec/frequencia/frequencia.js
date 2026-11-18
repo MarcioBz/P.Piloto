@@ -86,6 +86,33 @@
         students: Array.isArray(c.students) ? c.students : [],
       }));
   }
+  function classSchoolYear(classItem) {
+    return String(
+      window.AlunoTecShell?.getClassYear?.(
+        classItem?.id,
+        classItem?.year || classItem?.date?.slice?.(0, 4),
+      ) ||
+        classItem?.year ||
+        classItem?.date?.slice?.(0, 4) ||
+        new Date().getFullYear(),
+    );
+  }
+  function attendanceSchoolYear(call) {
+    const classItem = classes.find(
+      (item) => String(item.id) === String(call?.classId),
+    );
+    return classItem
+      ? classSchoolYear(classItem)
+      : String(
+          window.AlunoTecShell?.getClassYear?.(
+            call?.classId,
+            call?.year || call?.date?.slice?.(0, 4),
+          ) ||
+            call?.year ||
+            call?.date?.slice?.(0, 4) ||
+            "",
+        );
+  }
   function flattenRemaps() {
     const raw = read(KEYS.remaps, []);
     if (Array.isArray(raw)) return raw;
@@ -267,7 +294,7 @@
       justified = 0;
     Object.values(calls()).forEach((call) => {
       if (
-        String(call.year) !== localStorage.getItem(KEYS.year) ||
+        attendanceSchoolYear(call) !== localStorage.getItem(KEYS.year) ||
         !call.date?.startsWith(month)
       )
         return;
@@ -398,7 +425,7 @@
     Object.values(calls())
       .filter(
         (call) =>
-          String(call.year) === localStorage.getItem(KEYS.year) &&
+          attendanceSchoolYear(call) === localStorage.getItem(KEYS.year) &&
           String(call.classId) === classItem.id &&
           String(call.shift || "Todos") === selectedShift,
       )
@@ -437,53 +464,85 @@
     return isoDate(date);
   }
 
-  function calculateAlerts() {
-    const grouped = new Map();
+  function calculateAlerts(selectedYear = localStorage.getItem(KEYS.year)) {
+    const students = new Map();
     const currentWeek = weekStart(today());
-    const selectedYear = localStorage.getItem(KEYS.year);
 
     Object.values(calls()).forEach((call) => {
-      if (String(call.year) !== selectedYear) return;
+      if (attendanceSchoolYear(call) !== String(selectedYear)) return;
       if (!call.date || call.date > today()) return;
-      if (weekStart(call.date) !== currentWeek) return;
 
-      Object.entries(call.students || {}).forEach(([id, record]) => {
-        if (record.status !== "ausente") return;
+      Object.entries(call.students || {}).forEach(([studentId, record]) => {
+        if (
+          !record ||
+          !["ausente", "presente", "justificado"].includes(record.status)
+        )
+          return;
 
-        if (!grouped.has(id)) {
-          grouped.set(id, {
-            dates: new Set(),
-            name: "Aluno",
-            className: "sua turma",
-            lastDate: "",
-          });
-        }
+        if (!students.has(studentId))
+          students.set(studentId, { days: new Map() });
+        const student = students.get(studentId);
+        const day = student.days.get(call.date) || {
+          date: call.date,
+          absent: false,
+          present: false,
+          justified: false,
+          name: "Aluno",
+          className: "sua turma",
+        };
 
-        const student = grouped.get(id);
-
-        // O conjunto de datas evita contar o mesmo estudante mais de uma vez no dia.
-        student.dates.add(call.date);
-
-        if (call.date >= student.lastDate) {
-          student.lastDate = call.date;
-          student.name = record.studentName || "Aluno";
-          student.className =
-            record.currentClassName || call.className || "sua turma";
-        }
+        if (record.status === "ausente") day.absent = true;
+        if (record.status === "presente") day.present = true;
+        if (record.status === "justificado") day.justified = true;
+        day.name = record.studentName || day.name;
+        day.className =
+          record.currentClassName || call.className || day.className;
+        student.days.set(call.date, day);
       });
     });
 
     const alerts = [];
+    students.forEach((student, studentId) => {
+      const days = [...student.days.values()].sort((a, b) =>
+        a.date.localeCompare(b.date),
+      );
+      const absentDays = days.filter(
+        (day) => day.absent && !day.present && !day.justified,
+      );
+      const weeklyAbsences = absentDays.filter(
+        (day) => weekStart(day.date) === currentWeek,
+      );
 
-    grouped.forEach((student, studentId) => {
-      if (student.dates.size < 3) return;
+      let consecutiveStreak = [];
+      days.forEach((day) => {
+        if (day.absent && !day.present && !day.justified)
+          consecutiveStreak.push(day);
+        else consecutiveStreak = [];
+      });
+
+      const missedConsecutively = consecutiveStreak.length >= 3;
+      const missedThisWeek = weeklyAbsences.length >= 3;
+      if (!missedConsecutively && !missedThisWeek) return;
+
+      const latestRelevantDay = [
+        ...(missedConsecutively ? consecutiveStreak : []),
+        ...weeklyAbsences,
+      ]
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .at(-1);
+      const exampleDay = latestRelevantDay || days.at(-1);
+      const reasons = [];
+      if (missedConsecutively)
+        reasons.push(`${consecutiveStreak.length} faltas consecutivas`);
+      if (missedThisWeek)
+        reasons.push(`${weeklyAbsences.length} faltas nesta semana`);
 
       alerts.push({
-        signature: `${studentId}|semanal|${currentWeek}`,
-        message:
-          `${student.name} teve ${student.dates.size} dias com falta ` +
-          `sem justificativa nesta semana em ${student.className}.`,
-        date: student.lastDate,
+        signature: `${selectedYear}|${studentId}|${missedThisWeek ? currentWeek : ""}|${missedConsecutively ? consecutiveStreak[0].date : ""}`,
+        year: String(selectedYear),
+        studentId: String(studentId),
+        message: `${exampleDay.name} teve ${reasons.join(" e ")} em ${exampleDay.className}.`,
+        date: exampleDay.date,
       });
     });
 
@@ -500,7 +559,12 @@
     alerts.forEach((alert) => {
       if (alert.signature) dismissed.add(alert.signature);
     });
-    calculateAlerts().forEach((alert) => dismissed.add(alert.signature));
+    const years = window.AlunoTecShell?.getYears?.() || [
+      localStorage.getItem(KEYS.year),
+    ];
+    years
+      .flatMap((year) => calculateAlerts(year))
+      .forEach((alert) => dismissed.add(alert.signature));
     write(KEYS.dismissedAlerts, [...dismissed]);
     write(KEYS.alerts, []);
     write(KEYS.activities, []);
@@ -609,7 +673,7 @@
       const key = callId(targetClass.id, dateKey, shift);
       const call = callsData[key] || {
         id: key,
-        year: localStorage.getItem(KEYS.year),
+        year: classSchoolYear(targetClass),
         classId: targetClass.id,
         className: targetClass.name,
         date: dateKey,
@@ -644,16 +708,15 @@
 
   function populateYears() {
     classes = loadClasses();
-    let selected = localStorage.getItem(KEYS.year);
-    const years = [
-      ...new Set([
-        String(new Date().getFullYear()),
-        ...(selected ? [String(selected)] : []),
-        ...classes.map((c) => String(c.year || new Date().getFullYear())),
-      ]),
-    ].sort((a, b) => Number(b) - Number(a));
-    if (!years.includes(selected))
-      selected = years[0] || String(new Date().getFullYear());
+    const years = window.AlunoTecShell?.getYears?.() || [
+      String(new Date().getFullYear()),
+    ];
+    let selected = String(
+      window.AlunoTecShell?.getYear?.() ||
+        localStorage.getItem(KEYS.year) ||
+        years[0],
+    );
+    if (!years.includes(selected)) selected = years[0];
     localStorage.setItem(KEYS.year, selected);
     $("selectedYear").textContent = selected;
     $("footerYear").textContent = selected;
@@ -661,7 +724,7 @@
 
     const previous = $("classSelect").value;
     const options = classes
-      .filter((c) => String(c.year || "") === selected)
+      .filter((c) => classSchoolYear(c) === selected)
       .sort((a, b) => collator.compare(a.name || "", b.name || ""));
     $("classSelect").innerHTML =
       `<option value="">Selecione uma turma</option>` +
@@ -784,7 +847,7 @@
     );
     data[key] = {
       id: key,
-      year: localStorage.getItem(KEYS.year),
+      year: classSchoolYear(classItem),
       classId: classItem.id,
       className: classItem.name,
       date: $("attendanceDate").value,
@@ -844,36 +907,57 @@
       read(KEYS.alerts, []).map((alert) => [alert.signature, alert]),
     );
     const dismissed = new Set(read(KEYS.dismissedAlerts, []));
-    const active = calculateAlerts()
+    const years = window.AlunoTecShell?.getYears?.() || [
+      localStorage.getItem(KEYS.year),
+    ];
+    const active = years
+      .flatMap((year) => calculateAlerts(year))
       .filter((alert) => !dismissed.has(alert.signature))
-      .map(
-        (alert) =>
-          previous.get(alert.signature) || {
-            id: uid(),
-            ...alert,
-            read: false,
-            active: true,
-            createdAt: new Date().toISOString(),
-          },
-      );
+      .map((alert) => {
+        const prior = previous.get(alert.signature);
+        return {
+          ...prior,
+          ...alert,
+          id: prior?.id || uid(),
+          read: prior?.read || false,
+          active: true,
+          createdAt: prior?.createdAt || new Date().toISOString(),
+        };
+      });
     write(KEYS.alerts, active);
     updateBell();
   }
 
   function updateBell() {
-    const unread = read(KEYS.alerts, []).filter(
-      (alert) => alert.active !== false && !alert.read,
+    const selectedYear = String(localStorage.getItem(KEYS.year) || "");
+    const active = read(KEYS.alerts, []).filter(
+      (alert) =>
+        alert.active !== false &&
+        String(alert.year || selectedYear) === selectedYear,
     );
+    const unread = active.filter((alert) => !alert.read);
     $("activityBellCount").hidden = !unread.length;
     $("activityBellCount").textContent =
       unread.length > 99 ? "99+" : unread.length;
-    $("activityBell").classList.toggle("urgent", unread.length > 0);
+    $("activityBell").classList.toggle("urgent", active.length > 0);
+    $("activityBell").setAttribute(
+      "aria-label",
+      active.length
+        ? `Alerta de frequência: ${active.length} aluno(s) com faltas repetidas`
+        : "Notificações",
+    );
   }
 
   function openNotifications() {
     refreshAlerts();
+    const selectedYear = String(localStorage.getItem(KEYS.year) || "");
+    const storedAlerts = read(KEYS.alerts, []);
     const alerts = read(KEYS.alerts, [])
-      .filter((alert) => alert.active !== false)
+      .filter(
+        (alert) =>
+          alert.active !== false &&
+          String(alert.year || selectedYear) === selectedYear,
+      )
       .sort((a, b) => b.date.localeCompare(a.date));
     const activities = read(KEYS.activities, []).slice(0, 20);
     let html = `<div class="notice-section-title">Alertas de frequência</div>`;
@@ -897,7 +981,11 @@
     $("notificationList").innerHTML = html;
     write(
       KEYS.alerts,
-      read(KEYS.alerts, []).map((alert) => ({ ...alert, read: true })),
+      storedAlerts.map((alert) =>
+        String(alert.year || selectedYear) === selectedYear
+          ? { ...alert, read: true }
+          : alert,
+      ),
     );
     write(
       KEYS.activities,
@@ -1035,6 +1123,7 @@
       localStorage.setItem(KEYS.year, year);
       resetForFilterChange();
       populateYears();
+      refreshAlerts();
       render();
     });
     setupCustomSelect($("classSelect"));
