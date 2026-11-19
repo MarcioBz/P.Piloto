@@ -1686,3 +1686,32 @@ body {
     min-height: 170px;
   }
 }
+
+/* Cabeçalho do painel Frequência de hoje */
+.attendance-panel .panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+
+  gap: 14px 20px;
+}
+
+.attendance-panel .panel-header > div:first-child {
+  flex: 1 1 150px;
+  min-width: 0;
+}
+
+/* Evita que o seletor aperte o título */
+.attendance-panel #attendanceDropdown {
+  flex: 0 1 210px;
+
+  width: 210px;
+  max-width: 100%;
+}
+
+/* Espaço entre título e descrição */
+.attendance-panel .panel-subtitle {
+  margin-top: 6px;
+  line-height: 1.5;
+}

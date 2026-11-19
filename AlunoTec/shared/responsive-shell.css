@@ -1147,3 +1147,168 @@ tbody tr:last-child td {
     transition-duration: 0.01ms;
   }
 }
+
+/* Notificações das páginas que usam o cabeçalho básico */
+.at-header-notices {
+  width: min(480px, calc(100% - 32px));
+  max-height: calc(100dvh - 48px);
+  margin: auto;
+  padding: 22px;
+  overflow: auto;
+  border: 1px solid #dce8dd;
+  border-radius: 20px;
+  background: #fff;
+  color: #294535;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  box-shadow: 0 20px 70px rgb(16 43 26 / 20%);
+}
+
+.at-header-notices::backdrop {
+  background: rgb(16 43 26 / 45%);
+}
+
+.at-header-notices-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5ece5;
+}
+
+.at-header-notices-heading h2 {
+  margin: 0 0 5px;
+  font-size: 20px;
+  line-height: 1.3;
+}
+
+.at-header-notices-heading p {
+  margin: 0;
+  color: #7a8b7e;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.at-header-notices-heading > button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 9px;
+  background: #eff5ef;
+  color: #53755b;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.at-header-notices-list {
+  display: grid;
+  gap: 10px;
+  max-height: min(440px, 55vh);
+  margin: 16px 0;
+  overflow-y: auto;
+}
+
+.at-header-notice {
+  padding: 13px 14px;
+  border: 1px solid #e0eade;
+  border-left: 3px solid #508e5c;
+  border-radius: 10px;
+  background: #f7fbf6;
+}
+
+.at-header-notice.is-urgent {
+  border-left-color: #d64a54;
+  background: #fff7f7;
+}
+
+.at-header-notice > strong {
+  font-size: 11px;
+}
+
+.at-header-notice > p {
+  margin: 6px 0;
+  color: #40594a;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.at-header-notice > time {
+  color: #87978a;
+  font-size: 11px;
+}
+
+.at-header-notices-empty {
+  margin: 0;
+  padding: 28px 12px;
+  color: #839086;
+  font-size: 13px;
+  text-align: center;
+}
+
+.at-header-notices-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.at-header-notices-footer > button,
+.at-header-notices-footer > a {
+  padding: 10px 13px;
+  border: 0;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.at-header-notices-footer > button {
+  background: #edf6ee;
+  color: #367343;
+}
+
+.at-header-notices-footer > button:disabled {
+  opacity: .5;
+  cursor: default;
+}
+
+.at-header-notices-footer > a {
+  background: #317330;
+  color: #fff;
+}
+
+.at-header-notices-feedback {
+  margin: 10px 0 0;
+  color: #637b68;
+  font-size: 11px;
+}
+
+.at-header-notices :is(button, a):focus-visible {
+  outline: 3px solid #77aa80;
+  outline-offset: 3px;
+}
+
+#activityBell[data-header-notices="ready"].urgent {
+  color: #d4404b;
+  border-color: #efc1c6;
+  background: #fff3f4;
+}
+
+/* Barra superior acompanha o fluxo normal da página */
+.app > .main > .topbar {
+  position: relative;
+  inset: auto;
+  width: 100%;
+}
+
+/* Remove o espaço reservado para a antiga barra fixa */
+.app > .main {
+  padding-top: 0;
+}

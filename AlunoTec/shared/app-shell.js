@@ -487,21 +487,244 @@
   const connectionTitle = document.getElementById("connectionTitle");
   const connectionSubtitle = document.getElementById("connectionSubtitle");
 
-  function updateGenericConnection() {
-    if (["dashboard", "students", "frequency", "classes"].includes(page))
+  let genericConnectionRequest = 0;
+
+  async function updateGenericConnection() {
+    if (["dashboard", "students", "frequency", "classes"].includes(page)) {
       return;
-    const online = navigator.onLine;
-    connectionTitle.textContent = online ? "Online" : "Offline";
-    connectionSubtitle.textContent = online
-      ? "Conexão disponível"
-      : "Verifique a conexão";
-    connection.classList.toggle("offline", !online);
+    }
+
+    const request = ++genericConnectionRequest;
+    if (!navigator.onLine) {
+      connection.disabled = false;
+      connection.removeAttribute("aria-busy");
+      connection.classList.remove("checking");
+      connection.classList.add("offline");
+      connectionTitle.textContent = "Offline";
+      connectionSubtitle.textContent = "Sem conexão de rede neste dispositivo";
+      return;
+    }
+
+    connection.disabled = true;
+    connection.setAttribute("aria-busy", "true");
+    connection.classList.remove("offline");
+    connection.classList.add("checking");
+    connectionTitle.textContent = "Verificando";
+    connectionSubtitle.textContent = "Testando o acesso à internet…";
+
+    const started = Date.now();
+    let reachable = false;
+    try {
+      await fetch("https://www.gstatic.com/generate_204", {
+        mode: "no-cors",
+        cache: "no-store",
+        signal: AbortSignal.timeout(5000),
+      });
+      reachable = true;
+    } catch {
+      // Uma falha pode ser bloqueio do teste; não comprova falta de internet.
+    }
+
+    // Torna o retorno do clique perceptível mesmo em conexões rápidas.
+    const remaining = 600 - (Date.now() - started);
+    if (remaining > 0) await new Promise(resolve => setTimeout(resolve, remaining));
+    if (request !== genericConnectionRequest) return;
+
+    connection.disabled = false;
+    connection.removeAttribute("aria-busy");
+    connection.classList.remove("checking");
+    connection.classList.toggle("offline", !navigator.onLine);
+    connectionTitle.textContent = !navigator.onLine
+      ? "Offline"
+      : reachable ? "Online" : "Não confirmado";
+    connectionSubtitle.textContent = !navigator.onLine
+      ? "Sem conexão de rede neste dispositivo"
+      : reachable
+        ? "Acesso externo verificado • clique para testar novamente"
+        : "O teste pode ter sido bloqueado • clique para tentar novamente";
   }
 
   connection.addEventListener("click", updateGenericConnection);
   window.addEventListener("online", updateGenericConnection);
   window.addEventListener("offline", updateGenericConnection);
   updateGenericConnection();
+
+  /* ==========================================================
+     NOTIFICAÇÕES DO CABEÇALHO COMPARTILHADO
+     Páginas funcionais mantêm seus próprios painéis de avisos.
+     As demais usam as mesmas atividades e alertas já salvos.
+  ========================================================== */
+  if (!["dashboard", "students", "frequency", "classes"].includes(page)) {
+    const bell = document.getElementById("activityBell");
+    const badge = document.getElementById("activityBellCount");
+    const activityKey = "alunotec_turmas_activity_v1";
+    const alertsKey = "alunotec_frequencia_alertas_v1";
+    let noticesDialog = null;
+
+    function readNotices(key) {
+      try {
+        const items = JSON.parse(localStorage.getItem(key) || "[]");
+        return Array.isArray(items)
+          ? items.filter(item => item && typeof item === "object")
+          : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function currentNoticeYear() {
+      return String(yearInput.value || new Date().getFullYear());
+    }
+
+    function activeHeaderAlerts() {
+      const year = currentNoticeYear();
+      return readNotices(alertsKey).filter(item =>
+        item.active !== false && String(item.year || year) === year
+      );
+    }
+
+    function updateHeaderBell() {
+      const alerts = activeHeaderAlerts();
+      const activities = readNotices(activityKey);
+      const count = [...alerts, ...activities].filter(item => !item.read).length;
+
+      badge.textContent = count > 99 ? "99+" : String(count);
+      badge.hidden = count === 0;
+      bell.classList.toggle("has-activity", count > 0);
+      bell.classList.toggle("urgent", alerts.length > 0);
+      bell.setAttribute("aria-label", alerts.length
+        ? `${alerts.length} alerta(s) de frequência; ${count} notificação(ões) não lida(s)`
+        : `Notificações: ${count} não lida(s)`);
+    }
+
+    function noticeTime(value, dateOnly) {
+      const raw = String(value || "");
+      const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(raw)
+        ? `${raw}T12:00:00`
+        : raw);
+
+      if (Number.isNaN(date.getTime())) return "";
+      return new Intl.DateTimeFormat("pt-BR", dateOnly
+        ? { dateStyle: "short" }
+        : { dateStyle: "short", timeStyle: "short" }).format(date);
+    }
+
+    function renderHeaderNotices() {
+      if (!noticesDialog) return;
+      const list = noticesDialog.querySelector(".at-header-notices-list");
+      list.replaceChildren();
+      const alerts = activeHeaderAlerts();
+      const activities = readNotices(activityKey);
+      const entries = [
+        ...alerts.map(item => ({ item, urgent: true })),
+        ...activities.map(item => ({ item, urgent: false })),
+      ];
+
+      if (!entries.length) {
+        const empty = document.createElement("p");
+        empty.className = "at-header-notices-empty";
+        empty.textContent = "Nenhuma notificação por enquanto.";
+        list.append(empty);
+      }
+
+      entries.forEach(({ item, urgent }) => {
+        const article = document.createElement("article");
+        article.className = `at-header-notice${urgent ? " is-urgent" : ""}`;
+        const category = document.createElement("strong");
+        category.textContent = urgent ? "Alerta de frequência" : "Atividade do sistema";
+        const message = document.createElement("p");
+        message.textContent = item.message || (urgent
+          ? "Aluno com faltas repetidas. Confira a aba Frequência."
+          : "Atualização registrada nas turmas.");
+        const time = document.createElement("time");
+        time.textContent = noticeTime(item.date, urgent);
+        article.append(category, message, time);
+        list.append(article);
+      });
+
+      noticesDialog.querySelector("[data-mark-read]").disabled =
+        !entries.some(({ item }) => !item.read);
+    }
+
+    function openHeaderNotices() {
+      if (noticesDialog) return;
+      closeYearMenu();
+      closeProfile();
+      const dialog = document.createElement("dialog");
+      dialog.className = "at-header-notices";
+      dialog.id = "at-header-notices";
+      dialog.setAttribute("aria-labelledby", "at-header-notices-title");
+      dialog.innerHTML = `
+        <header class="at-header-notices-heading">
+          <div>
+            <h2 id="at-header-notices-title">Notificações</h2>
+            <p>Alertas de frequência e atividades das turmas</p>
+          </div>
+          <button type="button" data-close-notices aria-label="Fechar notificações">×</button>
+        </header>
+        <div class="at-header-notices-list"></div>
+        <footer class="at-header-notices-footer">
+          <button type="button" data-mark-read>Marcar como lidas</button>
+          <a href="../frequencia/frequencia.html">Ver Frequência →</a>
+        </footer>
+        <p class="at-header-notices-feedback" role="status"></p>`;
+
+      noticesDialog = dialog;
+      document.body.append(dialog);
+      renderHeaderNotices();
+      dialog.querySelector("[data-close-notices]").addEventListener("click", () => dialog.close());
+      dialog.querySelector("[data-mark-read]").addEventListener("click", () => {
+        try {
+          const year = currentNoticeYear();
+          localStorage.setItem(activityKey, JSON.stringify(
+            readNotices(activityKey).map(item => ({ ...item, read: true }))
+          ));
+          localStorage.setItem(alertsKey, JSON.stringify(
+            readNotices(alertsKey).map(item =>
+              String(item.year || year) === year ? { ...item, read: true } : item
+            )
+          ));
+          dialog.querySelector(".at-header-notices-feedback").textContent = "Notificações marcadas como lidas.";
+        } catch {
+          dialog.querySelector(".at-header-notices-feedback").textContent = "Não foi possível salvar o estado de leitura neste navegador.";
+        }
+        updateHeaderBell();
+        renderHeaderNotices();
+      });
+
+      dialog.addEventListener("click", event => {
+        if (event.target !== dialog) return;
+        const rect = dialog.getBoundingClientRect();
+        if (event.clientX < rect.left || event.clientX > rect.right ||
+            event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
+      });
+      dialog.addEventListener("close", () => {
+        noticesDialog = null;
+        dialog.remove();
+        bell.setAttribute("aria-expanded", "false");
+        bell.focus();
+      });
+      bell.setAttribute("aria-expanded", "true");
+      dialog.showModal();
+    }
+
+    bell.dataset.headerNotices = "ready";
+    bell.setAttribute("aria-haspopup", "dialog");
+    bell.addEventListener("click", openHeaderNotices);
+    document.addEventListener("alunotec:yearchange", () => {
+      updateHeaderBell();
+      renderHeaderNotices();
+    });
+    window.addEventListener("storage", event => {
+      if (!event.key || [activityKey, alertsKey, "alunotecSchoolYear"].includes(event.key)) {
+        updateHeaderBell();
+        renderHeaderNotices();
+      }
+    });
+    window.addEventListener("focus", updateHeaderBell);
+    window.addEventListener("alunotec:frequency-updated", updateHeaderBell);
+    updateHeaderBell();
+  }
 
   /* ==========================================================
      FECHAMENTO GLOBAL

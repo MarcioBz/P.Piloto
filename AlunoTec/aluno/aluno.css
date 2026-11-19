@@ -1194,3 +1194,146 @@ tbody tr:hover {
     transition: none;
   }
 }
+
+/* Janela compacta de notificações — Alunos */
+#notificationDialog {
+  box-sizing: border-box;
+
+  width: min(560px, calc(100vw - 32px));
+  max-width: 560px;
+  max-height: 85dvh;
+  height: auto;
+
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+
+  border: 1px solid #dce7dc;
+  border-radius: 24px;
+
+  background: #fff;
+  box-shadow: 0 24px 70px rgb(16 46 36 / 20%);
+}
+
+/* Espaçamento interno */
+#notificationDialog .notification-box {
+  padding: 28px;
+}
+
+/* Título e ícone */
+#notificationDialog .notification-heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+#notificationDialog .notification-icon {
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
+  border-radius: 18px;
+}
+
+#notificationDialog .notification-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+#notificationDialog .notification-heading strong {
+  display: block;
+  margin: 0;
+
+  color: #294535;
+  font-size: 22px;
+  line-height: 1.3;
+}
+
+#notificationDialog .notification-heading small {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Lista com rolagem interna */
+#notificationDialog .notification-list {
+  min-height: 110px;
+  max-height: min(280px, 40dvh);
+
+  margin: 24px 0;
+  overflow-y: auto;
+}
+
+/* Mensagem quando a lista estiver vazia */
+#notificationDialog .notification-empty {
+  display: grid;
+  place-items: center;
+
+  min-height: 110px;
+  margin: 0;
+  padding: 16px;
+
+  color: #7d8d80;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Botão inferior */
+#notificationDialog .notification-footer {
+  margin: 0;
+}
+
+#notificationDialog #clearNotifications {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-height: 46px;
+  padding: 12px 16px;
+
+  border: 1px solid #dbe6dc;
+  border-radius: 12px;
+
+  background: #f5f8f4;
+  color: #476b51;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+/* Ajuste para celular */
+@media (max-width: 480px) {
+  #notificationDialog .notification-box {
+    padding: 20px;
+  }
+
+  #notificationDialog .notification-heading strong {
+    font-size: 18px;
+  }
+}
+
+/* Janela com altura ajustada ao conteúdo */
+#notificationDialog {
+  height: fit-content;
+  min-height: 0;
+  max-height: calc(100dvh - 32px);
+}
+
+#notificationDialog .notification-box {
+  height: auto;
+  min-height: 0;
+}
+
+/* Reduz o espaço da mensagem vazia */
+#notificationDialog .notification-list {
+  height: auto;
+  min-height: 0;
+}
+
+#notificationDialog .notification-empty {
+  min-height: 80px;
+}
+
+/* Remove o espaço extra antes do botão */
+#notificationDialog .notification-footer {
+  margin: 0;
+  padding-top: 0;
+}

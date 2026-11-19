@@ -84,24 +84,8 @@ input {
 }
 .hidden {
   display: none !important;
-} /* ==========================================================
-   SCROLLBAR
-   Personaliza a barra de rolagem dos painéis sem alterar a rolagem do documento.
-========================================================== */
-::-webkit-scrollbar {
-  width: 9px;
-  height: 9px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #cbd5cb;
-  border-radius: 20px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #aeb9ae;
-} /* ==========================================================
+} 
+ /* ==========================================================
    CONTEÚDO
    Organiza a largura, o espaçamento e a hierarquia da área principal.
 ========================================================== */

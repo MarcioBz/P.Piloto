@@ -1,130 +1,722 @@
 <!doctype html>
-<!-- =====================================================
-     ALUNOTEC | MAPA DE EDIÇÃO — RELATÓRIOS
-     Estrutura: filtros de ano/mês, estado vazio, tabela e exportação.
-     Visual compartilhado: ../shared/management.css.
-     Comportamento: relat.js filtra as chamadas e gera o CSV; preserve os
-     IDs dos filtros e da tabela para manter esses controles conectados.
-===================================================== -->
-
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#073a54" />
-    <title>AlunoTec | Relatórios de frequência</title>
-    <link rel="icon" type="image/png" href="../assets/icons/icone.png" />
-    <link rel="stylesheet" href="../shared/management.css" />
+    <meta name="theme-color" content="#183f1c" />
+   <link rel="stylesheet" href="relat.css" />
+<script src="relat.js" defer></script>
 
+    <title>Central de Relatórios | AlunoTec</title>
+
+    <link
+      rel="icon"
+      type="image/png"
+      href="../assets/icons/icone.png"
+    />
+
+    <!-- ESTILOS COMPARTILHADOS -->
+    <link rel="stylesheet" href="../shared/management.css" />
     <link rel="stylesheet" href="../shared/responsive-shell.css" />
     <link rel="stylesheet" href="../shared/profile.css" />
     <link rel="stylesheet" href="../shared/banner.css" />
+
+    <!-- ESTILOS DOS RELATÓRIOS -->
+    <link rel="stylesheet" href="relat.css" />
+
+    <!-- ESTRUTURA COMPARTILHADA -->
     <script src="../shared/app-shell.js" defer></script>
     <script src="../shared/banner.js" defer></script>
     <script src="../shared/profile.js" defer></script>
-    <script src="relat.js" defer></script>
+
+    <!-- LÓGICA DOS RELATÓRIOS -->
   </head>
+
   <body data-app-page="reports">
-    <!-- =====================================================
-     NAVEGAÇÃO COMPARTILHADA
-     O menu e o topbar são montados por ../shared/app-shell.js.
-===================================================== -->
-    <!-- =====================================================
-         RELATÓRIO DE FREQUÊNCIA
-         Filtros, indicadores e tabela são atualizados por relat.js.
-    ===================================================== -->
-    <main class="management-main">
+    <main class="management-main reports-main">
+      <!--
+        BANNER
+        shared/banner.js transforma este título no banner configurado.
+      -->
       <div class="management-heading">
-        <p>Acompanhamento escolar</p>
-        <h1>Relatórios de frequência</h1>
+        <h1>Central de Relatórios</h1>
+
         <div class="lead">
-          Consulte as chamadas registradas neste navegador e exporte o resumo
-          filtrado.
+          Gere relatórios completos, analise indicadores e exporte
+          em PDF ou Excel.
         </div>
       </div>
-      <!-- =====================================================
-           FILTROS E EXPORTAÇÃO
-           Escolha o ano/mês e exporte o conjunto filtrado em CSV.
-      ===================================================== -->
-      <section class="management-card" aria-label="Filtros do relatório">
-        <div class="management-form-grid">
-          <label class="management-field" for="reportYear"
-            >Ano letivo<select id="reportYear"></select
-          ></label>
-          <label class="management-field" for="reportMonth"
-            >Mês<select id="reportMonth">
-              <option value="all">Todos os meses</option>
-            </select></label
-          >
-        </div>
-        <div class="management-actions">
+
+      <div id="rp-dashboard" class="reports-app">
+        <!-- ABAS DOS RELATÓRIOS -->
+        <nav
+          class="rp-tabs"
+          role="tablist"
+          aria-label="Tipos de relatório"
+        >
           <button
-            class="management-button secondary"
-            id="exportReport"
             type="button"
+            class="rp-tab is-active"
+            role="tab"
+            id="rp-tab-overview"
+            data-view="overview"
+            aria-selected="true"
+            aria-controls="rp-view"
+            tabindex="0"
           >
-            Exportar CSV
+            <span
+              class="rp-icon"
+              data-rp-icon="grid"
+              aria-hidden="true"
+            ></span>
+
+            <span>Visão Geral</span>
           </button>
-        </div>
-      </section>
-      <!-- =====================================================
-           RESUMO
-           Totais recalculados para o ano e mês selecionados.
-      ===================================================== -->
-      <div class="management-summary" aria-live="polite">
-        <div class="management-stat">
-          <span>Chamadas</span><strong id="callCount">0</strong>
-        </div>
-        <div class="management-stat">
-          <span>Registros de alunos</span><strong id="studentCount">0</strong>
-        </div>
-        <div class="management-stat">
-          <span>Presenças</span><strong id="presentCount">0</strong>
-        </div>
-        <div class="management-stat">
-          <span>Faltas</span><strong id="absenceCount">0</strong>
-        </div>
-      </div>
-      <!-- =====================================================
-           RESULTADOS POR TURMA
-           A tabela e as mensagens vazia/status são preenchidas por relat.js.
-      ===================================================== -->
-      <section class="management-card">
-        <h2>Resumo por turma</h2>
-        <div class="management-table-wrap">
-          <table class="management-table">
-            <thead>
-              <tr>
-                <th>Turma</th>
-                <th>Chamadas</th>
-                <th>Alunos registrados</th>
-                <th>Presenças</th>
-                <th>Faltas</th>
-                <th>Justificadas</th>
-              </tr>
-            </thead>
-            <tbody id="reportRows"></tbody>
-          </table>
-        </div>
-        <p class="management-empty" id="emptyMessage" hidden>
-          Nenhuma chamada foi encontrada para os filtros escolhidos.
-        </p>
+
+          <button
+            type="button"
+            class="rp-tab"
+            role="tab"
+            id="rp-tab-room"
+            data-view="room"
+            aria-selected="false"
+            aria-controls="rp-view"
+            tabindex="-1"
+          >
+            <span
+              class="rp-icon"
+              data-rp-icon="users"
+              aria-hidden="true"
+            ></span>
+
+            <span>Realidade de Sala</span>
+          </button>
+
+          <button
+            type="button"
+            class="rp-tab"
+            role="tab"
+            id="rp-tab-system"
+            data-view="system"
+            aria-selected="false"
+            aria-controls="rp-view"
+            tabindex="-1"
+          >
+            <span
+              class="rp-icon"
+              data-rp-icon="layers"
+              aria-hidden="true"
+            ></span>
+
+            <span>Realidade do Sistema</span>
+          </button>
+
+          <button
+            type="button"
+            class="rp-tab"
+            role="tab"
+            id="rp-tab-student"
+            data-view="student"
+            aria-selected="false"
+            aria-controls="rp-view"
+            tabindex="-1"
+          >
+            <span
+              class="rp-icon"
+              data-rp-icon="user"
+              aria-hidden="true"
+            ></span>
+
+            <span>Por Aluno</span>
+          </button>
+
+          <button
+            type="button"
+            class="rp-tab"
+            role="tab"
+            id="rp-tab-weekly"
+            data-view="weekly"
+            aria-selected="false"
+            aria-controls="rp-view"
+            tabindex="-1"
+          >
+            <span
+              class="rp-icon"
+              data-rp-icon="calendar"
+              aria-hidden="true"
+            ></span>
+
+            <span>Resumo Semanal</span>
+          </button>
+
+          <button
+            type="button"
+            class="rp-tab"
+            role="tab"
+            id="rp-tab-electives"
+            data-view="electives"
+            aria-selected="false"
+            aria-controls="rp-view"
+            tabindex="-1"
+          >
+            <span
+              class="rp-icon"
+              data-rp-icon="cap"
+              aria-hidden="true"
+            ></span>
+
+            <span>Eletivas</span>
+          </button>
+        </nav>
+
+        <!-- FILTROS -->
+        <form id="rp-filters" class="rp-filter-card">
+          <div class="rp-field">
+            <label for="rp-year">Ano letivo</label>
+            <select id="rp-year" data-rp-select></select>
+          </div>
+
+          <div class="rp-field">
+            <label for="rp-period">Período</label>
+
+            <select id="rp-period" data-rp-select>
+              <option value="week">Semanal</option>
+              <option value="month">Mensal</option>
+              <option value="year">Ano completo</option>
+              <option value="custom">Personalizado</option>
+            </select>
+          </div>
+
+          <div class="rp-field">
+            <label for="rp-shift">Turno</label>
+
+            <select id="rp-shift" data-rp-select>
+              <option value="">Todos</option>
+            </select>
+          </div>
+
+          <div class="rp-field">
+            <label for="rp-class">Turma</label>
+
+            <select id="rp-class" data-rp-select>
+              <option value="">Todas as turmas</option>
+            </select>
+          </div>
+
+          <fieldset class="rp-dates">
+            <legend>Data</legend>
+
+            <div>
+              <input
+                id="rp-start"
+                type="date"
+                required
+                aria-label="Data inicial"
+              />
+
+              <span aria-hidden="true">–</span>
+
+              <input
+                id="rp-end"
+                type="date"
+                required
+                aria-label="Data final"
+              />
+            </div>
+          </fieldset>
+
+          <button type="submit" class="rp-button rp-primary">
+            <span
+              class="rp-icon"
+              data-rp-icon="search"
+              aria-hidden="true"
+            ></span>
+
+            Aplicar filtros
+          </button>
+
+          <p
+            id="rp-filter-feedback"
+            class="rp-filter-feedback"
+            role="status"
+            aria-live="polite"
+          ></p>
+        </form>
+
         <p
-          class="management-status"
-          id="reportStatus"
+          id="rp-data-warning"
+          class="rp-warning"
+          role="alert"
+          hidden
+        ></p>
+
+        <!-- INDICADORES -->
+        <div id="rp-metrics" class="rp-metrics">
+          <article class="rp-metric rp-green">
+            <span class="rp-metric-icon">
+              <span
+                class="rp-icon"
+                data-rp-icon="users"
+                aria-hidden="true"
+              ></span>
+            </span>
+
+            <div>
+              <h2>Frequência Média</h2>
+              <strong id="rp-rate">—</strong>
+              <p id="rp-rate-note">Presenças / registros válidos</p>
+            </div>
+          </article>
+
+          <article class="rp-metric rp-blue">
+            <span class="rp-metric-icon">
+              <span
+                class="rp-icon"
+                data-rp-icon="user"
+                aria-hidden="true"
+              ></span>
+            </span>
+
+            <div>
+              <h2>Alunos Acompanhados</h2>
+              <strong id="rp-students">—</strong>
+              <p id="rp-students-note">
+                Alunos distintos com chamada
+              </p>
+            </div>
+          </article>
+
+          <article class="rp-metric rp-purple">
+            <span class="rp-metric-icon">
+              <span
+                class="rp-icon"
+                data-rp-icon="cap"
+                aria-hidden="true"
+              ></span>
+            </span>
+
+            <div>
+              <h2>Turmas Monitoradas</h2>
+              <strong id="rp-classes">—</strong>
+              <p id="rp-classes-note">
+                Turmas com chamada no período
+              </p>
+            </div>
+          </article>
+
+          <article class="rp-metric rp-red">
+            <span class="rp-metric-icon">
+              <span
+                class="rp-icon"
+                data-rp-icon="calendar"
+                aria-hidden="true"
+              ></span>
+            </span>
+
+            <div>
+              <h2>Faltas no Período</h2>
+              <strong id="rp-absences">—</strong>
+              <p id="rp-absences-note">Registros de ausência</p>
+            </div>
+          </article>
+
+          <article class="rp-metric rp-gold">
+            <span class="rp-metric-icon">
+              <span
+                class="rp-icon"
+                data-rp-icon="layers"
+                aria-hidden="true"
+              ></span>
+            </span>
+
+            <div>
+              <h2>Eletivas Ativas</h2>
+              <strong id="rp-electives">—</strong>
+              <p id="rp-electives-note">
+                Cadastradas no ano letivo
+              </p>
+            </div>
+          </article>
+        </div>
+
+        <!-- GRÁFICOS E RESUMO DO DIA -->
+        <div class="rp-charts">
+          <section class="rp-card rp-evolution">
+            <h2>
+              <span
+                class="rp-icon"
+                data-rp-icon="chart"
+                aria-hidden="true"
+              ></span>
+
+              Evolução da Frequência
+            </h2>
+
+            <p id="rp-chart-period" class="rp-muted"></p>
+
+            <div
+              id="rp-line-chart"
+              class="rp-line-chart"
+            ></div>
+          </section>
+
+          <section class="rp-card rp-situation">
+            <h2>Situação Geral</h2>
+
+            <div class="rp-situation-content">
+              <div id="rp-donut" class="rp-donut">
+                <div>
+                  <strong id="rp-donut-rate">—</strong>
+                  <span>Frequência</span>
+                </div>
+              </div>
+
+              <ul id="rp-legend" class="rp-legend"></ul>
+            </div>
+          </section>
+
+          <section class="rp-card rp-day">
+            <h2>
+              <span
+                class="rp-icon"
+                data-rp-icon="calendar"
+                aria-hidden="true"
+              ></span>
+
+              Resumo do Dia
+            </h2>
+
+            <p id="rp-day-date" class="rp-muted"></p>
+
+            <div
+              id="rp-day-values"
+              class="rp-day-values"
+            ></div>
+          </section>
+        </div>
+
+        <!-- RELATÓRIOS DISPONÍVEIS E EXPORTAÇÃO -->
+        <div class="rp-bottom">
+          <section class="rp-card rp-catalog">
+            <h2>
+              <span
+                class="rp-icon"
+                data-rp-icon="file"
+                aria-hidden="true"
+              ></span>
+
+              Relatórios Disponíveis
+            </h2>
+
+            <div class="rp-report-links">
+              <button
+                type="button"
+                class="rp-report-link"
+                data-report="room"
+              >
+                <span
+                  class="rp-icon"
+                  data-rp-icon="users"
+                  aria-hidden="true"
+                ></span>
+
+                <span>Relatório por<br />Turma de Sala</span>
+              </button>
+
+              <button
+                type="button"
+                class="rp-report-link"
+                data-report="system"
+              >
+                <span
+                  class="rp-icon"
+                  data-rp-icon="layers"
+                  aria-hidden="true"
+                ></span>
+
+                <span>Relatório por<br />Turma do Sistema</span>
+              </button>
+
+              <button
+                type="button"
+                class="rp-report-link"
+                data-report="student"
+              >
+                <span
+                  class="rp-icon"
+                  data-rp-icon="user"
+                  aria-hidden="true"
+                ></span>
+
+                <span>Relatório Individual<br />do Aluno</span>
+              </button>
+
+              <button
+                type="button"
+                class="rp-report-link"
+                data-report="weekly"
+              >
+                <span
+                  class="rp-icon"
+                  data-rp-icon="calendar"
+                  aria-hidden="true"
+                ></span>
+
+                <span>Resumo Semanal<br />das Turmas</span>
+              </button>
+
+              <button
+                type="button"
+                class="rp-report-link"
+                data-report="period"
+              >
+                <span
+                  class="rp-icon"
+                  data-rp-icon="chart"
+                  aria-hidden="true"
+                ></span>
+
+                <span>Frequência<br />por Período</span>
+              </button>
+
+              <button
+                type="button"
+                class="rp-report-link"
+                data-report="electives"
+              >
+                <span
+                  class="rp-icon"
+                  data-rp-icon="book"
+                  aria-hidden="true"
+                ></span>
+
+                <span>Acompanhamento<br />das Eletivas</span>
+              </button>
+
+              <button
+                type="button"
+                class="rp-report-link"
+                data-report="comparison"
+              >
+                <span
+                  class="rp-icon"
+                  data-rp-icon="swap"
+                  aria-hidden="true"
+                ></span>
+
+                <span>Comparativo<br />entre Turmas</span>
+              </button>
+
+              <button
+                type="button"
+                class="rp-report-link"
+                data-report="absences"
+              >
+                <span
+                  class="rp-icon"
+                  data-rp-icon="alert"
+                  aria-hidden="true"
+                ></span>
+
+                <span>Alunos com<br />Maior Ausência</span>
+              </button>
+
+              <button
+                type="button"
+                class="rp-report-link"
+                data-report="monthly"
+              >
+                <span
+                  class="rp-icon"
+                  data-rp-icon="trend"
+                  aria-hidden="true"
+                ></span>
+
+                <span>Evolução Mensal<br />da Frequência</span>
+              </button>
+
+              <button
+                type="button"
+                class="rp-report-link"
+                data-report="closing"
+              >
+                <span
+                  class="rp-icon"
+                  data-rp-icon="clipboard"
+                  aria-hidden="true"
+                ></span>
+
+                <span>Fechamento Mensal<br />da Escola</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="rp-card rp-export">
+            <h2>
+              <span
+                class="rp-icon"
+                data-rp-icon="file"
+                aria-hidden="true"
+              ></span>
+
+              Exportar / Imprimir
+            </h2>
+
+            <button
+              id="rp-pdf"
+              type="button"
+              class="rp-button rp-primary"
+            >
+              <span
+                class="rp-icon"
+                data-rp-icon="download"
+                aria-hidden="true"
+              ></span>
+
+              Baixar PDF
+            </button>
+
+            <button
+              id="rp-excel"
+              type="button"
+              class="rp-button rp-pale"
+            >
+              <span
+                class="rp-icon"
+                data-rp-icon="sheet"
+                aria-hidden="true"
+              ></span>
+
+              Exportar Excel
+            </button>
+
+            <button
+              id="rp-print-button"
+              type="button"
+              class="rp-button rp-soft-blue"
+            >
+              <span
+                class="rp-icon"
+                data-rp-icon="print"
+                aria-hidden="true"
+              ></span>
+
+              Imprimir relatório
+            </button>
+
+            <small>
+              A exportação usa o relatório e os filtros aplicados.
+            </small>
+          </section>
+        </div>
+
+        <!-- RESULTADOS DO RELATÓRIO ATIVO -->
+        <section
+          id="rp-view"
+          class="rp-card rp-results"
+          role="tabpanel"
+          aria-labelledby="rp-tab-overview"
+          tabindex="0"
+        >
+          <div class="rp-results-heading">
+            <div>
+              <p id="rp-result-eyebrow" class="rp-eyebrow">
+                VISÃO GERAL
+              </p>
+
+              <h2 id="rp-result-title">Resumo por turma</h2>
+
+              <p
+                id="rp-result-description"
+                class="rp-muted"
+              ></p>
+            </div>
+
+            <span id="rp-result-count" class="rp-count"></span>
+          </div>
+
+          <div
+            id="rp-student-field"
+            class="rp-field rp-student-field"
+            hidden
+          >
+            <label for="rp-student">Aluno</label>
+
+            <select id="rp-student" data-rp-select>
+              <option value="">Selecione um aluno</option>
+            </select>
+          </div>
+
+          <div
+            id="rp-student-summary"
+            class="rp-student-summary"
+            hidden
+          ></div>
+
+          <div class="rp-table-wrap">
+            <table class="rp-table">
+              <caption id="rp-table-caption" class="rp-sr-only">
+                Resultados do relatório
+              </caption>
+
+              <thead id="rp-table-head"></thead>
+              <tbody id="rp-table-body"></tbody>
+            </table>
+          </div>
+
+          <div id="rp-empty" class="rp-empty" hidden>
+            <span
+              class="rp-icon"
+              data-rp-icon="clipboard"
+              aria-hidden="true"
+            ></span>
+
+            <h3>Nenhuma chamada neste período</h3>
+
+            <p>
+              Registre a frequência das turmas ou ajuste os filtros
+              para consultar outro período.
+            </p>
+
+            <a href="../frequencia/frequencia.html">
+              Ir para Frequência →
+            </a>
+          </div>
+
+          <p id="rp-result-note" class="rp-table-note"></p>
+        </section>
+
+        <!-- ORIGEM E CRITÉRIOS DOS DADOS -->
+        <footer class="rp-footnote">
+          <p>
+            Fonte: chamadas salvas em Frequência e cadastros de
+            Turmas/Alunos neste navegador. Os dados de outros
+            dispositivos dependem da sincronização do projeto.
+          </p>
+
+          <p>
+            Frequência = presenças ÷ (presenças + faltas +
+            justificadas). Cada registro corresponde a um aluno
+            em uma chamada; turnos diferentes são contados
+            separadamente. Dias sem chamada não são tratados
+            como falta.
+          </p>
+        </footer>
+
+        <p
+          id="rp-status"
+          class="rp-status"
           role="status"
           aria-live="polite"
         ></p>
-      </section>
-      <!-- =====================================================
-           AVISO SOBRE A ORIGEM DOS DADOS
-           Informa que o relatório considera os registros deste navegador.
-      ===================================================== -->
-      <p class="management-note">
-        O relatório considera os dados locais de frequência armazenados neste
-        navegador. Para obter dados de outros dispositivos, configure e valide a
-        sincronização do servidor.
-      </p>
+      </div>
+
+      <!-- VERSÃO PREENCHIDA PELO JAVASCRIPT PARA IMPRESSÃO -->
+      <section
+        id="rp-print"
+        class="rp-print"
+        aria-label="Versão de impressão"
+      ></section>
     </main>
   </body>
 </html>
