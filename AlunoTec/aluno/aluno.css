@@ -281,96 +281,206 @@ body {
    FILTROS E SELETORES PERSONALIZADOS
    Controla aparência, abertura, opções e seleção dos filtros de busca e do ano letivo.
 ========================================================== */
+/* ==========================================================
+   SELETORES PERSONALIZADOS
+========================================================== */
+
 .custom-select {
   position: relative;
+  width: 100%;
   min-width: 0;
 }
-.custom-select-native {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  opacity: 0;
-  pointer-events: none;
+
+.custom-select.open {
+  z-index: 40;
 }
-.select-trigger {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  width: 100%;
-  height: 42px;
-  min-height: 42px;
-  padding: 0 12px;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  color: #31483a;
-  background: #fff;
-  font-size: 11px;
-  text-align: left;
-}
-.select-trigger::after {
-  width: 7px;
-  height: 7px;
-  border-right: 1.5px solid #6d8274;
-  border-bottom: 1.5px solid #6d8274;
-  content: "";
-  transform: rotate(45deg) translateY(-2px);
-}
-.custom-select.open .select-trigger {
-  border-color: #32712e;
-  box-shadow: 0 0 0 3px rgba(50, 113, 46, 0.12);
-}
-.custom-select.open .select-trigger::after {
-  transform: rotate(225deg) translateY(-1px);
-}
-.select-menu {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  z-index: 30;
+
+/* O campo original continua guardando o valor para o JS */
+.custom-select > select.custom-select-native {
   display: none;
-  width: 100%;
-  max-height: 220px;
-  padding: 5px;
-  overflow-y: auto;
-  border: 1px solid var(--border);
-  border-radius: 11px;
-  background: #fff;
-  box-shadow: 0 12px 28px rgba(20, 45, 30, 0.14);
 }
-.custom-select.open .select-menu {
-  display: block;
-}
-.select-option {
+
+/* Botão que mostra a opção selecionada */
+.custom-select > .select-trigger {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+
   width: 100%;
-  min-height: 36px;
-  padding: 8px 10px;
-  border: 0;
-  border-radius: 7px;
-  color: #40574a;
+  min-height: 46px;
+  padding: 11px 15px;
+
+  border: 1px solid #d5e2d6;
+  border-radius: 12px;
   background: #fff;
-  font-size: 11px;
+  color: #294535;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
   text-align: left;
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 }
-.select-option:hover,
-.select-option[aria-selected="true"] {
-  color: #245f2d;
-  background: #edf5eb;
+
+.custom-select > .select-trigger:hover {
+  border-color: #8caf90;
+  background: #f8fbf8;
 }
-.select-check {
+
+.custom-select > .select-trigger:focus-visible {
+  outline: 2px solid #317330;
+  outline-offset: 3px;
+}
+
+/* Seta para baixo */
+.custom-select > .select-trigger::after {
+  content: "";
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+
+  border-right: 1.8px solid #317330;
+  border-bottom: 1.8px solid #317330;
+
+  transform: rotate(45deg);
+  transition: transform 0.25s ease;
+}
+
+/* Lista aberta */
+.custom-select.open > .select-trigger {
+  border-color: #317330;
+  box-shadow: 0 0 0 3px rgb(49 115 48 / 10%);
+}
+
+/* Seta gira para cima e permanece assim enquanto aberto */
+.custom-select.open > .select-trigger::after {
+  transform: rotate(225deg);
+}
+
+/* Caixa de opções */
+.custom-select > .select-menu {
+  box-sizing: border-box;
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 50;
+
+  width: 100%;
+  max-height: min(260px, 40vh);
+  padding: 6px;
+  overflow-y: auto;
+
+  border: 1px solid #d5e2d6;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgb(25 60 35 / 14%);
+}
+
+.custom-select.open > .select-menu {
+  display: block;
+  animation: student-options-enter 0.18s ease-out;
+}
+
+/* Cada opção */
+.custom-select .select-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+
+  border: 0;
+  border-radius: 9px;
+  background: #fff;
+  color: #40574a;
+
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.custom-select .select-option + .select-option {
+  margin-top: 3px;
+}
+
+.custom-select .select-option:hover {
+  background: #f0f7f1;
+  color: #255b22;
+}
+
+.custom-select .select-option[aria-selected="true"] {
+  background: #e8f5ec;
+  color: #255b22;
+  font-weight: 600;
+}
+
+.custom-select .select-option:focus-visible {
+  outline: 2px solid #317330;
+  outline-offset: -2px;
+}
+
+.custom-select .select-option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Confirmação da opção selecionada */
+.custom-select .select-check {
   display: grid;
-  width: 20px;
-  height: 20px;
   place-items: center;
+  flex: 0 0 22px;
+
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
+
+  background: #317330;
   color: #fff;
-  background: var(--green);
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+@keyframes student-options-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .custom-select > .select-trigger,
+  .custom-select > .select-trigger::after,
+  .custom-select .select-option {
+    transition: none;
+  }
+
+  .custom-select.open > .select-menu {
+    animation: none;
+  }
 } /* ==========================================================
    ABAS DE CATEGORIA
    Define as guias usadas para alternar entre grupos ou estados da lista de estudantes.
@@ -948,3 +1058,139 @@ tbody tr:hover {
    Espaço entre os itens do cabeçalho
    Controla a distância entre os controles da barra superior.
 ========================================================== */
+
+/* Filtros da lista de alunos */
+.filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 16px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* Pesquisa ocupa uma linha inteira */
+.filters .search-field {
+  grid-column: 1 / -1;
+  box-sizing: border-box;
+  height: 46px;
+}
+
+.filters .search-field input {
+  font-size: 14px;
+}
+
+.filters .field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.filters .field > small {
+  color: #63776a;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Aparência dos três seletores */
+#classFilter,
+#listYearFilter,
+#statusFilter {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 46px;
+  margin: 0;
+  padding: 11px 42px 11px 14px;
+
+  border: 1px solid #d5e2d6;
+  border-radius: 12px;
+  background-color: #fff;
+  color: #294535;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+
+  appearance: none;
+  cursor: pointer;
+
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23317330' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 18px;
+
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+
+#classFilter:hover,
+#listYearFilter:hover,
+#statusFilter:hover {
+  border-color: #8caf90;
+  background-color: #f8fbf8;
+}
+
+#classFilter:focus,
+#listYearFilter:focus,
+#statusFilter:focus {
+  outline: 2px solid #317330;
+  outline-offset: 2px;
+  border-color: #317330;
+}
+
+/* Filtros empilhados no celular */
+@media (max-width: 640px) {
+  .filters {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+}
+
+/* Contêiner da seta */
+.student-filter-control {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Remove a seta desenhada no fundo do campo */
+.student-filter-control > #classFilter,
+.student-filter-control > #listYearFilter,
+.student-filter-control > #statusFilter {
+  appearance: none;
+  background-image: none;
+  padding-right: 44px;
+}
+
+/* Seta para baixo */
+.student-filter-control::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 18px;
+
+  width: 8px;
+  height: 8px;
+
+  border-right: 2px solid #317330;
+  border-bottom: 2px solid #317330;
+
+  transform: translateY(-50%) rotate(45deg);
+  transition: transform 0.25s ease;
+  pointer-events: none;
+}
+
+/* Seta para cima enquanto a lista estiver aberta */
+.student-filter-control:has(> select:open)::after {
+  transform: translateY(-50%) rotate(225deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .student-filter-control::after {
+    transition: none;
+  }
+}

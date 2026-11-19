@@ -17,10 +17,11 @@
     sensitivity: "base",
   });
 
-  const $ = (selector) => document.querySelector(selector);
-  const $$ = (selector, root = document) => [
-    ...root.querySelectorAll(selector),
-  ];
+ const $ = (selector, root = document) =>
+  root.querySelector(selector);
+
+const $$ = (selector, root = document) =>
+  [...root.querySelectorAll(selector)];
 
   let activeTab = "Todos";
   let internetReachable = null;
@@ -357,11 +358,11 @@
     });
   }
 
-  function enhanceAllSelects(root = document) {
-    $("select", root)
-      .filter((select) => select.id !== "yearFilter")
-      .forEach(enhanceSelect);
-  }
+ function enhanceAllSelects(root = document) {
+  $$("select", root)
+    .filter((select) => select.id !== "yearFilter")
+    .forEach(enhanceSelect);
+}
 
   /* ==========================================================
      LISTA E RESUMO
@@ -869,3 +870,4 @@
   render();
   updateBell();
 })();
+
