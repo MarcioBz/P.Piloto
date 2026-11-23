@@ -23,6 +23,24 @@
     return text(value).replace(/[&<>"']/g, char =>
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
   }
+  function decodeStudentCSV(buffer) {
+    const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
+    let content;
+    const decode = encoding => new TextDecoder(encoding, { fatal: true }).decode(bytes);
+    if (bytes[0] === 0xff && bytes[1] === 0xfe) content = decode("utf-16le");
+    else if (bytes[0] === 0xfe && bytes[1] === 0xff) content = decode("utf-16be");
+    else {
+      try { content = decode("utf-8"); }
+      catch (error) {
+        if (bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf)
+          throw new Error("O CSV UTF-8 contém caracteres danificados. Salve uma nova cópia a partir do arquivo original.");
+        content = decode("windows-1252");
+      }
+    }
+    if (content.includes("\ufffd"))
+      throw new Error("O CSV já contém caracteres ilegíveis (�). Corrija os nomes no arquivo original e salve novamente como CSV UTF-8.");
+    return content;
+  }
   function parseStudentCSV(value) {
     const input = text(value).replace(/^\uFEFF/, "");
     let quoted = false, commas = 0, semicolons = 0;
@@ -59,7 +77,7 @@
     const phoneColumn = hasHeader ? header.findIndex(label => /whatsapp|telefone|celular/.test(label)) : 1;
     const statusColumn = hasHeader ? header.findIndex(label => ["status", "situacao"].includes(label)) : -1;
     return rows.slice(hasHeader ? 1 : 0).filter(values => values[hasHeader ? nameColumn : 0])
-      .map(values => ({ name: values[hasHeader ? nameColumn : 0],
+      .map(values => ({ name: values[hasHeader ? nameColumn : 0].normalize("NFC"),
         whatsapp: values[phoneColumn] || "",
         status: norm(values[statusColumn]) === "inativo" ? "Inativo" : "Ativo" }));
   }
@@ -244,7 +262,7 @@
         <span class="at-student-electives${value.electives.length ? "" : " is-empty"}">${escapeHTML(value.electives.length ?
           `Eletiva${value.electives.length > 1 ? "s" : ""}: ${value.electives.map(item => item.name).join(", ")}` : "Sem eletiva vinculada")}</span>
         <span class="at-student-origin">Origem: ${escapeHTML(value.origin.name || "não identificada")}</span>
-        ${value.baseRemapped ? `<span class="at-student-remapped">Remanejado</span><span class="at-student-current">Atual: ${escapeHTML(value.current.name || "turma não identificada")}</span>` :
+        ${value.baseRemapped ? '<span class="at-student-remapped">Remanejado</span>' :
           value.electiveRemapped ? '<span class="at-student-remapped">Eletiva remanejada</span>' : ""}
       </span></span>`;
   }
@@ -273,7 +291,7 @@
   }
   const api = Object.freeze({ compare, sorted, createIndex, info, label, detailsText,
     transferred, electiveCopy, dateKey });
-  root.AlunoTecUtils = Object.freeze({ ...(root.AlunoTecUtils || {}), escapeHTML, parseStudentCSV });
+  root.AlunoTecUtils = Object.freeze({ ...(root.AlunoTecUtils || {}), escapeHTML, decodeStudentCSV, parseStudentCSV });
   root.AlunoTecStudents = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   if (typeof document !== "undefined" && !document.getElementById("at-student-links-css")) {

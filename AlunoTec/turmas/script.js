@@ -2684,7 +2684,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!item) return;
 
             const name =
-                studentName.value.trim();
+                studentName.value.trim().normalize("NFC");
 
             const whatsapp =
                 formatWhatsapp(
@@ -3255,11 +3255,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (!item) return;
 
-                const content =
-                    String(reader.result || "");
-
                 let imported = 0;
                 try {
+                    const content = window.AlunoTecUtils.decodeStudentCSV(reader.result);
                     const students = window.AlunoTecUtils.parseStudentCSV(content);
                     if (!students.length) {
                         showToast("O arquivo CSV não contém alunos para importar.", "warning");
@@ -3292,7 +3290,7 @@ document.addEventListener("DOMContentLoaded", () => {
             };
 
             reader.onerror = () => showToast("Não foi possível abrir esse arquivo CSV.", "warning");
-            reader.readAsText(file, "UTF-8");
+            reader.readAsArrayBuffer(file);
 
         }
     );

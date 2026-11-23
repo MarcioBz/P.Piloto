@@ -2925,3 +2925,16 @@ button:disabled {
     padding: 14px;
   }
 }
+
+/* Oculta o campo, mantendo o botão Importar funcionando. */
+#studentImportInput {
+  display: none !important;
+}
+
+/* Aumenta o título Alunos da turma. */
+.students-card .students-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.3;
+}
