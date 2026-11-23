@@ -744,7 +744,7 @@ document.addEventListener("DOMContentLoaded", () => {
       String(now.getDate()).padStart(2, "0"),
     ].join("-");
     return classes
-      .filter((item) => item && item.id != null && classYear(item) === year)
+      .filter((item) => item && item.id != null && classYear(item) === year && !String(item.status || "").toLowerCase().startsWith("inativ"))
       .map((item) => {
         const records = calls.filter(
           (call) => String(call.classId) === String(item.id),

@@ -1,0 +1,152 @@
+.elective-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.elective-metrics article {
+  padding: 20px;
+  border: 1px solid #e0e9de;
+  border-radius: 16px;
+  background: #fff;
+}
+.elective-metrics small {
+  color: #718178;
+  font-size: 13px;
+}
+.elective-metrics strong {
+  display: block;
+  margin-top: 8px;
+  color: #255b22;
+  font-size: 30px;
+}
+.elective-heading,
+.elective-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.elective-heading h2 {
+  margin: 0;
+  font-size: 20px;
+}
+.elective-heading p {
+  margin: 6px 0 0;
+  color: #75877c;
+  font-size: 13px;
+}
+.elective-search label {
+  display: grid;
+  flex: 1 1 280px;
+  gap: 7px;
+  color: #697b6e;
+  font-size: 13px;
+}
+.elective-search .elective-year {
+  flex: 0 1 200px;
+}
+.elective-search input,
+.elective-search select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #dbe5d8;
+  border-radius: 10px;
+  background: #fff;
+  color: #294535;
+  font: inherit;
+}
+.elective-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 112px;
+  padding: 20px;
+  border: 1px solid #dfe8db;
+  border-radius: 15px;
+  background: #fff;
+  text-align: left;
+}
+.elective-card:hover {
+  border-color: #a5c7a2;
+  background: #f7fbf5;
+}
+.elective-card:focus-visible {
+  outline: 2px solid #32712e;
+  outline-offset: 3px;
+}
+#electiveCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 14px;
+}
+.elective-symbol {
+  display: grid;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 13px;
+  background: #eaf4e7;
+  color: #32712e;
+}
+.elective-copy {
+  display: grid;
+  gap: 6px;
+  color: #294535;
+}
+.elective-copy strong {
+  font-size: 16px;
+}
+.elective-copy small,
+.elective-copy > span {
+  color: #738177;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.elective-empty {
+  grid-column: 1 / -1;
+  padding: 28px 18px;
+  border: 1px dashed #d9e5d6;
+  border-radius: 12px;
+  color: #75877c;
+  font-size: 14px;
+  text-align: center;
+}
+.elective-table-wrap {
+  overflow-x: auto;
+}
+.elective-table-wrap table {
+  width: 100%;
+  min-width: 480px;
+  border-collapse: collapse;
+}
+.elective-table-wrap td,
+.elective-table-wrap th {
+  padding: 14px 12px;
+  border-bottom: 1px solid #e6ede3;
+  text-align: left;
+  font-size: 13px;
+}
+.elective-table-wrap th {
+  background: #f4f8f2;
+  color: #718178;
+}
+#electiveStudentsPanel[hidden] {
+  display: none;
+}
+@media (max-width: 640px) {
+  .elective-metrics {
+    grid-template-columns: 1fr;
+  }
+  #electiveCards {
+    grid-template-columns: 1fr;
+  }
+  .elective-search .elective-year {
+    flex-basis: 100%;
+  }
+}

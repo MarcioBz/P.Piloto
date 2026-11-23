@@ -66,39 +66,18 @@
      CÓPIA DE SEGURANÇA
      Exporta e restaura as chaves locais usadas pelo sistema, com validação antes de substituir os dados.
   ========================================================== */
-  document.getElementById("exportBackup").addEventListener("click", () => {
-    const keys = [
-      "alunotec_turmas_v2",
-      "alunotec_turmas_activity_v1",
-      "alunotec_alunos_remanejamentos_v1",
-      "alunotecSchoolYear",
-      "alunotec.profile.v1",
-      "alunotec_frequencia_v1",
-      "alunotec_frequencia_alertas_v1",
-      "alunotec_frequencia_alertas_ocultos_v1",
-      "alunotec_institution_v1",
-    ];
-    const data = {};
-    keys.forEach((key) => {
-      const value = localStorage.getItem(key);
-      if (value !== null) data[key] = value;
-    });
-    const backup = {
-      application: "AlunoTec",
-      formatVersion: 1,
-      exportedAt: new Date().toISOString(),
-      localStorage: data,
-    };
-    const blob = new Blob([JSON.stringify(backup, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `alunotec-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    backupStatus.textContent =
-      "Cópia criada. Guarde o arquivo em um local seguro.";
+  document.getElementById("exportBackup").addEventListener("click", async () => {
+    const button = document.getElementById("exportBackup");
+    button.disabled = true;
+    try {
+      const backup = await window.AlunoTecBackup.buildBackup();
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob), link = document.createElement("a");
+      link.href = url; link.download = `alunotec-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.append(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      backupStatus.textContent = "Cópia completa criada, incluindo os anexos locais.";
+    } catch (error) { backupStatus.textContent = `Não foi possível criar a cópia: ${error.message || "erro de armazenamento"}`; }
+    finally { button.disabled = false; }
   });
 })();

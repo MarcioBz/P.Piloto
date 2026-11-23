@@ -1,0 +1,145 @@
+.at-app-dialog {
+  position: fixed;
+  inset: 0;
+  width: min(580px, calc(100vw - 32px));
+  height: fit-content;
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 30px;
+  overflow: auto;
+  border: 1px solid #dce7dc;
+  border-radius: 22px;
+  background: #fff;
+  color: #294535;
+  font: 14px/1.65 Inter, Arial, sans-serif;
+}
+
+.modal-overlay:not(.open) {
+  visibility: hidden;
+}
+
+.modal-overlay.open {
+  visibility: visible;
+}
+
+/* O campo nativo continua sincronizado pelo JavaScript, sem um segundo controle no foco. */
+.custom-select.native-hidden > select {
+  display: none !important;
+}
+
+.at-app-dialog::backdrop {
+  background: rgb(23 48 29 / 32%);
+  backdrop-filter: blur(6px);
+}
+
+.at-app-dialog h2 {
+  margin: 0 30px 12px 0;
+  font-size: 23px;
+}
+
+.at-app-dialog p {
+  margin: 12px 0;
+}
+
+.at-app-dialog ol {
+  padding-left: 22px;
+}
+
+.at-app-dialog li {
+  margin: 8px 0;
+}
+
+.at-app-dialog a {
+  color: #27763b;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.at-dialog-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: #f0f5ef;
+  color: #657a69;
+  font-size: 23px;
+  cursor: pointer;
+}
+
+.at-mode-badge {
+  margin: 16px 8px 12px;
+  color: rgb(255 255 255 / 70%);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.at-readonly-notice {
+  padding: 10px 24px;
+  border-bottom: 1px solid #dbe8da;
+  background: #edf6ec;
+  color: #43634a;
+  font-size: 12px;
+}
+
+.at-readonly-notice a {
+  margin-left: 8px;
+  color: #255b22;
+  font-weight: 650;
+  text-decoration: underline;
+}
+
+.at-local-access {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.at-local-access p {
+  margin: 0;
+  color: #64776a;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+#localLogin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 18px;
+  border: 1px solid #16834c;
+  border-radius: 12px;
+  background: #16834c;
+  color: #fff;
+  font: 650 14px Inter, Arial, sans-serif;
+  cursor: pointer;
+}
+
+#localLogin:hover {
+  background: #116d3e;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+.at-restore-input {
+  display: block;
+  max-width: 100%;
+  margin: 16px 0;
+  font: inherit;
+}
+
+.at-restore-summary {
+  padding: 12px;
+  border: 1px solid #e0e9dd;
+  border-radius: 10px;
+  background: #f6faf4;
+  white-space: pre-line;
+}

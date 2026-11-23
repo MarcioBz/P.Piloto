@@ -23,6 +23,46 @@
     return text(value).replace(/[&<>"']/g, char =>
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
   }
+  function parseStudentCSV(value) {
+    const input = text(value).replace(/^\uFEFF/, "");
+    let quoted = false, commas = 0, semicolons = 0;
+    for (let i = 0; i < input.length; i++) {
+      if (input[i] === '"') quoted = !quoted;
+      if (!quoted && /[\r\n]/.test(input[i])) break;
+      if (!quoted && input[i] === ',') commas++;
+      if (!quoted && input[i] === ';') semicolons++;
+    }
+    const separator = semicolons >= commas ? ';' : ',';
+    const rows = []; let row = [], cell = ""; quoted = false;
+    function finishRow() {
+      row.push(cell.trim());
+      if (row.some(Boolean)) rows.push(row);
+      row = []; cell = "";
+    }
+    for (let i = 0; i < input.length; i++) {
+      const char = input[i];
+      if (char === '"') {
+        if (quoted && input[i + 1] === '"') { cell += '"'; i++; }
+        else quoted = !quoted;
+      } else if (!quoted && char === separator) { row.push(cell.trim()); cell = ""; }
+      else if (!quoted && /[\r\n]/.test(char)) {
+        finishRow();
+        if (char === '\r' && input[i + 1] === '\n') i++;
+      } else cell += char;
+    }
+    if (quoted) throw new Error("O CSV contém aspas sem fechamento. Confira o arquivo e tente novamente.");
+    finishRow();
+    if (!rows.length) return [];
+    const header = rows[0].map(norm);
+    const nameColumn = header.findIndex(label => ["nome", "nome do aluno", "aluno"].includes(label));
+    const hasHeader = nameColumn >= 0;
+    const phoneColumn = hasHeader ? header.findIndex(label => /whatsapp|telefone|celular/.test(label)) : 1;
+    const statusColumn = hasHeader ? header.findIndex(label => ["status", "situacao"].includes(label)) : -1;
+    return rows.slice(hasHeader ? 1 : 0).filter(values => values[hasHeader ? nameColumn : 0])
+      .map(values => ({ name: values[hasHeader ? nameColumn : 0],
+        whatsapp: values[phoneColumn] || "",
+        status: norm(values[statusColumn]) === "inativo" ? "Inativo" : "Ativo" }));
+  }
   function sorted(students, name = item => item.name || item.studentName || "") {
     return [...students].sort((a, b) => compare(text(name(a)), text(name(b))) ||
       compare(text(a.id || a.studentId || a.key), text(b.id || b.studentId || b.key)));
@@ -233,7 +273,7 @@
   }
   const api = Object.freeze({ compare, sorted, createIndex, info, label, detailsText,
     transferred, electiveCopy, dateKey });
-  root.AlunoTecUtils = Object.freeze({ ...(root.AlunoTecUtils || {}), escapeHTML });
+  root.AlunoTecUtils = Object.freeze({ ...(root.AlunoTecUtils || {}), escapeHTML, parseStudentCSV });
   root.AlunoTecStudents = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   if (typeof document !== "undefined" && !document.getElementById("at-student-links-css")) {

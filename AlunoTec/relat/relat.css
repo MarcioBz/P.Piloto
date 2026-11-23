@@ -487,3 +487,74 @@ body[data-app-page="reports"]
     font-size: 24px;
   }
 }
+
+/* Organização dos resultados, mantendo os estilos desta versão do projeto. */
+.rp-results-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #edf1ec;
+}
+
+.rp-results-heading .rp-muted {
+  margin-top: 7px;
+  color: #7a8b7e;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.rp-eyebrow {
+  display: inline-block;
+  margin: 0 0 8px !important;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: #eef6ef;
+  color: #42734c;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .07em;
+  line-height: 1.4;
+}
+
+.rp-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 5px 12px;
+  border: 1px solid #dfe9df;
+  border-radius: 20px;
+  background: #f8fbf7;
+  color: #65806b;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.rp-student-field {
+  max-width: 440px;
+  margin-bottom: 15px;
+}
+
+
+.rp-table-wrap {
+  max-height: 520px;
+  overflow: auto;
+  border: 1px solid var(--rp-line);
+  border-radius: 11px;
+}
+
+
+.rp-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+

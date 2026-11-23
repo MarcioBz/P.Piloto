@@ -1014,7 +1014,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     class="action-button"
                     data-action="view"
                     data-type="${type}"
-                    data-id="${id}"
+                    data-id="${escapeHTML(id)}"
                     title="Visualizar"
                     aria-label="Visualizar"
                 >
@@ -1028,7 +1028,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     class="action-button edit"
                     data-action="edit"
                     data-type="${type}"
-                    data-id="${id}"
+                    data-id="${escapeHTML(id)}"
                     title="Editar"
                     aria-label="Editar"
                 >
@@ -1042,7 +1042,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     class="action-button danger"
                     data-action="delete"
                     data-type="${type}"
-                    data-id="${id}"
+                    data-id="${escapeHTML(id)}"
                     title="Excluir"
                     aria-label="Excluir"
                 >
@@ -2421,7 +2421,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                         type="button"
                                         class="student-action-button edit"
                                         data-student-action="edit"
-                                        data-student-id="${student.id}"
+                                        data-student-id="${escapeHTML(student.id)}"
                                     >
                                         <svg>
                                             <use href="#icon-edit"></use>
@@ -2437,7 +2437,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                                     type="button"
                                                     class="student-action-button transfer"
                                                     data-student-action="transfer"
-                                                    data-student-id="${student.id}"
+                                                    data-student-id="${escapeHTML(student.id)}"
                                                 >
                                                     Transferir
                                                 </button>
@@ -2446,13 +2446,13 @@ document.addEventListener("DOMContentLoaded", () => {
                                                     type="button"
                                                     class="student-action-button copy"
                                                     data-student-action="copy"
-                                                    data-student-id="${student.id}"
+                                                    data-student-id="${escapeHTML(student.id)}"
                                                 >
                                                     Eletiva
                                                 </button>
                                             `
                                             : `
-                                                <button type="button" class="student-action-button transfer" data-student-action="transfer" data-student-id="${student.id}">Transferir</button>
+                                                <button type="button" class="student-action-button transfer" data-student-action="transfer" data-student-id="${escapeHTML(student.id)}">Transferir</button>
                                             `
                                     }
 
@@ -2460,7 +2460,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                         type="button"
                                         class="student-action-button remove"
                                         data-student-action="remove"
-                                        data-student-id="${student.id}"
+                                        data-student-id="${escapeHTML(student.id)}"
                                     >
                                         Excluir
                                     </button>
@@ -2471,7 +2471,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                                 ? "inactive"
                                                 : ""
                                         }"
-                                        data-student-status="${student.id}"
+                                        data-student-status="${escapeHTML(student.id)}"
                                     >
 
                                         <button
@@ -2497,7 +2497,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                                 type="button"
                                                 class="student-status-option"
                                                 data-student-action="status"
-                                                data-student-id="${student.id}"
+                                                data-student-id="${escapeHTML(student.id)}"
                                                 data-status="Ativo"
                                             >
                                                 Ativo
@@ -2507,7 +2507,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                                 type="button"
                                                 class="student-status-option"
                                                 data-student-action="status"
-                                                data-student-id="${student.id}"
+                                                data-student-id="${escapeHTML(student.id)}"
                                                 data-status="Inativo"
                                             >
                                                 Inativo
@@ -2990,7 +2990,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         <button
                             type="button"
                             class="custom-select-option"
-                            data-value="${item.id}"
+                            data-value="${escapeHTML(item.id)}"
                         >
                             <span>
                                 ${escapeHTML(item.name)}
@@ -3197,6 +3197,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         saveData();
+        renderOpenedClass();
         updateSummary();
 
         showToast(
@@ -3257,81 +3258,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 const content =
                     String(reader.result || "");
 
-                const lines =
-                    content
-                        .split(/\r?\n/)
-                        .map(
-                            (line) =>
-                                line.trim()
-                        )
-                        .filter(Boolean);
-
-                if (!lines.length) {
-
-                    showToast(
-                        "O arquivo CSV está vazio.",
-                        "warning"
-                    );
-
+                let imported = 0;
+                try {
+                    const students = window.AlunoTecUtils.parseStudentCSV(content);
+                    if (!students.length) {
+                        showToast("O arquivo CSV não contém alunos para importar.", "warning");
+                        return;
+                    }
+                    students.forEach(student => {
+                        item.students.push({
+                            id: generateId("student"),
+                            name: student.name,
+                            whatsapp: formatWhatsapp(student.whatsapp),
+                            status: student.status
+                        });
+                        imported++;
+                    });
+                } catch (error) {
+                    showToast(error.message || "Não foi possível ler o CSV.", "warning");
+                    event.target.value = "";
                     return;
                 }
-
-                let imported = 0;
-
-                lines.forEach(
-                    (line, index) => {
-
-                        const separator =
-                            line.includes(";")
-                                ? ";"
-                                : ",";
-
-                        const columns =
-                            line
-                                .split(separator)
-                                .map(
-                                    (value) =>
-                                        value
-                                            .replace(/^"|"$/g, "")
-                                            .trim()
-                                );
-
-                        const name =
-                            columns[0];
-
-                        const whatsapp =
-                            columns[1] || "";
-
-                        if (!name) return;
-
-                        if (
-                            index === 0 &&
-                            normalizeText(name).includes(
-                                "nome"
-                            )
-                        ) {
-                            return;
-                        }
-
-                        item.students.push({
-                            id:
-                                generateId(
-                                    "student"
-                                ),
-
-                            name,
-
-                            whatsapp:
-                                formatWhatsapp(
-                                    whatsapp
-                                ),
-
-                            status: "Ativo"
-                        });
-
-                        imported++;
-                    }
-                );
 
                 saveData();
                 renderOpenedClass();
@@ -3344,10 +3291,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 event.target.value = "";
             };
 
-            reader.readAsText(
-                file,
-                "UTF-8"
-            );
+            reader.onerror = () => showToast("Não foi possível abrir esse arquivo CSV.", "warning");
+            reader.readAsText(file, "UTF-8");
 
         }
     );
@@ -3947,7 +3892,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     loadData();
     const startParams=new URLSearchParams(location.search);
-    if(startParams.get("turma")&&["base","electives"].includes(startParams.get("tipo")))showClassInCurrentTab(startParams.get("tipo"),startParams.get("turma"));
+
 
 
     initializeCustomSelects();
@@ -3975,7 +3920,12 @@ document.addEventListener("DOMContentLoaded", () => {
        A página começa sem cadastros de exemplo; o usuário cria turmas e eletivas pela interface.
     ========================================================== */
 
-    changeTab("base");
+    changeTab(startParams.get("aba") === "electives" || startParams.get("tipo") === "electives" ? "electives" : "base");
+    if (startParams.get("turma") && ["base", "electives"].includes(startParams.get("tipo"))) {
+        showClassInCurrentTab(startParams.get("tipo"), startParams.get("turma"));
+    } else if (startParams.get("nova") === "1" && window.AlunoTecAccess?.canEdit()) {
+        openCreateModal(startParams.get("aba") === "electives" ? "electives" : "base");
+    }
 
     updateSummary();
     updateYearFilter();

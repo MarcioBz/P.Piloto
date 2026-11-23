@@ -330,6 +330,11 @@
     }
   });
 
+  window.addEventListener("alunotec:datarestored", () => {
+    readProfile();
+    render();
+  });
+
   readProfile();
   render();
 })();

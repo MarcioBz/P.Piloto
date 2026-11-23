@@ -76,12 +76,15 @@
         // O histórico é lido sem reaplicar remanejamentos às chamadas já salvas.
         const movement = movements.find(item => String(item?.studentId) === studentId && item.sourceClassId && item.active !== false && (!classById.has(String(item.sourceClassId)) || classById.get(String(item.sourceClassId)).year === year));
         const originalClass = sourceByStudent.get(`${year}|${studentId}`);
-        const originId = String(entry.originClassId || movement?.sourceClassId || originalClass?.id || systemId);
+        const originalStudent = originalClass?.students.find(student => String(student.id) === studentId);
+        const originId = String(entry.originClassId || originalStudent?.originBaseClassId ||
+          originalStudent?.originClassId || movement?.sourceClassId || originalClass?.id || systemId);
         const originClass = classById.get(originId);
         rows.push({
           callId: String(call.id || key), date: call.date, year, shift: String(call.shift || systemClass?.shift || "Todos"),
           studentId, studentName: String(entry.studentName || entry.name || originalClass?.students.find(s => String(s.id) === studentId)?.name || "Aluno sem nome"),
-          originId, originName: String(entry.originClassName || originClass?.name || movement?.sourceClassName || call.className || "Turma sem nome"),
+          originId, originName: String(entry.originClassName || originClass?.name || originalStudent?.originBaseClassName ||
+            originalStudent?.originClassName || movement?.sourceClassName || call.className || "Turma sem nome"),
           systemId, systemName: String(call.className || systemClass?.name || "Turma sem nome"),
           type: systemClass?.type || (call.type === "elective" || call.type === "electives" ? "electives" : "base"),
           status: entry.status,
@@ -228,8 +231,41 @@
   }
 
   // Permite validar os cálculos e arquivos exportados sem navegador.
+  function studentCatalog(data, rows, filters, studentAPI) {
+    const school = { base: data.classes.filter(item => item.type === "base"),
+      electives: data.classes.filter(item => item.type === "electives") };
+    const index = studentAPI?.createIndex(school, [], filters.year);
+    const identity = new Map();
+    index?.entities.forEach(entity => {
+      const primary = entity.records.find(item => item.type === "base") || entity.records[0];
+      const id = String(primary.originStudentId || primary.id);
+      const value = { id, name: primary.name, ids: new Set(entity.records.map(item => String(item.id))),
+        classes: [...new Set(entity.records.map(item => item.className))] };
+      value.ids.add(id);
+      value.ids.forEach(alias => identity.set(alias, value));
+    });
+    const entries = new Map();
+    function add(id, name, className) {
+      const value = identity.get(String(id)) || { id: String(id), name,
+        ids: new Set([String(id)]), classes: [className].filter(Boolean) };
+      if (!entries.has(value.id)) entries.set(value.id, value);
+    }
+    rows.forEach(row => add(row.studentId, row.studentName, row.systemName));
+    data.classes.filter(item => item.year === filters.year && (!filters.classId || item.id === filters.classId) &&
+      (!filters.shift || !item.shift || normalize(item.shift) === "todos" || normalize(item.shift) === normalize(filters.shift)))
+      .forEach(item => item.students.forEach(student => {
+        if (student?.id != null) add(student.id, String(student.name || "Aluno sem nome"), item.name);
+      }));
+    const names = new Map();
+    entries.forEach(item => names.set(normalize(item.name), (names.get(normalize(item.name)) || 0) + 1));
+    return [...entries.values()].map(item => ({ ...item,
+      label: names.get(normalize(item.name)) > 1 ?
+        `${item.name} · ${item.classes.join(", ")} · cód. ${item.id.slice(-6)}` : item.name,
+    })).sort((a, b) => compare(a.name, b.name) || compare(a.id, b.id));
+  }
+
   if (typeof module !== "undefined" && module.exports) {
-    module.exports = { prepareData, filterRows, totals, grouped, periodRange, previousRange, pdf, xlsx };
+    module.exports = { prepareData, filterRows, totals, grouped, periodRange, previousRange, pdf, xlsx, studentCatalog };
     return;
   }
 
@@ -398,11 +434,9 @@
     render();
   }
   function studentOptions(rows) {
-    const entries = new Map(rows.map(row => [row.studentId, row.studentName]));
-    state.data.classes.filter(item => item.year === state.applied.year && (!state.applied.classId || item.id === state.applied.classId) && (!state.applied.shift || !item.shift || normalize(item.shift) === "todos" || normalize(item.shift) === normalize(state.applied.shift))).forEach(item => item.students.forEach(student => {
-      if (student?.id != null && !entries.has(String(student.id))) entries.set(String(student.id), String(student.name || "Aluno sem nome"));
-    }));
-    return [...entries.entries()].sort((a, b) => compare(a[1], b[1]));
+    const items = studentCatalog(state.data, rows, state.applied, window.AlunoTecStudents);
+    state.studentCatalog = new Map(items.map(item => [item.id, item]));
+    return items.map(item => [item.id, item.label]);
   }
   function currentRows() {
     let rows = filterRows(state.data, state.applied, state.view);
@@ -410,7 +444,7 @@
       const options = studentOptions(rows);
       if (!options.some(([id]) => id === state.studentId)) state.studentId = options[0]?.[0] || "";
       setOptions($("student"), options.length ? options : [["", "Nenhum aluno disponível"]], state.studentId);
-      rows = rows.filter(row => row.studentId === state.studentId);
+      rows = rows.filter(row => state.studentCatalog.get(state.studentId)?.ids.has(row.studentId));
     }
     return rows;
   }
@@ -423,7 +457,7 @@
   }
   function scopedActiveElectives() {
     const filters = state.applied;
-    return state.data.classes.filter(item => item.type === "electives" && item.year === filters.year && item.status !== "Inativo" && (!filters.classId || item.id === filters.classId) && (!filters.shift || !item.shift || normalize(item.shift) === "todos" || normalize(item.shift) === normalize(filters.shift)));
+    return state.data.classes.filter(item => item.type === "electives" && item.year === filters.year && !normalize(item.status).startsWith("inativ") && (!filters.classId || item.id === filters.classId) && (!filters.shift || !item.shift || normalize(item.shift) === "todos" || normalize(item.shift) === normalize(filters.shift)));
   }
   function changeNote(current, previous, name, unit = "") {
     if (current == null || previous == null) return `${name}: sem base no período anterior`;
@@ -433,7 +467,7 @@
   function renderMetrics(rows) {
     const summary = totals(rows), previousFilters = previousRange(state.applied);
     let previous = filterRows(state.data, previousFilters, state.view);
-    if (state.view === "student" && state.mode !== "absences") previous = previous.filter(row => row.studentId === state.studentId);
+    if (state.view === "student" && state.mode !== "absences") previous = previous.filter(row => state.studentCatalog.get(state.studentId)?.ids.has(row.studentId));
     const before = totals(previous);
     $("rate").textContent = percent(summary.rate);
     $("rate-note").textContent = changeNote(summary.rate, before.rate, "Comparação", " p.p.");
@@ -557,7 +591,7 @@
       links.innerHTML = individual && state.studentId ?
         `<p>Vínculos atuais no ano letivo ${escapeHTML(state.applied.year)}</p>` +
         window.AlunoTecStudents.label({ id: state.studentId,
-          name: $("student").options[$("student").selectedIndex]?.textContent || "Aluno" },
+          name: state.studentCatalog?.get(state.studentId)?.name || "Aluno" },
           { year: state.applied.year }) : "";
     }
     if (individual) {
@@ -634,7 +668,8 @@
     const action = button.dataset.report;
     if (action === "closing" || action === "monthly") {
       $("year").value = state.applied.year; $("period").value = action === "closing" ? "month" : "year";
-      refreshSelect($("period")); setRange(state.applied.end); applyFilters(); setView("overview", action, true); return;
+      const anchor = state.applied.end > today() ? anchorForYear(state.applied.year) : state.applied.end;
+      refreshSelect($("period")); setRange(anchor); applyFilters(); setView("overview", action, true); return;
     }
     if (action === "comparison") return setView("system", "comparison", true);
     if (action === "absences") return setView("student", "absences", true);

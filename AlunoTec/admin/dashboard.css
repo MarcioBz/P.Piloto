@@ -1715,3 +1715,62 @@ body {
   margin-top: 6px;
   line-height: 1.5;
 }
+
+/* Espaçamento da janela de atividades. */
+.activity-dialog {
+  height: fit-content;
+  min-height: 0;
+  padding: 32px;
+}
+
+.activity-heading {
+  gap: 16px;
+}
+
+.activity-heading strong {
+  font-size: 23px;
+  line-height: 1.3;
+}
+
+.activity-heading small {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.activity-icon {
+  flex-basis: 56px;
+  width: 56px;
+  height: 56px;
+}
+
+.activity-list {
+  margin-top: 22px;
+}
+
+.activity-empty {
+  margin: 14px 0;
+  padding: 28px 12px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.activity-footer {
+  margin-top: 22px;
+  padding-top: 0;
+}
+
+.activity-clear {
+  flex: 1;
+  width: 100%;
+  min-height: 46px;
+}
+
+@media (max-width: 480px) {
+  .activity-dialog {
+    padding: 20px;
+  }
+
+  .activity-heading strong {
+    font-size: 20px;
+  }
+}

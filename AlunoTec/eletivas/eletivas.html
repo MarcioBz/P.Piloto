@@ -1,36 +1,45 @@
 <!doctype html>
-<!-- =====================================================
-     ALUNOTEC | MAPA DE EDIÇÃO — ELETIVAS
-     Esta página ainda é uma estrutura provisória: título, aviso e retorno
-     ao painel. Para transformar em uma tela funcional, inclua a estrutura
-     HTML, conecte um arquivo CSS e crie o JavaScript da página.
-===================================================== -->
-
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Eletivas | AlunoTec</title>
-    <link rel="icon" type="image/png" href="../assets/icons/icone.png" />
-
-    <link rel="stylesheet" href="../shared/responsive-shell.css" />
-    <link rel="stylesheet" href="../shared/profile.css" />
-    <link rel="stylesheet" href="../shared/banner.css" />
-    <script src="../shared/app-shell.js" defer></script>
-    <script src="../shared/banner.js" defer></script>
-    <script src="../shared/profile.js" defer></script>
-  </head>
-  <body data-app-page="electives">
-    <!-- =====================================================
-       CONTEÚDO PROVISÓRIO
-       Título e aviso indicam que a tela de Eletivas ainda está em construção.
-  ===================================================== -->
-    <h1>Eletivas</h1>
-    <p>Página em desenvolvimento.</p>
-    <!-- =====================================================
-       LINK DE RETORNO
-       Leva o usuário de volta ao painel administrativo.
-  ===================================================== -->
-    <a href="../admin/dashboard.html">Voltar ao início</a>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Eletivas | AlunoTec</title>
+  <link rel="icon" href="../assets/icons/icone.png" type="image/png">
+  <link rel="stylesheet" href="../shared/management.css">
+  <link rel="stylesheet" href="../shared/responsive-shell.css">
+  <link rel="stylesheet" href="../shared/profile.css">
+  <link rel="stylesheet" href="../shared/banner.css">
+  <link rel="stylesheet" href="../shared/app-extra.css">
+  <link rel="stylesheet" href="eletivas.css">
+  <script src="../shared/access.js" defer></script>
+  <script src="../shared/app-shell.js" defer></script>
+  <script src="../shared/banner.js" defer></script>
+  <script src="../shared/profile.js" defer></script>
+  <script src="../shared/utils.js" defer></script>
+  <script src="eletivas.js" defer></script>
+</head>
+<body data-app-page="electives">
+  <main class="management-main">
+    <div class="management-heading"><h1>Eletivas</h1><div class="lead">Organize as disciplinas eletivas e acompanhe os alunos vinculados.</div></div>
+    <section class="elective-metrics" aria-label="Resumo das eletivas">
+      <article><small>Eletivas no ano</small><strong id="electiveTotal">0</strong></article>
+      <article><small>Eletivas ativas</small><strong id="electiveActive">0</strong></article>
+      <article><small>Vínculos de alunos</small><strong id="electiveEnrollments">0</strong></article>
+    </section>
+    <section class="management-card" aria-labelledby="electiveListTitle">
+      <div class="elective-heading"><div><h2 id="electiveListTitle">Eletivas cadastradas</h2><p>Selecione uma eletiva para consultar seus alunos.</p></div>
+        <a class="management-button" data-mutation href="../turmas/index.html?aba=electives&amp;nova=1">Nova eletiva</a></div>
+      <div class="elective-search"><label for="electiveSearch">Pesquisar eletiva ou aluno<input type="search" id="electiveSearch" placeholder="Digite o nome da eletiva ou do aluno..."></label>
+        <label class="elective-year" for="electiveYear">Ano letivo<select id="electiveYear"></select></label></div>
+      <div id="electiveCards"></div>
+    </section>
+    <section class="management-card" id="electiveStudentsPanel" aria-labelledby="electiveStudentsTitle" hidden>
+      <div class="elective-heading"><div><h2 id="electiveStudentsTitle" tabindex="-1">Alunos da eletiva</h2><p id="electiveStudentsCount"></p></div>
+        <div class="management-actions"><a class="management-button secondary" id="manageElective" href="../turmas/index.html">Gerenciar eletiva</a>
+        <button class="management-button secondary" type="button" id="closeElectiveStudents">Fechar lista</button></div></div>
+      <div class="elective-table-wrap"><table><thead><tr><th scope="col">Nº</th><th scope="col">Aluno e vínculos</th><th scope="col">Situação</th></tr></thead>
+        <tbody id="electiveStudentRows"></tbody></table></div>
+    </section>
+  </main>
+</body>
 </html>

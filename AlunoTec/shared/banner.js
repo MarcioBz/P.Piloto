@@ -162,7 +162,8 @@
   if (!copy) return;
 
   if (page === "electives") {
-    addToElectivesPage(copy);
+    if (document.querySelector(".management-main > .management-heading")) addToManagementPage(copy);
+    else addToElectivesPage(copy);
     return;
   }
 

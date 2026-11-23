@@ -79,7 +79,7 @@
   function loadClasses() {
     const data = read(KEYS.classes, {});
     return (Array.isArray(data?.base) ? data.base : [])
-      .filter((c) => c && c.id != null && c.status !== "Inativo")
+      .filter((c) => c && c.id != null)
       .map((c) => ({
         ...c,
         id: String(c.id),
@@ -286,7 +286,7 @@
           id: String(student.id),
           originClassId: links?.origin.id || source.id,
           originClassName: links?.origin.name || source.name,
-          remanejado: Boolean(links?.baseRemapped || source.id !== classItem.id),
+          remanejado: links ? Boolean(links.baseRemapped) : source.id !== classItem.id,
         });
       }),
     );
@@ -675,6 +675,9 @@
       const date = new Date(`${startDate}T12:00:00`);
       date.setDate(date.getDate() + offset);
       const dateKey = isoDate(date);
+      const links = window.AlunoTecStudents?.info(student, {
+        classId: source.id, year: classSchoolYear(source), date: dateKey,
+      });
       const effectiveClassId = effectiveClassFor(student, source, dateKey);
       const targetClass = classes.find((item) => item.id === effectiveClassId);
       if (!targetClass) continue;
@@ -698,8 +701,8 @@
         attachment,
         studentId: String(studentId),
         studentName: student.name,
-        originClassId: source.id,
-        originClassName: source.name,
+        originClassId: links?.origin.id || source.id,
+        originClassName: links?.origin.name || source.name,
         currentClassId: targetClass.id,
         currentClassName: targetClass.name,
         certificateStartDate: startDate,
@@ -733,7 +736,7 @@
 
     const previous = $("classSelect").value;
     const options = classes
-      .filter((c) => classSchoolYear(c) === selected)
+      .filter((c) => classSchoolYear(c) === selected && !normalize(c.status).startsWith("inativ"))
       .sort((a, b) => collator.compare(a.name || "", b.name || ""));
     $("classSelect").innerHTML =
       `<option value="">Selecione uma turma</option>` +

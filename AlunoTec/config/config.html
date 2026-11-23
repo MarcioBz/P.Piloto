@@ -19,10 +19,14 @@
     <link rel="stylesheet" href="../shared/responsive-shell.css" />
     <link rel="stylesheet" href="../shared/profile.css" />
     <link rel="stylesheet" href="../shared/banner.css" />
+    <script src="../shared/access.js" defer></script>
     <script src="../shared/app-shell.js" defer></script>
     <script src="../shared/banner.js" defer></script>
     <script src="../shared/profile.js" defer></script>
+    <script src="backup.js" defer></script>
     <script src="config.js" defer></script>
+    <script src="config-local.js" defer></script>
+      <link rel="stylesheet" href="../shared/app-extra.css">
   </head>
   <body data-app-page="settings">
     <!-- =====================================================
@@ -75,7 +79,7 @@
         <p class="management-note">
           Baixe os dados escolares salvos neste navegador em um arquivo JSON. A
           cópia inclui turmas, frequências, remanejamentos, notificações,
-          alertas e o ano letivo. Ela não inclui tokens de acesso.
+          alertas, anexos e o ano letivo. Ela não inclui tokens de acesso.
         </p>
         <div class="management-actions">
           <button
@@ -93,6 +97,26 @@
           aria-live="polite"
         ></p>
       </section>
+      <section class="management-card" aria-labelledby="restoreTitle">
+        <h2 id="restoreTitle">Restaurar cópia de segurança</h2>
+        <p class="management-note">Escolha o JSON exportado pelo AlunoTec. Você poderá desfazer a restauração e recuperar os dados anteriores.</p>
+        <label class="management-field" for="restoreFile">Arquivo de cópia JSON</label>
+        <input class="at-restore-input" id="restoreFile" type="file" accept=".json,application/json">
+        <p id="restoreSummary" class="at-restore-summary" hidden></p>
+        <div class="management-actions">
+          <button id="restoreBackup" type="button" class="management-button" disabled>Restaurar cópia</button>
+          <button id="undoRestore" type="button" class="management-button secondary" disabled>Desfazer última restauração</button>
+        </div>
+        <p class="management-status" id="restoreStatus" role="status" aria-live="polite"></p>
+      </section>
     </main>
+    <dialog id="restoreConfirm" class="at-app-dialog">
+      <h2>Restaurar os dados desta cópia?</h2>
+      <p>Os cadastros deste navegador serão substituídos pelos dados do arquivo escolhido. A versão atual ficará guardada para desfazer a restauração.</p>
+      <div class="management-actions">
+        <button id="cancelRestore" class="management-button secondary" type="button">Cancelar</button>
+        <button id="confirmRestore" class="management-button" type="button">Confirmar restauração</button>
+      </div>
+    </dialog>
   </body>
 </html>

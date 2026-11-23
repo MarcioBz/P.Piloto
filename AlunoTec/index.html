@@ -17,7 +17,9 @@
     <title>AlunoTec | Sistema de Frequência Escolar</title>
 
     <link rel="stylesheet" href="login/login.css" />
+    <script src="shared/access.js" defer></script>
     <script src="login/login.js" defer></script>
+      <link rel="stylesheet" href="shared/app-extra.css">
   </head>
 
   <body>
@@ -328,6 +330,10 @@
                Separa o login principal das opções institucional e convidado.
           ===================================================== -->
 
+          <div class="at-local-access">
+            <p id="localAccessNotice" hidden>Use o sistema neste dispositivo. As contas online dependem da configuração do servidor.</p>
+            <button type="button" id="localLogin">Usar neste dispositivo</button>
+          </div>
           <div class="divider">
             <span>OU</span>
           </div>
@@ -363,7 +369,7 @@
               <use href="#icon-guest" />
             </svg>
 
-            <span> Conta convidado </span>
+            <span> Visualizar neste dispositivo </span>
           </button>
 
           <!-- =====================================================

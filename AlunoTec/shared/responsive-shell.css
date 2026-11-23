@@ -1312,3 +1312,14 @@ tbody tr:last-child td {
 .app > .main {
   padding-top: 0;
 }
+
+/* Abre também os seletores criados dentro das janelas. */
+.custom-select.open > .custom-select-menu {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+}
+
+.custom-select-menu[hidden] {
+  display: none !important;
+}
