@@ -1,6 +1,6 @@
 /* ==========================================================
    ALUNOTEC | MAPA DE EDIÇÃO — LÓGICA DE ALUNOS
-   Ordem: chaves/helpers e leitura de dados; filtros e listas; resumo
+   Ordem: leitura de dados; pesquisa e tipos de turma; cartões e resumo
    e renderização; detalhes e remanejamento; avisos/conexão; eventos.
    Os IDs usados aqui vêm de aluno.html. As chaves alunotec_* são usadas
    também pelo painel, turmas e frequência; não as renomeie isoladamente.
@@ -8,6 +8,9 @@
 
 (() => {
   "use strict";
+
+  // Evita eventos e seletores duplicados se o arquivo for incluído duas vezes.
+  if (window.AlunoTecAlunos?.studentsBrowserReady) return;
 
   const TURMAS_KEY = "alunotec_turmas_v2";
   const ACTIVITY_KEY = "alunotec_turmas_activity_v1";
@@ -17,13 +20,13 @@
     sensitivity: "base",
   });
 
- const $ = (selector, root = document) =>
-  root.querySelector(selector);
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
-const $$ = (selector, root = document) =>
-  [...root.querySelectorAll(selector)];
-
-  let activeTab = "Todos";
+  let activeType = "base";
+  let openedClassId = "";
+  let lastRenderedYear = "";
+  let lastRenderedRows = new Map();
   let internetReachable = null;
   let toastTimer;
 
@@ -115,118 +118,112 @@ const $$ = (selector, root = document) =>
 
   function getStudentGroups(year = selectedSchoolYear()) {
     const groups = new Map();
-    const movements = readMovements();
+    const records = [];
     const scopedClasses = allClasses(year);
-    const scopedClassIds = new Set(
-      scopedClasses.map((item) => String(item.id)),
-    );
+    const scopedClassIds = new Set(scopedClasses.map((item) => String(item.id)));
 
     for (const classItem of scopedClasses) {
-      for (const student of Array.isArray(classItem.students)
-        ? classItem.students
-        : []) {
-        const key = normalizeName(student.name);
-        if (!key) continue;
-
-        if (!groups.has(key)) {
-          groups.set(key, {
-            key,
-            name: student.name || "Aluno sem nome",
-            baseRecords: [],
-            electiveRecords: [],
-            movements: [],
-          });
-        }
-
-        const group = groups.get(key);
-        const record = {
+      const students = Array.isArray(classItem.students) ? classItem.students : [];
+      students.forEach((student, index) => {
+        if (!normalizeName(student.name)) return;
+        records.push({
           ...student,
-          classId: classItem.id,
+          recordKey: JSON.stringify([classItem.type, String(classItem.id), String(student.id || index)]),
+          classId: String(classItem.id),
           className: classItem.name || "Turma sem nome",
           classYear: classSchoolYear(classItem),
           grade: classItem.grade || "",
+          shift: classItem.shift || "",
           type: classItem.type,
-        };
-
-        if (classItem.type === "base") group.baseRecords.push(record);
-        else group.electiveRecords.push(record);
-      }
-    }
-
-    for (const group of groups.values()) {
-      const ids = new Set([
-        ...group.baseRecords.map((item) => String(item.id)),
-        ...group.electiveRecords.map((item) => String(item.id)),
-      ]);
-
-      group.movements = movements.filter((item) => {
-        const sameStudent =
-          ids.has(String(item.studentId)) ||
-          normalizeName(item.studentName) === group.key;
-        const belongsToYear =
-          scopedClassIds.has(String(item.sourceClassId || "")) ||
-          scopedClassIds.has(String(item.destinationClassId || "")) ||
-          (!item.sourceClassId &&
-            !item.destinationClassId &&
-            String(item.date || "").slice(0, 4) === String(year));
-        return sameStudent && belongsToYear;
+        });
       });
     }
 
-    return [...groups.values()]
-      .map((group) => {
-        group.baseRecords.sort((a, b) =>
-          collator.compare(a.className, b.className),
-        );
-        group.electiveRecords.sort((a, b) =>
-          collator.compare(a.className, b.className),
-        );
-        group.movements.sort((a, b) => new Date(a.date) - new Date(b.date));
+    function addRecord(key, record) {
+      if (!groups.has(key)) {
+        groups.set(key, { key, name: record.name, baseRecords: [], electiveRecords: [], movements: [] });
+      }
+      const group = groups.get(key);
+      group[record.type === "base" ? "baseRecords" : "electiveRecords"].push(record);
+    }
 
-        const primary = group.baseRecords[0] || group.electiveRecords[0];
-        const latestMovement =
-          group.movements.filter((item) => item.active !== false).at(-1) ||
-          null;
-        const electiveNames = [
-          ...new Set(group.electiveRecords.map((item) => item.className)),
-        ];
-        const source = group.baseRecords[0] || null;
-        const fallback = primary;
+    // Identificadores preservam alunos diferentes que têm o mesmo nome.
+    for (const record of records.filter((item) => item.type === "base")) {
+      addRecord(record.id ? `id:${record.id}` : record.recordKey, record);
+    }
 
-        return {
-          ...group,
-          id: primary?.id || "",
-          name: primary?.name || group.name,
-          status: primary?.status || "Ativo",
-          sourceName: source?.className || "—",
-          sourceClassId: source?.classId || fallback?.classId || "",
-          classYear: source?.classYear || fallback?.classYear || "",
-          grade: source?.grade || fallback?.grade || "",
-          electiveNames,
-          latestMovement,
-          frequencyClassName:
-            latestMovement?.destinationClassName || source?.className || "—",
-          frequencyClassId:
-            latestMovement?.destinationClassId || source?.classId || "",
-          moved: group.movements.length > 0,
-          searchText: [
-            group.name,
-            ...group.baseRecords.map(
-              (item) => `${item.className} ${item.whatsapp || ""}`,
-            ),
-            ...group.electiveRecords.map(
-              (item) => `${item.className} ${item.whatsapp || ""}`,
-            ),
-          ]
-            .join(" ")
-            .toLocaleLowerCase("pt-BR"),
-        };
-      })
-      .sort(
-        (a, b) =>
-          collator.compare(a.sourceName, b.sourceName) ||
-          collator.compare(a.name, b.name),
-      );
+    const baseByName = new Map();
+    const groupById = new Map();
+    for (const group of groups.values()) {
+      const name = normalizeName(group.name);
+      if (!baseByName.has(name)) baseByName.set(name, new Set());
+      baseByName.get(name).add(group.key);
+      group.baseRecords.forEach((record) => {
+        if (record.id) groupById.set(String(record.id), group.key);
+      });
+    }
+
+    for (const record of records.filter((item) => item.type === "elective")) {
+      const anchor = record.originStudentId || record.sourceStudentId;
+      let key = groupById.get(String(anchor || record.id || ""));
+      // Cópias legadas em Eletivas recebem outro ID. Só relaciona por nome
+      // quando há um único cadastro correspondente na Base Comum.
+      if (!key && !anchor) {
+        const candidates = baseByName.get(normalizeName(record.name));
+        if (candidates?.size === 1) key = [...candidates][0];
+      }
+      key ||= record.id ? `id:${record.id}` : record.recordKey;
+      addRecord(key, record);
+      if (record.id) groupById.set(String(record.id), key);
+    }
+
+    const groupsByName = new Map();
+    for (const group of groups.values()) {
+      const name = normalizeName(group.name);
+      if (!groupsByName.has(name)) groupsByName.set(name, []);
+      groupsByName.get(name).push(group);
+    }
+
+    for (const movement of readMovements()) {
+      const belongsToYear = scopedClassIds.has(String(movement.sourceClassId || "")) ||
+        scopedClassIds.has(String(movement.destinationClassId || "")) ||
+        (!movement.sourceClassId && !movement.destinationClassId &&
+          String(movement.date || "").slice(0, 4) === String(year));
+      if (!belongsToYear) continue;
+      const key = groupById.get(String(movement.studentId || ""));
+      const names = groupsByName.get(normalizeName(movement.studentName));
+      const group = key ? groups.get(key) : names?.length === 1 ? names[0] : null;
+      group?.movements.push(movement);
+    }
+
+    return [...groups.values()].map((group) => {
+      group.baseRecords.sort((a, b) => collator.compare(a.className, b.className));
+      group.electiveRecords.sort((a, b) => collator.compare(a.className, b.className));
+      group.movements.sort((a, b) => new Date(a.date) - new Date(b.date));
+      const primary = group.baseRecords[0] || group.electiveRecords[0];
+      const links = window.AlunoTecStudents?.info(primary, { year, classId: primary.classId });
+      if (links) group.movements = links.history;
+      const source = group.baseRecords[0];
+      const frequencyRecords = group.baseRecords.length ? group.baseRecords : group.electiveRecords;
+      const frequencyIds = new Set(frequencyRecords.map((item) => String(item.id)));
+      const latestMovement = group.movements.filter((item) =>
+        item.active !== false && frequencyIds.has(String(item.studentId))).at(-1) || null;
+      return {
+        ...group,
+        id: primary.id || "",
+        name: primary.name || group.name,
+        status: primary.status || "Ativo",
+        sourceName: links?.origin.name || source?.className || "—",
+        sourceClassId: links?.origin.id || source?.classId || primary.classId,
+        classYear: primary.classYear,
+        grade: primary.grade,
+        electiveNames: links ? links.electives.map((item) => item.name) : [...new Set(group.electiveRecords.map((item) => item.className))],
+        latestMovement,
+        frequencyClassName: links?.current.name || latestMovement?.destinationClassName || source?.className || primary.className,
+        frequencyClassId: links?.current.id || latestMovement?.destinationClassId || source?.classId || primary.classId,
+        moved: Boolean(links?.remapped || group.movements.length),
+      };
+    }).sort((a, b) => collator.compare(a.name, b.name) || collator.compare(a.id, b.id));
   }
 
   /* ==========================================================
@@ -305,6 +302,46 @@ const $$ = (selector, root = document) =>
     const menu = document.createElement("div");
     menu.className = "select-menu";
     menu.setAttribute("role", "listbox");
+    menu.id = `${select.id || select.name}-options`;
+    trigger.setAttribute("aria-controls", menu.id);
+    trigger.setAttribute("aria-label", select.getAttribute("aria-label") ||
+      select.closest("label")?.textContent.trim() || "Selecionar opção");
+    trigger.addEventListener("keydown", (event) => {
+      if (!["ArrowDown", "ArrowUp", "Escape"].includes(event.key)) return;
+      event.preventDefault();
+      if (event.key === "Escape") {
+        closeSelectMenus();
+        return;
+      }
+      closeSelectMenus();
+      wrapper.classList.add("open");
+      trigger.setAttribute("aria-expanded", "true");
+      const options = $$("button:not(:disabled)", menu);
+      const target = $("[aria-selected='true']", menu) ||
+        options[event.key === "ArrowUp" ? options.length - 1 : 0];
+      target?.focus();
+    });
+    menu.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeSelectMenus();
+        trigger.focus();
+        return;
+      }
+      if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+      event.preventDefault();
+      const options = $$("button:not(:disabled)", menu);
+      const current = options.indexOf(document.activeElement);
+      let next = event.key === "Home" ? 0 : event.key === "End" ? options.length - 1 :
+        (current + (event.key === "ArrowDown" ? 1 : -1) + options.length) % options.length;
+      options[next]?.focus();
+    });
+    wrapper.addEventListener("focusout", (event) => {
+      if (!wrapper.contains(event.relatedTarget)) {
+        wrapper.classList.remove("open");
+        trigger.setAttribute("aria-expanded", "false");
+      }
+    });
 
     wrapper.append(trigger, menu);
     select._customSelect = { wrapper, trigger, menu };
@@ -324,6 +361,7 @@ const $$ = (selector, root = document) =>
       select.dispatchEvent(new Event("change", { bubbles: true }));
       wrapper.classList.remove("open");
       trigger.setAttribute("aria-expanded", "false");
+      trigger.focus();
     });
 
     select.addEventListener("change", () => refreshSelect(select));
@@ -358,59 +396,31 @@ const $$ = (selector, root = document) =>
     });
   }
 
- function enhanceAllSelects(root = document) {
-  $$("select", root)
-    .filter((select) => select.id !== "yearFilter")
-    .forEach(enhanceSelect);
-}
+  function enhanceAllSelects(root = document) {
+    const selector = root === document ? ".students-browser select, #dialogBox select" : "select";
+    $$(selector, root).forEach(enhanceSelect);
+  }
 
   /* ==========================================================
      LISTA E RESUMO
      Monta as opções de filtro, calcula contagens e renderiza a lista de estudantes.
   ========================================================== */
   function fillFilters() {
-    const data = readClasses();
     const currentYear = selectedSchoolYear();
-    const baseClasses = data.base.filter(
-      (item) => classSchoolYear(item) === currentYear,
-    );
-    const oldClass = $("#classFilter").value;
-    const availableYears =
-      window.AlunoTecShell?.getYears?.() ||
-      [...new Set([...data.base, ...data.electives].map(classSchoolYear))].sort(
-        (a, b) => Number(b) - Number(a),
-      );
-    const years = availableYears.length ? availableYears : [currentYear];
-    const selectedYear = years.includes(currentYear) ? currentYear : years[0];
-
-    $("#classFilter").innerHTML =
-      `<option value="">Todas</option>` +
-      baseClasses
-        .map(
-          (item) =>
-            `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)}</option>`,
-        )
-        .join("");
-
-    const yearOptions = years
-      .map(
-        (year) =>
-          `<option value="${escapeHtml(year)}">${escapeHtml(year)}</option>`,
-      )
-      .join("");
-
-    $("#listYearFilter").innerHTML = yearOptions;
-    $("#yearFilter").innerHTML =
-      yearOptions || `<option value="${selectedYear}">${selectedYear}</option>`;
-    $("#listYearFilter").value = selectedYear;
-    $("#yearFilter").value = selectedYear;
-
-    if (baseClasses.some((item) => String(item.id) === oldClass))
-      $("#classFilter").value = oldClass;
-
-    window.AlunoTecShell?.setYears(years, selectedYear);
-
+    const data = readClasses();
+    const available = window.AlunoTecShell?.getYears?.() ||
+      [...new Set([...data.base, ...data.electives].map(classSchoolYear))]
+        .sort((a, b) => Number(b) - Number(a));
+    const years = available.length ? available.map(String) : [currentYear];
+    const year = years.includes(currentYear) ? currentYear : years[0];
+    const options = years.map((value) =>
+      `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("");
+    const list = $("#listYearFilter");
+    if (list.innerHTML !== options) list.innerHTML = options;
+    list.value = year;
+    window.AlunoTecShell?.setYears(years, year);
     enhanceAllSelects();
+    return year;
   }
 
   function isActive(student) {
@@ -419,116 +429,137 @@ const $$ = (selector, root = document) =>
 
   function updateSummary(students) {
     const active = students.filter(isActive).length;
-    const inactive = students.length - active;
-    const moved = students.filter((student) => student.moved).length;
-    const percent = (value) =>
-      students.length
-        ? `${((value / students.length) * 100).toFixed(1).replace(".", ",")}%`
-        : "0%";
-
     $("#totalCount").textContent = students.length;
     $("#activeCount").textContent = active;
-    $("#inactiveCount").textContent = inactive;
-    $("#movedCount").textContent = moved;
-    $("#activePercent").textContent = percent(active);
-    $("#inactivePercent").textContent = percent(inactive);
-    $("#movedPercent").textContent = percent(moved);
-    $("#tabAll").textContent = students.length;
-    $("#tabActive").textContent = active;
-    $("#tabInactive").textContent = inactive;
-    $("#tabMoved").textContent = moved;
+    $("#inactiveCount").textContent = students.length - active;
+    $("#movedCount").textContent = students.filter((student) => student.moved).length;
+  }
+
+  function plural(count, singular, pluralForm) {
+    return `${count} ${count === 1 ? singular : pluralForm}`;
+  }
+
+  function recordsForType(student, type = activeType) {
+    return type === "base" ? student.baseRecords : student.electiveRecords;
+  }
+
+  function selectRows(students, { type = activeType, classId = openedClassId,
+    term = "", status = "" } = {}) {
+    const nameTerm = normalizeName(term);
+    return students.flatMap((student) => {
+      const records = recordsForType(student, type).filter((record) =>
+        !classId || String(record.classId) === String(classId));
+      if (!records.length || (nameTerm && !normalizeName(student.name).includes(nameTerm))) return [];
+      const context = records[0];
+      const row = { ...student, status: context.status || "Ativo", contextClassId: context.classId,
+        contextRecordId: context.id, contextType: type };
+      if (status === "Remanejado" && !row.moved) return [];
+      if (status && status !== "Remanejado" && row.status !== status) return [];
+      return [row];
+    });
+  }
+
+  function renderClasses(classes) {
+    $("#classesTitle").textContent = activeType === "base" ? "Turmas da Base Comum" : "Turmas Eletivas";
+    $("#classCountLabel").textContent = plural(classes.length, "turma", "turmas");
+    $("#classCards").innerHTML = classes.length ? classes.map((item) => {
+      const count = (Array.isArray(item.students) ? item.students : []).filter((student) =>
+        normalizeName(student.name)).length;
+      const info = [item.grade, item.shift, plural(count, "aluno", "alunos")].filter(Boolean).join(" · ");
+      return `<button class="students-class-card" type="button" data-class-id="${escapeHtml(item.id)}"
+        aria-label="Abrir ${escapeHtml(item.name || "turma")}, ${plural(count, "aluno", "alunos")}">
+        <span class="students-class-icon"><svg aria-hidden="true"><use href="#i-users"></use></svg></span>
+        <span class="students-class-copy"><strong>${escapeHtml(item.name || "Turma sem nome")}</strong>
+          <small>${escapeHtml(info)}</small></span>
+        <svg class="students-class-arrow" aria-hidden="true"><use href="#i-chevron-right"></use></svg>
+      </button>`;
+    }).join("") : `<div class="students-browser-empty">
+      <svg aria-hidden="true"><use href="#i-users"></use></svg>
+      <strong>${activeType === "base" ? "Nenhuma turma da Base Comum" : "Nenhuma eletiva cadastrada"} neste ano.</strong>
+      <p>Cadastre as turmas pela aba Turmas para consultar os alunos aqui.</p>
+      <a href="../turmas/index.html">Ir para Turmas <span aria-hidden="true">→</span></a>
+    </div>`;
   }
 
   function render() {
-    fillFilters();
-
-    const students = getStudentGroups();
+    const year = fillFilters();
+    if (lastRenderedYear && lastRenderedYear !== year) {
+      openedClassId = "";
+      $("#statusFilter").value = "";
+      refreshSelect($("#statusFilter"));
+    }
+    lastRenderedYear = year;
+    const classes = allClasses(year);
+    const students = getStudentGroups(year);
     updateSummary(students);
-
-    const term = $("#searchInput").value.trim().toLocaleLowerCase("pt-BR");
-    const classId = $("#classFilter").value;
-    const year = $("#listYearFilter").value;
-    const status = $("#statusFilter").value;
-
-    const filtered = students.filter((student) => {
-      const tabMatch =
-        activeTab === "Todos" ||
-        (activeTab === "Ativos" && isActive(student)) ||
-        (activeTab === "Inativos" && !isActive(student)) ||
-        (activeTab === "Remanejados" && student.moved);
-
-      const statusMatch =
-        !status ||
-        (status === "Remanejado" ? student.moved : student.status === status);
-
-      const classMatch =
-        !classId ||
-        student.baseRecords.some((item) => String(item.classId) === classId);
-
-      return (
-        tabMatch &&
-        statusMatch &&
-        classMatch &&
-        (!year || String(student.classYear) === year) &&
-        (!term || student.searchText.includes(term))
-      );
+    $("#baseClassCount").textContent = classes.filter((item) => item.type === "base").length;
+    $("#electiveClassCount").textContent = classes.filter((item) => item.type === "elective").length;
+    $$("[data-student-type]").forEach((button) => {
+      const active = button.dataset.studentType === activeType;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-selected", String(active));
+      button.tabIndex = active ? 0 : -1;
     });
+    $("#studentsTypePanel").setAttribute("aria-labelledby",
+      activeType === "base" ? "baseStudentsTab" : "electiveStudentsTab");
 
-    if (!filtered.length) {
-      const message = students.length
-        ? "Nenhum aluno corresponde aos filtros selecionados."
-        : "Nenhum aluno cadastrado. Cadastre os alunos pela aba Turmas.";
-      $("#studentRows").innerHTML =
-        `<tr><td colspan="8" class="empty-state">${message}</td></tr>`;
-      $("#storageNote").textContent = students.length
-        ? ""
-        : "Esta lista é preenchida pelos cadastros feitos na aba Turmas.";
+    const scopedClasses = classes.filter((item) => item.type === activeType)
+      .sort((a, b) => collator.compare(a.name, b.name));
+    let openedClass = scopedClasses.find((item) => String(item.id) === openedClassId);
+    if (!openedClass) openedClassId = "";
+    const term = $("#searchInput").value.trim();
+    const showResults = Boolean(openedClass || term);
+    $("#classBrowserPanel").hidden = showResults;
+    $("#studentResults").hidden = !showResults;
+    renderClasses(scopedClasses);
+    if (!showResults) {
+      lastRenderedRows = new Map();
+      $("#studentRows").innerHTML = "";
       return;
     }
 
-    $("#studentRows").innerHTML = filtered
-      .map((student, index) => {
-        const statusClass = !isActive(student)
-          ? "inactive"
-          : student.moved
-            ? "moved"
-            : "";
-        const statusLabel = !isActive(student)
-          ? "Inativo"
-          : student.moved
-            ? "Remanejado"
-            : "Ativo";
-        const electives = student.electiveNames.length
-          ? student.electiveNames
-              .map(
-                (name) =>
-                  `<span class="elective-tag">${escapeHtml(name)}</span>`,
-              )
-              .join("")
-          : "—";
+    const filtered = selectRows(students, { term, status: $("#statusFilter").value });
+    lastRenderedRows = new Map(filtered.map((student) => [student.key, student]));
+    $("#studentResultsTitle").textContent = openedClass?.name || "Resultados da pesquisa";
+    $("#studentResultsDescription").textContent = openedClass ?
+      [openedClass.grade, openedClass.shift, `Ano letivo ${year}`].filter(Boolean).join(" · ") :
+      `${activeType === "base" ? "Base Comum" : "Eletivas"} · Ano letivo ${year}`;
+    $("#studentResultsCount").textContent = plural(filtered.length, "aluno", "alunos");
 
-        const movement = student.latestMovement
-          ? `${escapeHtml(student.latestMovement.sourceClassName)} → ${escapeHtml(student.latestMovement.destinationClassName)}<small>${formatDate(student.latestMovement.date)}</small>`
-          : escapeHtml(student.sourceName);
+    if (!filtered.length) {
+      const hasStudents = openedClass && Array.isArray(openedClass.students) && openedClass.students.length;
+      const message = openedClass && !hasStudents ? "Esta turma ainda não possui alunos cadastrados." :
+        "Nenhum aluno corresponde à pesquisa e à situação selecionadas.";
+      $("#studentRows").innerHTML = `<tr><td colspan="8" class="empty-state">${message}</td></tr>`;
+      $("#storageNote").textContent = openedClass && !hasStudents ?
+        "Os cadastros feitos na aba Turmas aparecem automaticamente nesta lista." : "";
+      return;
+    }
 
-        return `<tr>
-                <td>${index + 1}</td>
-                <td class="student-name">${escapeHtml(student.name)}</td>
-                <td>${escapeHtml(student.sourceName)}</td>
-                <td><div class="elective-tags">${electives}</div></td>
-                <td>${escapeHtml(student.grade || "—")}</td>
-                <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
-                <td class="movement-detail">${movement}</td>
-                <td><div class="actions">
-                    <button class="icon-button" data-action="view" data-key="${escapeHtml(student.key)}" title="Visualizar aluno" aria-label="Visualizar aluno"><svg><use href="#i-eye"></use></svg></button>
-                    <button class="icon-button" data-action="transfer" data-key="${escapeHtml(student.key)}" title="Remanejar aluno" aria-label="Remanejar aluno"><svg><use href="#i-transfer"></use></svg></button>
-                </div></td>
-            </tr>`;
-      })
-      .join("");
-
-    $("#storageNote").textContent =
-      "A turma de origem continua registrada. A frequência considera a turma de destino após o remanejamento.";
+    $("#studentRows").innerHTML = filtered.map((student, index) => {
+      const statusClass = !isActive(student) ? "inactive" : student.moved ? "moved" : "";
+      const statusLabel = !isActive(student) ? "Inativo" : student.moved ? "Remanejado" : "Ativo";
+      const electives = student.electiveNames.length ? student.electiveNames.map((name) =>
+        `<span class="elective-tag">${escapeHtml(name)}</span>`).join("") : "—";
+      const movement = student.latestMovement ?
+        `${escapeHtml(student.latestMovement.sourceClassName)} → ${escapeHtml(student.latestMovement.destinationClassName)}<small>${formatDate(student.latestMovement.date)}</small>` :
+        escapeHtml(student.frequencyClassName || "—");
+      return `<tr>
+        <td>${index + 1}</td><td class="student-name">${window.AlunoTecStudents?.label(student, {
+          classId: student.contextClassId, year: student.classYear,
+        }) || escapeHtml(student.name)}</td>
+        <td>${escapeHtml(student.sourceName)}</td><td><div class="elective-tags">${electives}</div></td>
+        <td>${escapeHtml(student.grade || "—")}</td>
+        <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+        <td class="movement-detail">${movement}</td>
+        <td><div class="actions">
+          <button class="icon-button" type="button" data-action="view" data-key="${escapeHtml(student.key)}"
+            title="Visualizar aluno" aria-label="Visualizar ${escapeHtml(student.name)}"><svg aria-hidden="true"><use href="#i-eye"></use></svg></button>
+          <button class="icon-button" type="button" data-action="transfer" data-key="${escapeHtml(student.key)}"
+            title="Remanejar aluno" aria-label="Remanejar ${escapeHtml(student.name)}"><svg aria-hidden="true"><use href="#i-transfer"></use></svg></button>
+        </div></td></tr>`;
+    }).join("");
+    $("#storageNote").textContent = "A turma de origem continua registrada. Os remanejamentos preservam o histórico do aluno.";
   }
 
   /* ==========================================================
@@ -575,18 +606,21 @@ const $$ = (selector, root = document) =>
 
   function showTransfer(student) {
     const data = readClasses();
-    const origin = student.baseRecords[0] || student.electiveRecords[0];
+    const origin = [...student.baseRecords, ...student.electiveRecords].find((record) =>
+      record.classId === student.contextClassId && String(record.id) === String(student.contextRecordId)) ||
+      student.baseRecords[0] || student.electiveRecords[0];
     if (!origin) return;
 
-    const collection = student.baseRecords.length ? data.base : data.electives;
+    const collection = origin.type === "base" ? data.base : data.electives;
     const destinations = collection.filter(
-      (item) => String(item.id) !== String(origin.classId),
+      (item) => String(item.id) !== String(origin.classId) &&
+        classSchoolYear(item) === student.classYear,
     );
 
     if (!destinations.length) {
       showToast(
-        student.baseRecords.length
-          ? "Cadastre outra turma da Base Comum para remanejar este aluno."
+        origin.type === "base"
+          ? "Cadastre outra turma da Base Comum neste ano para remanejar este aluno."
           : "Cadastre outra eletiva para transferir este aluno.",
       );
       return;
@@ -635,6 +669,7 @@ const $$ = (selector, root = document) =>
       !source ||
       !destination ||
       source.type !== destination.type ||
+      classSchoolYear(source.item) !== classSchoolYear(destination.item) ||
       sourceId === destinationId
     ) {
       showToast("Selecione uma turma de destino válida.");
@@ -762,9 +797,7 @@ const $$ = (selector, root = document) =>
     const button = event.target.closest("[data-action]");
     if (!button) return;
 
-    const student = getStudentGroups().find(
-      (item) => item.key === button.dataset.key,
-    );
+    const student = lastRenderedRows.get(button.dataset.key);
     if (!student) return;
 
     if (button.dataset.action === "view") showStudent(student);
@@ -782,28 +815,53 @@ const $$ = (selector, root = document) =>
   });
 
   $("#searchInput").addEventListener("input", render);
-  $("#classFilter").addEventListener("change", render);
   $("#listYearFilter").addEventListener("change", () => {
     const year = $("#listYearFilter").value;
+    openedClassId = "";
     if (window.AlunoTecShell?.setYears) {
-      window.AlunoTecShell.setYears(
-        window.AlunoTecShell.getYears(),
-        year,
-        true,
-      );
+      window.AlunoTecShell.setYears(window.AlunoTecShell.getYears(), year, true);
     } else {
-      render();
+      localStorage.setItem("alunotecSchoolYear", year);
     }
+    render();
   });
   document.addEventListener("alunotec:yearchange", render);
   $("#statusFilter").addEventListener("change", render);
 
-  $(".tabs").addEventListener("click", (event) => {
-    const button = event.target.closest("[data-tab]");
+  $(".students-type-tabs").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-student-type]");
     if (!button) return;
-    activeTab = button.dataset.tab;
-    $$(".tab").forEach((tab) => tab.classList.toggle("active", tab === button));
+    activeType = button.dataset.studentType;
+    openedClassId = "";
+    $("#statusFilter").value = "";
     render();
+  });
+  $(".students-type-tabs").addEventListener("keydown", (event) => {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const buttons = $$("[data-student-type]");
+    const current = buttons.indexOf(event.target.closest("[data-student-type]"));
+    const next = event.key === "Home" ? 0 : event.key === "End" ? buttons.length - 1 :
+      (current + (event.key === "ArrowRight" ? 1 : -1) + buttons.length) % buttons.length;
+    buttons[next].click();
+    buttons[next].focus();
+  });
+  $("#classCards").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-class-id]");
+    if (!button) return;
+    openedClassId = button.dataset.classId;
+    $("#statusFilter").value = "";
+    render();
+    $("#studentResultsTitle").focus({ preventScroll: true });
+  });
+  $("#backToClasses").addEventListener("click", () => {
+    const previousClass = openedClassId;
+    openedClassId = "";
+    $("#searchInput").value = "";
+    $("#statusFilter").value = "";
+    render();
+    const card = $$("[data-class-id]").find((button) => button.dataset.classId === previousClass);
+    (card || $("#searchInput")).focus({ preventScroll: true });
   });
 
   $("#activityBell").addEventListener("click", showNotifications);
@@ -851,6 +909,7 @@ const $$ = (selector, root = document) =>
   });
 
   window.AlunoTecAlunos = {
+    studentsBrowserReady: true,
     getFrequencyClass(studentId, originalClassId) {
       return (
         readMovements()
@@ -870,4 +929,3 @@ const $$ = (selector, root = document) =>
   render();
   updateBell();
 })();
-

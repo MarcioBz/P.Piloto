@@ -175,6 +175,10 @@
     };
   }
   function effectiveClassFor(student, source, date) {
+    const links = window.AlunoTecStudents?.info(student, {
+      classId: source.id, year: classSchoolYear(source), date,
+    });
+    if (links?.current.id) return links.current.id;
     const direct =
       student.frequencyClassId ??
       student.attendanceClassId ??
@@ -270,16 +274,19 @@
   function getRoster(classItem, date) {
     if (!classItem) return [];
     const students = [];
-    classes.forEach((source) =>
+    classes.filter((source) => classSchoolYear(source) === classSchoolYear(classItem)).forEach((source) =>
       source.students.forEach((student) => {
         if (!student || student.status === "Inativo") return;
         if (effectiveClassFor(student, source, date) !== classItem.id) return;
+        const links = window.AlunoTecStudents?.info(student, {
+          classId: source.id, year: classSchoolYear(source), date,
+        });
         students.push({
           ...student,
           id: String(student.id),
-          originClassId: source.id,
-          originClassName: source.name,
-          remanejado: source.id !== classItem.id,
+          originClassId: links?.origin.id || source.id,
+          originClassName: links?.origin.name || source.name,
+          remanejado: Boolean(links?.baseRemapped || source.id !== classItem.id),
         });
       }),
     );
@@ -367,7 +374,9 @@
         const locked = saved && !editing ? "disabled" : "";
         return `<tr>
         <td>${index + 1}</td>
-        <td><span class="student-name">${esc(student.name || "Aluno sem nome")}</span>${student.remanejado ? `<span class="student-sub">Aluno remanejado</span>` : ""}</td>
+        <td>${window.AlunoTecStudents?.label(student, {
+          classId: classItem.id, year: classSchoolYear(classItem), date,
+        }) || `<span class="student-name">${esc(student.name || "Aluno sem nome")}</span>`}</td>
         <td>${origin}</td>
         <td><div class="status-actions">
           ${statusButton(student.id, "presente", "Presente", record.status, locked)}

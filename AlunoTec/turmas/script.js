@@ -2328,7 +2328,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         ].join(" ")
                     ).includes(search);
 
-                });
+                })
+                .sort((a, b) => new Intl.Collator("pt-BR", { numeric: true, sensitivity: "base" })
+                    .compare(String(a.name || ""), String(b.name || "")));
 
         if (!students.length) {
 
@@ -2383,9 +2385,10 @@ document.addEventListener("DOMContentLoaded", () => {
                             </td>
 
                             <td>
-                                <strong>
-                                    ${escapeHTML(student.name)}
-                                </strong>
+                                ${window.AlunoTecStudents?.label(student, {
+                                    classId: item.id,
+                                    year: String(item.year || item.date?.slice(0, 4) || CURRENT_YEAR)
+                                }) || `<strong>${escapeHTML(student.name)}</strong>`}
                             </td>
 
                             <td>
@@ -3092,9 +3095,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            destination.students.push(
-                student
-            );
+            if (String(source.year || source.date?.slice(0, 4) || CURRENT_YEAR) !==
+                String(destination.year || destination.date?.slice(0, 4) || CURRENT_YEAR)) {
+                showToast("Selecione uma turma do mesmo ano letivo.", "warning");
+                return;
+            }
+
+            const transferredStudent = window.AlunoTecStudents?.transferred(
+                student, source, destination, { type: state.openedClassType }
+            ) || student;
+
+            destination.students.push(transferredStudent);
 
             source.students =
                 source.students.filter(
@@ -3180,7 +3191,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         elective.students.push({
-            ...student,
+            ...(window.AlunoTecStudents?.electiveCopy(student, source) || student),
             id:
                 generateId("student")
         });
@@ -3370,16 +3381,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 [
                     "Nome do aluno",
                     "WhatsApp do responsável",
-                    "Status"
+                    "Status",
+                    "Eletivas",
+                    "Turma de origem",
+                    "Turma de frequência",
+                    "Remanejado"
                 ],
 
-                ...item.students.map(
-                    (student) => [
-                        student.name,
-                        student.whatsapp || "",
-                        student.status || "Ativo"
-                    ]
-                )
+                ...(window.AlunoTecStudents?.sorted(item.students) || [...item.students].sort((a, b) =>
+                    String(a.name).localeCompare(String(b.name), "pt-BR"))).map((student) => {
+                    const links = window.AlunoTecStudents?.info(student, {
+                        classId: item.id, year: String(item.year || item.date?.slice(0, 4) || CURRENT_YEAR)
+                    });
+                    return [student.name, student.whatsapp || "", student.status || "Ativo",
+                        links?.electives.map(e => e.name).join(", ") || "",
+                        links?.origin.name || "", links?.current.name || "",
+                        links?.remapped ? "Sim" : "Não"];
+                })
             ];
 
             const csv =

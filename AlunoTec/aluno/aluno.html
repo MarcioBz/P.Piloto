@@ -108,6 +108,12 @@
         <circle cx="12" cy="8" r="4" />
         <path d="M4 21a8 8 0 0 1 16 0M19 8l2 2 2-2" />
       </symbol>
+      <symbol id="i-chevron-right" viewBox="0 0 24 24">
+        <path d="m9 5 7 7-7 7" />
+      </symbol>
+      <symbol id="i-arrow-left" viewBox="0 0 24 24">
+        <path d="M20 12H4m6-6-6 6 6 6" />
+      </symbol>
       <symbol id="i-menu" viewBox="0 0 24 24">
         <path d="M4 6h16M4 12h16M4 18h16" />
       </symbol>
@@ -186,7 +192,7 @@
             ><span
               ><small>Ativos</small
               ><strong
-                ><b id="activeCount">0</b><em id="activePercent">0%</em></strong
+                ><b id="activeCount">0</b></strong
               ></span
             >
           </article>
@@ -197,7 +203,7 @@
               ><small>Inativos</small
               ><strong
                 ><b id="inactiveCount">0</b
-                ><em id="inactivePercent">0%</em></strong
+                ></strong
               ></span
             >
           </article>
@@ -207,7 +213,7 @@
             ><span
               ><small>Remanejados</small
               ><strong
-                ><b id="movedCount">0</b><em id="movedPercent">0%</em></strong
+                ><b id="movedCount">0</b></strong
               ></span
             >
           </article>
@@ -215,85 +221,103 @@
 
         <!-- =====================================================
              LISTA E FILTROS
-             Pesquisa, turma, ano, situação, abas e tabela controlados por aluno.js.
+             Pesquisa por nome, ano letivo, tipos de turma, cartões e listas controlados por aluno.js.
         ===================================================== -->
-        <section class="student-panel">
+        <section class="student-panel students-browser" aria-labelledby="studentsBrowserTitle">
           <div class="panel-heading">
             <div class="panel-title">
-              <svg><use href="#i-users"></use></svg>
+              <svg aria-hidden="true"><use href="#i-users"></use></svg>
               <div>
-                <h2>Lista de alunos</h2>
-                <p>Alunos cadastrados nas turmas e eletivas.</p>
+                <h2 id="studentsBrowserTitle">Pesquisar alunos</h2>
+                <p>Escolha Base Comum ou Eletivas para ver as turmas, ou pesquise pelo nome.</p>
               </div>
             </div>
           </div>
 
-          <div class="filters">
+          <div class="students-search-controls">
             <label class="search-field">
-              <svg><use href="#i-search"></use></svg>
-              <input
-                id="searchInput"
-                type="search"
-                placeholder="Pesquisar por nome, telefone, turma ou eletiva..."
-              />
+              <svg aria-hidden="true"><use href="#i-search"></use></svg>
+              <input id="searchInput" type="search" autocomplete="off"
+                aria-label="Pesquisar pelo nome do aluno"
+                placeholder="Digite o nome do aluno..." />
             </label>
-            <label class="field"
-              ><small>Turma de origem</small
-              ><select id="classFilter">
-                <option value="">Todas</option>
-              </select></label
-            >
-            <label class="field"
-              ><small>Ano letivo</small
-              ><select id="listYearFilter">
-                <option value="">Todos</option>
-              </select></label
-            >
-            <label class="field"
-              ><small>Status</small
-              ><select id="statusFilter">
-                <option value="">Todos</option>
-                <option value="Ativo">Ativo</option>
-                <option value="Inativo">Inativo</option>
-                <option value="Remanejado">Remanejado</option>
-              </select></label
-            >
-
+            <label class="field">
+              <small>Ano letivo</small>
+              <select id="listYearFilter" aria-label="Ano letivo da lista"></select>
+            </label>
           </div>
 
-          <div class="tabs" role="tablist">
-            <button class="tab active" data-tab="Todos" type="button">
-              Todos <span id="tabAll">0</span>
+          <div class="students-type-tabs" role="tablist" aria-label="Tipo de turma">
+            <button id="baseStudentsTab" class="students-type-tab active" type="button"
+              role="tab" data-student-type="base" aria-selected="true"
+              aria-controls="studentsTypePanel" tabindex="0">
+              Base Comum <span id="baseClassCount">0</span>
             </button>
-            <button class="tab" data-tab="Ativos" type="button">
-              Ativos <span id="tabActive">0</span>
-            </button>
-            <button class="tab" data-tab="Inativos" type="button">
-              Inativos <span id="tabInactive">0</span>
-            </button>
-            <button class="tab" data-tab="Remanejados" type="button">
-              Remanejados <span id="tabMoved">0</span>
+            <button id="electiveStudentsTab" class="students-type-tab" type="button"
+              role="tab" data-student-type="elective" aria-selected="false"
+              aria-controls="studentsTypePanel" tabindex="-1">
+              Eletivas <span id="electiveClassCount">0</span>
             </button>
           </div>
 
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Nº</th>
-                  <th>NOME DO ALUNO</th>
-                  <th>TURMA DE ORIGEM</th>
-                  <th>ELETIVA VINCULADA</th>
-                  <th>ANO/SÉRIE</th>
-                  <th>STATUS</th>
-                  <th>TURMA DA FREQUÊNCIA / REMANEJAMENTO</th>
-                  <th>AÇÕES</th>
-                </tr>
-              </thead>
-              <tbody id="studentRows"></tbody>
-            </table>
+          <div id="studentsTypePanel" role="tabpanel" aria-labelledby="baseStudentsTab">
+            <section id="classBrowserPanel" aria-labelledby="classesTitle">
+              <div class="students-section-heading">
+                <div>
+                  <h3 id="classesTitle">Turmas da Base Comum</h3>
+                  <p>Selecione uma turma para visualizar os alunos cadastrados.</p>
+                </div>
+                <span class="students-count" id="classCountLabel">0 turmas</span>
+              </div>
+              <div class="students-class-grid" id="classCards"></div>
+            </section>
+
+            <section id="studentResults" aria-labelledby="studentResultsTitle" hidden>
+              <div class="students-results-top">
+                <button class="students-back-button" id="backToClasses" type="button">
+                  <svg aria-hidden="true"><use href="#i-arrow-left"></use></svg>
+                  Voltar às turmas
+                </button>
+                <label class="students-status-field">
+                  <span>Filtrar por situação</span>
+                  <select id="statusFilter" aria-label="Filtrar alunos por situação">
+                    <option value="">Todos</option>
+                    <option value="Ativo">Ativos</option>
+                    <option value="Inativo">Inativos</option>
+                    <option value="Remanejado">Remanejados</option>
+                  </select>
+                </label>
+              </div>
+              <div class="students-section-heading">
+                <div>
+                  <h3 id="studentResultsTitle" tabindex="-1">Alunos da turma</h3>
+                  <p id="studentResultsDescription"></p>
+                </div>
+                <span class="students-count" id="studentResultsCount" role="status"
+                  aria-live="polite" aria-atomic="true">0 alunos</span>
+              </div>
+
+              <div class="table-wrap">
+                <table>
+                  <caption class="students-sr-only">Alunos da turma ou da pesquisa selecionada</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Nº</th>
+                      <th scope="col">NOME DO ALUNO</th>
+                      <th scope="col">TURMA DE ORIGEM</th>
+                      <th scope="col">ELETIVA VINCULADA</th>
+                      <th scope="col">ANO/SÉRIE</th>
+                      <th scope="col">STATUS</th>
+                      <th scope="col">TURMA DA FREQUÊNCIA / REMANEJAMENTO</th>
+                      <th scope="col">AÇÕES</th>
+                    </tr>
+                  </thead>
+                  <tbody id="studentRows"></tbody>
+                </table>
+              </div>
+              <p class="storage-note" id="storageNote"></p>
+            </section>
           </div>
-          <p class="storage-note" id="storageNote"></p>
         </section>
       </section>
     </main>

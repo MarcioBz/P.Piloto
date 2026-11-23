@@ -1195,42 +1195,409 @@ tbody tr:hover {
   }
 }
 
-/* Janela compacta de notificações — Alunos */
+/* ==========================================================
+   ALUNOS | PESQUISA E NAVEGAÇÃO POR TURMA
+   Usa os mesmos dados de Turmas e preserva a estrutura compartilhada.
+========================================================== */
+
+body[data-app-page="students"] .summary-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+
+body[data-app-page="students"] .summary-card {
+  min-height: 100px;
+  padding: 18px;
+  flex-wrap: nowrap;
+}
+
+.students-browser {
+  padding: 24px 20px 20px;
+  border-radius: 18px;
+}
+
+.students-browser [hidden] {
+  display: none !important;
+}
+
+.students-browser .panel-heading {
+  margin: 0 0 22px;
+}
+
+.students-browser .panel-title h2 {
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.students-browser .panel-title p {
+  margin-top: 4px;
+  color: #79857c;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.students-search-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 260px);
+  align-items: end;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.students-search-controls > .search-field {
+  height: 46px;
+  min-height: 46px;
+  border-color: #e2e9e2;
+  border-radius: 10px;
+  background: #fff;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.students-search-controls > .search-field:focus-within {
+  border-color: #7ca883;
+  box-shadow: 0 0 0 3px rgb(49 115 48 / 9%);
+}
+
+.students-search-controls .search-field input {
+  min-height: 42px;
+  color: #304938;
+  font-size: 14px;
+}
+
+.students-search-controls .search-field input::placeholder {
+  color: #7f8981;
+}
+
+.students-search-controls .field {
+  min-width: 0;
+  gap: 8px;
+}
+
+.students-search-controls .field > small {
+  color: #718075;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.students-browser .custom-select > .select-trigger {
+  min-height: 46px;
+  border-color: #dfe8df;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.students-type-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.students-type-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 10px 18px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: #f3f7f3;
+  color: #59695d;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.students-type-tab > span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  min-height: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #fff;
+  color: #47624d;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.students-type-tab:hover {
+  background: #e7f0e6;
+}
+
+.students-type-tab.active {
+  background: #255b22;
+  color: #fff;
+}
+
+.students-type-tab:focus-visible,
+.students-class-card:focus-visible,
+.students-back-button:focus-visible {
+  outline: 2px solid #317330;
+  outline-offset: 4px;
+}
+
+.students-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.students-section-heading h3 {
+  margin: 0;
+  color: #304837;
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.students-section-heading p {
+  margin-top: 5px;
+  color: #7c887f;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.students-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-height: 28px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #eef6ef;
+  color: #497351;
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.students-class-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.students-class-card {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 82px;
+  padding: 15px 14px;
+  gap: 12px;
+  border: 1px solid #e2e9e2;
+  border-radius: 14px;
+  background: #fff;
+  color: #34543d;
+  box-shadow: 0 2px 5px rgb(25 60 35 / 2%);
+  text-align: left;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.students-class-card:hover {
+  transform: translateY(-2px);
+  border-color: #a6c4a5;
+  background: #fbfdfb;
+  box-shadow: 0 7px 18px rgb(25 60 35 / 7%);
+}
+
+.students-class-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #edf6ee;
+  color: #4f8057;
+}
+
+.students-class-icon > svg {
+  width: 23px;
+  height: 23px;
+}
+
+.students-class-copy {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 4px;
+}
+
+.students-class-copy strong {
+  color: #304837;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.students-class-copy small {
+  color: #7c887f;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.students-class-arrow {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  color: #56815b;
+  transition: transform 0.2s ease;
+}
+
+.students-class-card:hover .students-class-arrow {
+  transform: translateX(3px);
+}
+
+.students-results-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.students-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 9px 12px;
+  border: 1px solid #e0e9df;
+  border-radius: 10px;
+  background: #f5f9f4;
+  color: #3f6f46;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.students-back-button:hover {
+  background: #eaf3e8;
+}
+
+.students-back-button > svg {
+  width: 16px;
+  height: 16px;
+}
+
+.students-status-field {
+  display: grid;
+  width: min(240px, 100%);
+  gap: 6px;
+  color: #718075;
+  font-size: 11px;
+}
+
+.students-browser .table-wrap {
+  margin-top: 8px;
+}
+
+.students-browser table {
+  min-width: 1040px;
+}
+
+.students-browser th {
+  background: #f4f8f4;
+  color: #6c7d70;
+  font-size: 10px;
+}
+
+.students-browser td {
+  padding: 15px 12px;
+  font-size: 12px;
+}
+
+.students-browser .storage-note:empty {
+  display: none;
+}
+
+.students-browser-empty {
+  display: flex;
+  grid-column: 1 / -1;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 28px 20px;
+  border: 1px dashed #dce7db;
+  border-radius: 14px;
+  background: #f9fcf8;
+  color: #4d6952;
+  font-size: 13px;
+  text-align: center;
+}
+
+.students-browser-empty > svg {
+  width: 28px;
+  height: 28px;
+  margin-bottom: 4px;
+}
+
+.students-browser-empty > p {
+  color: #7c887f;
+  font-size: 12px;
+}
+
+.students-browser-empty > a {
+  margin-top: 4px;
+  color: #32712e;
+  font-weight: 650;
+}
+
+.students-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Mantém a central de notificações compacta. */
 #notificationDialog {
   box-sizing: border-box;
-
   width: min(560px, calc(100vw - 32px));
   max-width: 560px;
-  max-height: 85dvh;
-  height: auto;
-
+  height: fit-content;
+  min-height: 0;
+  max-height: calc(100dvh - 32px);
   margin: auto;
   padding: 0;
   overflow: auto;
-
-  border: 1px solid #dce7dc;
   border-radius: 24px;
-
-  background: #fff;
-  box-shadow: 0 24px 70px rgb(16 46 36 / 20%);
 }
 
-/* Espaçamento interno */
 #notificationDialog .notification-box {
+  height: auto;
+  min-height: 0;
   padding: 28px;
 }
 
-/* Título e ícone */
 #notificationDialog .notification-heading {
-  display: flex;
-  align-items: center;
   gap: 16px;
 }
 
 #notificationDialog .notification-icon {
+  flex: 0 0 56px;
   width: 56px;
   height: 56px;
-  flex: 0 0 56px;
   border-radius: 18px;
 }
 
@@ -1240,10 +1607,7 @@ tbody tr:hover {
 }
 
 #notificationDialog .notification-heading strong {
-  display: block;
   margin: 0;
-
-  color: #294535;
   font-size: 22px;
   line-height: 1.3;
 }
@@ -1253,54 +1617,107 @@ tbody tr:hover {
   line-height: 1.5;
 }
 
-/* Lista com rolagem interna */
 #notificationDialog .notification-list {
-  min-height: 110px;
+  height: auto;
+  min-height: 0;
   max-height: min(280px, 40dvh);
-
   margin: 24px 0;
   overflow-y: auto;
 }
 
-/* Mensagem quando a lista estiver vazia */
 #notificationDialog .notification-empty {
   display: grid;
   place-items: center;
-
-  min-height: 110px;
+  min-height: 80px;
   margin: 0;
   padding: 16px;
-
   color: #7d8d80;
   font-size: 14px;
   text-align: center;
 }
 
-/* Botão inferior */
 #notificationDialog .notification-footer {
   margin: 0;
+  padding-top: 0;
 }
 
 #notificationDialog #clearNotifications {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
   width: 100%;
   min-height: 46px;
   padding: 12px 16px;
-
   border: 1px solid #dbe6dc;
   border-radius: 12px;
-
   background: #f5f8f4;
   color: #476b51;
   font-size: 14px;
   font-weight: 650;
 }
 
-/* Ajuste para celular */
+@media (max-width: 680px) {
+  .students-search-controls {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .students-browser {
+    padding: 20px 16px;
+  }
+
+  .students-class-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .students-class-card {
+    padding: 12px;
+    gap: 9px;
+  }
+
+  .students-class-icon {
+    flex-basis: 36px;
+    width: 36px;
+    height: 36px;
+  }
+}
+
 @media (max-width: 480px) {
+  body[data-app-page="students"] .summary-card {
+    min-height: 92px;
+    padding: 12px;
+    gap: 10px;
+  }
+
+  body[data-app-page="students"] .summary-icon {
+    flex-basis: 38px;
+    width: 38px;
+    height: 38px;
+  }
+
+  body[data-app-page="students"] .summary-card strong {
+    font-size: 23px;
+  }
+
+  .students-class-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .students-class-card {
+    min-height: 78px;
+  }
+
+  .students-type-tab {
+    padding: 9px 14px;
+    font-size: 12px;
+  }
+
+  .students-results-top {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .students-status-field {
+    width: 100%;
+  }
+
   #notificationDialog .notification-box {
     padding: 20px;
   }
@@ -1310,30 +1727,10 @@ tbody tr:hover {
   }
 }
 
-/* Janela com altura ajustada ao conteúdo */
-#notificationDialog {
-  height: fit-content;
-  min-height: 0;
-  max-height: calc(100dvh - 32px);
-}
-
-#notificationDialog .notification-box {
-  height: auto;
-  min-height: 0;
-}
-
-/* Reduz o espaço da mensagem vazia */
-#notificationDialog .notification-list {
-  height: auto;
-  min-height: 0;
-}
-
-#notificationDialog .notification-empty {
-  min-height: 80px;
-}
-
-/* Remove o espaço extra antes do botão */
-#notificationDialog .notification-footer {
-  margin: 0;
-  padding-top: 0;
+@media (prefers-reduced-motion: reduce) {
+  .students-class-card,
+  .students-class-arrow,
+  .students-type-tab {
+    transition: none;
+  }
 }

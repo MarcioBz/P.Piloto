@@ -481,8 +481,10 @@
     const f = state.applied;
     let result = { title: "Resumo por turma", headers, rows: [], rateIndex: 6, note: "Alunos são contados por identificador em cada grupo. Um aluno pode aparecer em mais de uma turma; o indicador geral conta cada identificador uma vez." };
     if (state.mode === "absences") {
-      const students = grouped(rows, row => row.studentId, row => row.studentName).filter(item => item.absent > 0).sort((a, b) => b.absent - a.absent || compare(a.name, b.name));
-      return { title: "Alunos com maior ausência", headers: ["Aluno", "Registros", "Presenças", "Faltas", "Dias com falta", "Justificadas", "Frequência"], rows: students.map(item => [item.name, item.records, item.present, item.absent, new Set(item.rows.filter(row => row.status === "ausente").map(row => row.date)).size, item.justified, percent(item.rate)]), rateIndex: 6, note: "Ordenado por registros de ausência. Dias com falta contam datas distintas; faltas em dois turnos do mesmo dia contam como um dia nessa coluna." };
+      const students = grouped(rows, row => row.studentId, row => row.studentName).filter(item => item.absent > 0).sort((a, b) => compare(a.name, b.name));
+      return { title: "Alunos com maior ausência", headers: ["Aluno", "Registros", "Presenças", "Faltas", "Dias com falta", "Justificadas", "Frequência"], rows: students.map(item => [item.name, item.records, item.present, item.absent, new Set(item.rows.filter(row => row.status === "ausente").map(row => row.date)).size, item.justified, percent(item.rate)]),
+        studentRefs: students.map(item => ({ id: item.key, name: item.name })),
+        rateIndex: 6, note: "Alunos em ordem alfabética. Os vínculos junto ao nome são os atuais do ano selecionado; os totais usam as chamadas do período. Dias com falta contam datas distintas." };
     }
     if (state.view === "student") {
       const name = $("student").options[$("student").selectedIndex]?.textContent;
@@ -522,11 +524,13 @@
     $("result-description").textContent = `${br(state.applied.start)} a ${br(state.applied.end)} · ${integer(totals(rows).calls)} chamada(s) · ${integer(rows.length)} registro(s)`;
     $("result-count").textContent = `${integer(table.rows.length)} ${state.view === "student" && state.mode !== "absences" ? "registro(s)" : "resultado(s)"}`;
     $("table-head").innerHTML = `<tr>${table.headers.map(heading => `<th scope="col">${escapeHTML(heading)}</th>`).join("")}</tr>`;
-    $("table-body").replaceChildren(...table.rows.map(values => {
+    $("table-body").replaceChildren(...table.rows.map((values, rowIndex) => {
       const row = document.createElement("tr");
       values.forEach((value, index) => {
         const cell = document.createElement("td");
-        if (index === table.rateIndex && value !== "—") {
+        if (index === 0 && table.studentRefs?.[rowIndex] && window.AlunoTecStudents) {
+          cell.innerHTML = window.AlunoTecStudents.label(table.studentRefs[rowIndex], { year: state.applied.year });
+        } else if (index === table.rateIndex && value !== "—") {
           const badge = document.createElement("span"); badge.className = `rp-rate${Number(String(value).replace("%", "").replace(",", ".")) < 75 ? " is-low" : ""}`; badge.textContent = value; cell.append(badge);
         } else cell.textContent = String(value ?? "—");
         row.append(cell);
@@ -541,6 +545,21 @@
     const individual = state.view === "student" && state.mode !== "absences";
     $("student-field").hidden = !individual;
     $("student-summary").hidden = !individual;
+    let links = document.getElementById("rp-student-current-links");
+    if (!links && window.AlunoTecStudents) {
+      links = document.createElement("div");
+      links.id = "rp-student-current-links";
+      links.className = "at-student-current-links";
+      $("student-field").after(links);
+    }
+    if (links) {
+      links.hidden = !individual || !state.studentId;
+      links.innerHTML = individual && state.studentId ?
+        `<p>Vínculos atuais no ano letivo ${escapeHTML(state.applied.year)}</p>` +
+        window.AlunoTecStudents.label({ id: state.studentId,
+          name: $("student").options[$("student").selectedIndex]?.textContent || "Aluno" },
+          { year: state.applied.year }) : "";
+    }
     if (individual) {
       const total = totals(rows), dates = new Set(rows.filter(row => row.status === "ausente").map(row => row.date));
       $("student-summary").innerHTML = `<div>Frequência<strong>${percent(total.rate)}</strong></div><div>Presenças<strong>${integer(total.present)}</strong></div><div>Faltas<strong>${integer(total.absent)}</strong></div><div>Dias com falta<strong>${integer(dates.size)}</strong></div><div>Justificadas<strong>${integer(total.justified)}</strong></div>`;
@@ -577,10 +596,15 @@
   });
   $("excel").addEventListener("click", () => {
     const meta = metadata();
-    const records = [...state.rows].sort((a, b) => a.date.localeCompare(b.date) || compare(a.studentName, b.studentName)).map(row => [row.date, row.year, row.studentId, row.studentName, row.originName, row.systemName, row.shift, { presente: "Presente", ausente: "Falta", justificado: "Justificada" }[row.status]]);
+    const records = [...state.rows].sort((a, b) => compare(a.studentName, b.studentName) || a.date.localeCompare(b.date)).map(row => {
+      const links = window.AlunoTecStudents?.info({ id: row.studentId, name: row.studentName }, { year: row.year });
+      return [row.date, row.year, row.studentId, row.studentName, row.originName, row.systemName, row.shift,
+        { presente: "Presente", ausente: "Falta", justificado: "Justificada" }[row.status],
+        links?.electives.map(item => item.name).join(", ") || "", links?.origin.name || "", links?.current.name || ""];
+    });
     const sheets = [
       { name: "Resumo", rows: [state.table.headers, ...state.table.rows] },
-      { name: "Registros", rows: [["Data", "Ano letivo", "ID do aluno", "Aluno", "Turma de origem", "Turma da chamada", "Turno", "Situação"], ...records] },
+      { name: "Registros", rows: [["Data", "Ano letivo", "ID do aluno", "Aluno", "Turma de origem na chamada", "Turma da chamada", "Turno", "Situação", "Eletivas atuais", "Origem atual do cadastro", "Turma de frequência atual"], ...records] },
       { name: "Critérios", rows: [["Campo", "Valor"], ["Escola", meta.school], ["Relatório", state.table.title], ["Filtros", meta.filters], ["Resumo", meta.summary], ["Geração", meta.generated], ["Critério", "Presenças / (presenças + faltas + justificadas). Um registro por aluno/chamada."], ["Observação", state.table.note]] },
     ];
     download(xlsx(sheets), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx");
