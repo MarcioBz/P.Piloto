@@ -43,9 +43,22 @@
     const roster = window.AlunoTecStudents.sorted((opened.students || []).filter(student =>
       !term || norm(opened.name).includes(term) || norm(student.name).includes(term)));
     $("electiveStudentsCount").textContent = `${roster.length} aluno(s)`;
-    $("electiveStudentRows").innerHTML = roster.length ? roster.map((student, index) => `<tr>
-      <td>${index + 1}</td><td>${window.AlunoTecStudents.label(student, { classId: opened.id, year })}</td>
-      <td>${esc(student.status || "Ativo")}</td></tr>`).join("") :
+    $("electiveStudentRows").innerHTML = roster.length ? roster.map((student, index) => {
+      const options = { classId: opened.id, year };
+      const links = window.AlunoTecStudents.info(student, options);
+      const hasBaseEnrollment = links.linked.some(record => record.type === "base");
+      const currentClass = hasBaseEnrollment ? links.current.name : "";
+      return `<tr>
+        <td>${index + 1}</td>
+        <td><span class="elective-student-identity">
+          ${window.AlunoTecStudents.label(student, options)}
+          <span class="elective-current-class${currentClass ? "" : " is-empty"}"
+            title="Turma atual da Base Comum">${currentClass ?
+              `Turma atual: ${esc(currentClass)}` : "Turma não identificada"}</span>
+        </span></td>
+        <td>${esc(student.status || "Ativo")}</td>
+      </tr>`;
+    }).join("") :
       '<tr><td colspan="3" class="elective-empty">Nenhum aluno para exibir. Gerencie os vínculos pela área de Turmas.</td></tr>';
   }
   $("electiveSearch").addEventListener("input", render);
@@ -60,7 +73,9 @@
   });
   $("closeElectiveStudents").addEventListener("click", () => { openedId = ""; render(); });
   document.addEventListener("alunotec:yearchange", () => { openedId = ""; render(); });
-  window.addEventListener("storage", event => { if (!event.key || event.key === "alunotec_turmas_v2") render(); });
+  window.addEventListener("storage", event => {
+    if (!event.key || ["alunotec_turmas_v2", "alunotec_alunos_remanejamentos_v1"].includes(event.key)) render();
+  });
   window.addEventListener("focus", render);
   render();
 })();

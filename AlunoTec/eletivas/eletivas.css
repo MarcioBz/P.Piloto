@@ -132,6 +132,49 @@
   text-align: left;
   font-size: 13px;
 }
+
+/* Turma atual ao lado do nome, apenas na lista de Eletivas. */
+.elective-student-identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px 10px;
+  min-width: 0;
+}
+
+.elective-student-identity > .at-student-label {
+  display: contents;
+}
+
+.elective-student-identity .at-student-label-name {
+  order: 0;
+  max-width: 100%;
+}
+
+.elective-current-class {
+  order: 1;
+  max-width: 100%;
+  padding: 4px 9px;
+  border: 1px solid #d6e7d9;
+  border-radius: 7px;
+  background: #edf6ef;
+  color: #397149;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.elective-current-class.is-empty {
+  border-color: #e4e9e5;
+  background: #f4f6f4;
+  color: #829087;
+}
+
+.elective-student-identity .at-student-label-details {
+  order: 2;
+  flex-basis: 100%;
+}
 .elective-table-wrap th {
   background: #f4f8f2;
   color: #718178;

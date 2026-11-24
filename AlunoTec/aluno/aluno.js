@@ -566,42 +566,97 @@
      DETALHES E REMANEJAMENTOS
      Abre os detalhes e executa o fluxo de movimentação do estudante entre turmas.
   ========================================================== */
-  function showDialog(content) {
-    $("#dialogBox").innerHTML = content;
-    enhanceAllSelects($("#dialogBox"));
-    $("#appDialog").showModal();
+  function showDialog(content, variant = "") {
+    const dialog = $("#appDialog");
+    const box = $("#dialogBox");
+    dialog.classList.toggle("student-record-dialog", ["student-profile", "student-transfer"].includes(variant));
+    dialog.classList.toggle("student-profile-dialog", variant === "student-profile");
+    dialog.classList.toggle("student-transfer-dialog", variant === "student-transfer");
+    box.innerHTML = content;
+    const heading = box.querySelector("h2");
+    if (heading) {
+      heading.id = "student-dialog-title";
+      dialog.setAttribute("aria-labelledby", heading.id);
+    }
+    enhanceAllSelects(box);
+    dialog.showModal();
   }
 
   function showStudent(student) {
+    const nameParts = String(student.name || "").trim().split(/\s+/).filter(Boolean);
+    const initials = [nameParts[0], nameParts.length > 1 ? nameParts.at(-1) : ""]
+      .map(part => Array.from(part || "")[0] || "").join("").toLocaleUpperCase("pt-BR");
+    const statusClass = !isActive(student) ? "inactive" : student.moved ? "moved" : "";
+    const statusLabel = !isActive(student) ? "Inativo" : student.moved ? "Remanejado" : "Ativo";
     const electives = student.electiveNames.length
-      ? student.electiveNames.map(escapeHtml).join(", ")
-      : "Nenhuma eletiva vinculada";
+      ? student.electiveNames.map(name =>
+          `<span class="student-profile-elective">${escapeHtml(name)}</span>`).join("")
+      : `<span class="student-profile-placeholder">Nenhuma eletiva vinculada</span>`;
 
     const history = student.movements.length
-      ? student.movements
-          .slice()
+      ? `<ol class="student-profile-timeline">${student.movements.slice()
           .sort((a, b) => new Date(b.date) - new Date(a.date))
-          .map(
-            (item) =>
-              `<div class="history-item"><strong>${escapeHtml(item.sourceClassName)} → ${escapeHtml(item.destinationClassName)}</strong><small>${new Date(item.date).toLocaleString("pt-BR")}</small></div>`,
-          )
-          .join("")
-      : `<div class="history-item">Nenhum remanejamento registrado.</div>`;
+          .map(item => {
+            const date = new Date(item.date);
+            const formatted = Number.isNaN(date.getTime()) ? "Data não informada" :
+              date.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+            return `<li><div class="student-profile-route">
+              <strong>${escapeHtml(item.sourceClassName || "Turma de origem")}</strong>
+              <span aria-hidden="true">→</span>
+              <strong>${escapeHtml(item.destinationClassName || "Turma de destino")}</strong>
+              </div><time>${escapeHtml(formatted)}</time></li>`;
+          }).join("")}</ol>`
+      : `<div class="student-profile-empty">
+          <span class="student-profile-empty-icon" aria-hidden="true">
+            <svg><use href="#i-transfer"></use></svg>
+          </span>
+          <div><strong>Nenhum remanejamento registrado</strong>
+            <p>As movimentações de turma aparecerão aqui.</p></div>
+        </div>`;
 
-    showDialog(`<button type="button" class="dialog-close" data-close>×</button>
-            <h2>${escapeHtml(student.name)}</h2>
-            <p>Informações consolidadas do aluno.</p>
-            <div class="detail-list">
-                <span><strong>Turma de origem:</strong> ${escapeHtml(student.sourceName)}</span>
-                <span><strong>Turma considerada na frequência:</strong> ${escapeHtml(student.frequencyClassName)}</span>
-                <span><strong>Eletiva(s) vinculada(s):</strong> ${electives}</span>
-                <span><strong>Ano letivo:</strong> ${escapeHtml(student.classYear || "—")}</span>
-                <span><strong>Ano/série:</strong> ${escapeHtml(student.grade || "—")}</span>
-                <span><strong>Status:</strong> ${escapeHtml(student.status)}</span>
-            </div>
-            <h3>Histórico de remanejamentos</h3>
-            <div class="history-list">${history}</div>
-            <div class="dialog-actions"><button type="button" class="button primary" data-close>Fechar</button></div>`);
+    showDialog(`
+      <button type="button" class="dialog-close" data-close
+        aria-label="Fechar detalhes do aluno">×</button>
+      <header class="student-profile-heading">
+        <span class="student-profile-avatar" aria-hidden="true">${escapeHtml(initials || "A")}</span>
+        <div class="student-profile-heading-copy">
+          <span class="student-profile-eyebrow">Ficha do aluno</span>
+          <h2>${escapeHtml(student.name)}</h2>
+          <span class="status-badge ${statusClass}">${statusLabel}</span>
+        </div>
+      </header>
+      <div class="student-profile-body">
+        <dl class="student-profile-grid">
+          <div class="student-profile-field">
+            <dt>Turma de origem</dt><dd>${escapeHtml(student.sourceName || "—")}</dd>
+          </div>
+          <div class="student-profile-field">
+            <dt>Turma da frequência</dt><dd>${escapeHtml(student.frequencyClassName || "—")}</dd>
+          </div>
+          <div class="student-profile-field student-profile-field--wide">
+            <dt>Eletivas vinculadas</dt><dd class="student-profile-electives">${electives}</dd>
+          </div>
+          <div class="student-profile-field student-profile-field--small">
+            <dt>Ano letivo</dt><dd>${escapeHtml(student.classYear || "—")}</dd>
+          </div>
+          <div class="student-profile-field student-profile-field--small">
+            <dt>Ano/série</dt><dd>${escapeHtml(student.grade || "—")}</dd>
+          </div>
+        </dl>
+        <section class="student-profile-history" aria-labelledby="student-profile-history-title">
+          <div class="student-profile-history-heading">
+            <h3 id="student-profile-history-title">
+              <svg aria-hidden="true"><use href="#i-transfer"></use></svg>
+              Histórico de remanejamentos
+            </h3>
+            ${student.movements.length ? `<span>${student.movements.length}</span>` : ""}
+          </div>
+          ${history}
+        </section>
+      </div>
+      <footer class="dialog-actions student-profile-actions">
+        <button type="button" class="button primary" data-close>Fechar</button>
+      </footer>`, "student-profile");
   }
 
   function showTransfer(student) {
@@ -633,24 +688,42 @@
       )
       .join("");
 
-    showDialog(`<button type="button" class="dialog-close" data-close>×</button>
-            <h2>Remanejar aluno</h2>
-            <p><strong>${escapeHtml(student.name)}</strong><br>Turma de origem: ${escapeHtml(origin.className)}</p>
-            <p class="transfer-note">O aluno permanecerá cadastrado na turma de origem. A frequência será considerada na turma de destino.</p>
-            <form id="transferForm" class="form-grid">
-                <label>Turma de destino
-                    <select name="destinationId" required>
-                        <option value="">Selecione uma turma</option>${options}
-                    </select>
-                </label>
-                <div class="dialog-actions">
-                    <button type="button" class="button secondary" data-close>Cancelar</button>
-                    <button class="button primary" type="submit">Confirmar remanejamento</button>
-                </div>
-                <input type="hidden" name="studentId" value="${escapeHtml(origin.id)}">
-                <input type="hidden" name="studentName" value="${escapeHtml(student.name)}">
-                <input type="hidden" name="sourceId" value="${escapeHtml(origin.classId)}">
-            </form>`);
+    showDialog(`
+      <button type="button" class="dialog-close" data-close
+        aria-label="Fechar remanejamento">×</button>
+      <header class="student-profile-heading">
+        <span class="student-profile-avatar" aria-hidden="true">
+          <svg><use href="#i-transfer"></use></svg>
+        </span>
+        <div class="student-profile-heading-copy">
+          <span class="student-profile-eyebrow">Movimentação de turma</span>
+          <h2>Remanejar aluno</h2>
+          <p class="student-transfer-subtitle">Escolha a turma de destino para a frequência.</p>
+        </div>
+      </header>
+      <form id="transferForm" class="student-transfer-form">
+        <div class="student-profile-body">
+          <div class="student-transfer-student">
+            <span>Aluno selecionado</span>
+            <strong>${escapeHtml(student.name)}</strong>
+            <dl><div><dt>Turma de origem</dt><dd>${escapeHtml(origin.className)}</dd></div></dl>
+          </div>
+          <label class="student-transfer-destination">Turma de destino
+            <select name="destinationId" aria-label="Turma de destino" required>
+              <option value="">Selecione uma turma</option>${options}
+            </select>
+          </label>
+          <p class="student-transfer-note">O aluno continuará cadastrado na turma de origem.
+            A frequência será considerada na turma de destino.</p>
+        </div>
+        <footer class="dialog-actions student-profile-actions">
+          <button type="button" class="button secondary" data-close>Cancelar</button>
+          <button class="button primary" type="submit">Confirmar remanejamento</button>
+        </footer>
+        <input type="hidden" name="studentId" value="${escapeHtml(origin.id)}">
+        <input type="hidden" name="studentName" value="${escapeHtml(student.name)}">
+        <input type="hidden" name="sourceId" value="${escapeHtml(origin.classId)}">
+      </form>`, "student-transfer");
   }
 
   function handleTransfer(event) {
