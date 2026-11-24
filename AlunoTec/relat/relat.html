@@ -90,6 +90,7 @@
 <button type="button" class="rp-report-link" data-report="monthly"><span class="rp-icon" data-rp-icon="trend" aria-hidden="true"></span><span>Evolução Mensal<br>da Frequência</span></button>
 <button type="button" class="rp-report-link" data-report="closing"><span class="rp-icon" data-rp-icon="clipboard" aria-hidden="true"></span><span>Fechamento Mensal<br>da Escola</span></button></div></section>
         <section class="rp-card rp-export"><h2><span class="rp-icon" data-rp-icon="file" aria-hidden="true"></span> Exportar / Imprimir</h2>
+          <p id="rp-export-description" class="rp-muted" aria-live="polite"></p>
           <button id="rp-pdf" type="button" class="rp-button rp-primary"><span class="rp-icon" data-rp-icon="download" aria-hidden="true"></span> Baixar PDF</button>
           <button id="rp-excel" type="button" class="rp-button rp-pale"><span class="rp-icon" data-rp-icon="sheet" aria-hidden="true"></span> Exportar Excel</button>
           <button id="rp-print-button" type="button" class="rp-button rp-soft-blue"><span class="rp-icon" data-rp-icon="print" aria-hidden="true"></span> Imprimir relatório</button>
@@ -106,7 +107,7 @@
         <div id="rp-empty" class="rp-empty" hidden><span class="rp-icon" data-rp-icon="clipboard" aria-hidden="true"></span> <h3>Nenhuma chamada neste período</h3><p>Registre a frequência das turmas ou ajuste os filtros para consultar outro período.</p><a href="../frequencia/frequencia.html">Ir para Frequência →</a></div>
         <p id="rp-result-note" class="rp-table-note"></p>
       </section>
-      <footer class="rp-footnote"><p>Fonte: chamadas salvas em Frequência e cadastros de Turmas/Alunos neste navegador. Os dados de outros dispositivos dependem da sincronização do projeto.</p><p>Frequência = presenças ÷ (presenças + faltas + justificadas). Cada registro corresponde a um aluno em uma chamada; turnos diferentes são contados separadamente. Dias sem chamada não são tratados como falta.</p></footer>
+      <footer class="rp-footnote"><p>Fonte: chamadas salvas em Frequência e cadastros de Turmas/Alunos neste navegador. Os dados de outros dispositivos dependem da sincronização do projeto.</p><p>Frequência = presenças ÷ (presenças + faltas + justificadas). Cada registro corresponde a um aluno em uma chamada; turnos diferentes são contados separadamente. Dias sem chamada não são tratados como falta. No filtro de turno, chamadas salvas como “Todos” usam o turno cadastrado da turma, quando disponível.</p></footer>
       <p id="rp-status" class="rp-status" role="status" aria-live="polite"></p>
     </div>
     <section id="rp-print" class="rp-print" aria-label="Versão de impressão"></section>

@@ -52,7 +52,7 @@
     }
     return Object.values(raw).flatMap(item => Array.isArray(item) ? item : item && typeof item === "object" ? [item] : []);
   }
-  function prepareData(rawClasses, rawCalls, rawMovements = []) {
+  function prepareData(rawClasses, rawCalls, rawMovements = [], studentAPI) {
     let ignored = 0;
     const classes = ["base", "electives"].flatMap(type => (Array.isArray(rawClasses?.[type]) ? rawClasses[type] : [])
       .filter(item => item && item.id != null)
@@ -63,26 +63,38 @@
       if (student?.id != null && !sourceByStudent.has(`${item.year}|${student.id}`)) sourceByStudent.set(`${item.year}|${student.id}`, item);
     }));
     const movements = flattenMovements(rawMovements);
+    const indexes = new Map();
     const rows = [];
     Object.entries(rawCalls && typeof rawCalls === "object" ? rawCalls : {}).forEach(([key, call]) => {
       if (!call || typeof call !== "object" || !validDate(call.date)) { ignored++; return; }
       const systemId = String(call.classId ?? `historica:${call.className || key}`);
-      const systemClass = classById.get(systemId);
-      const year = String(systemClass?.year || call.year || call.date.slice(0, 4));
+      const storedYear = /^\d{4}$/.test(String(call.year || "")) ? String(call.year) : "";
+      const systemClass = classes.find(item => item.id === systemId && item.year === storedYear) || classById.get(systemId);
+      const year = storedYear || String(systemClass?.year || call.date.slice(0, 4));
+      if (studentAPI?.createIndex && !indexes.has(year)) {
+        indexes.set(year, studentAPI.createIndex(rawClasses, movements, year));
+      }
       const students = call.students && typeof call.students === "object" ? call.students : {};
       Object.entries(students).forEach(([studentKey, entry]) => {
         if (!entry || !["presente", "ausente", "justificado"].includes(entry.status)) { ignored++; return; }
         const studentId = String(entry.studentId ?? entry.id ?? (Array.isArray(students) ? `${key}:${studentKey}` : studentKey));
+        const links = indexes.get(year)?.describe({ id: studentId, name: entry.studentName || entry.name || "" },
+          { classId: systemId, date: call.date });
+        const primary = links?.linked.find(item => item.type === "base") || links?.linked[0];
+        const personId = String(primary?.originStudentId || primary?.sourceStudentId || primary?.id ||
+          entry.originStudentId || studentId);
         // O histórico é lido sem reaplicar remanejamentos às chamadas já salvas.
         const movement = movements.find(item => String(item?.studentId) === studentId && item.sourceClassId && item.active !== false && (!classById.has(String(item.sourceClassId)) || classById.get(String(item.sourceClassId)).year === year));
         const originalClass = sourceByStudent.get(`${year}|${studentId}`);
         const originalStudent = originalClass?.students.find(student => String(student.id) === studentId);
         const originId = String(entry.originClassId || originalStudent?.originBaseClassId ||
-          originalStudent?.originClassId || movement?.sourceClassId || originalClass?.id || systemId);
-        const originClass = classById.get(originId);
+          originalStudent?.originClassId || (links?.linked.some(item => item.type === "base") ? links.origin.id : "") ||
+          movement?.sourceClassId || originalClass?.id || systemId);
+        const originClass = classes.find(item => item.id === originId && item.year === year);
         rows.push({
           callId: String(call.id || key), date: call.date, year, shift: String(call.shift || systemClass?.shift || "Todos"),
-          studentId, studentName: String(entry.studentName || entry.name || originalClass?.students.find(s => String(s.id) === studentId)?.name || "Aluno sem nome"),
+          classShift: String(systemClass?.shift || ""),
+          studentId, personId, studentName: String(entry.studentName || entry.name || primary?.name || originalClass?.students.find(s => String(s.id) === studentId)?.name || "Aluno sem nome"),
           originId, originName: String(entry.originClassName || originClass?.name || originalStudent?.originBaseClassName ||
             originalStudent?.originClassName || movement?.sourceClassName || call.className || "Turma sem nome"),
           systemId, systemName: String(call.className || systemClass?.name || "Turma sem nome"),
@@ -91,17 +103,23 @@
         });
       });
     });
-    return { classes, classById, rows, ignored };
+    return { classes, classById, rows, ignored, movements };
+  }
+  function matchesShift(row, shift) {
+    if (!shift) return true;
+    const recorded = normalize(row.shift);
+    return recorded === normalize(shift) || ((!recorded || recorded === "todos") &&
+      normalize(row.classShift) === normalize(shift));
   }
   function filterRows(data, filters, view = "overview") {
     return data.rows.filter(row => row.year === filters.year && row.date >= filters.start && row.date <= filters.end &&
-      (!filters.shift || normalize(row.shift) === normalize(filters.shift)) &&
+      matchesShift(row, filters.shift) &&
       (!filters.classId || (view === "room" ? row.originId : row.systemId) === filters.classId) &&
       (view !== "electives" || row.type === "electives") &&
       (view !== "room" || row.type === "base"));
   }
   function totals(rows) {
-    const result = { present: 0, absent: 0, justified: 0, records: rows.length, students: new Set(rows.map(r => r.studentId)).size, calls: new Set(rows.map(r => r.callId)).size };
+    const result = { present: 0, absent: 0, justified: 0, records: rows.length, students: new Set(rows.map(r => r.personId || r.studentId)).size, calls: new Set(rows.map(r => r.callId)).size };
     rows.forEach(row => { result[row.status === "presente" ? "present" : row.status === "ausente" ? "absent" : "justified"]++; });
     result.rate = result.records ? result.present / result.records * 100 : null;
     return result;
@@ -118,6 +136,25 @@
   function previousRange(filters) {
     const duration = Math.round((dateObject(filters.end) - dateObject(filters.start)) / 86400000) + 1;
     return { ...filters, start: addDays(filters.start, -duration), end: addDays(filters.start, -1) };
+  }
+
+  function classChoices(data, year, shift = "", view = "overview") {
+    const allowed = type => view === "room" ? type === "base" : view === "electives" ? type === "electives" : true;
+    const choices = new Map(data.classes.filter(item => item.year === year && allowed(item.type) &&
+      (!shift || !item.shift || normalize(item.shift) === "todos" || normalize(item.shift) === normalize(shift)))
+      .map(item => [item.id, item.name]));
+    data.rows.filter(row => row.year === year && allowed(row.type) && matchesShift(row, shift))
+      .forEach(row => {
+        const id = view === "room" ? row.originId : row.systemId;
+        if (!choices.has(id)) choices.set(id, view === "room" ? row.originName : row.systemName);
+      });
+    return [...choices.entries()].sort((a, b) => compare(a[1], b[1]));
+  }
+
+  function activeElectives(data, filters) {
+    return data.classes.filter(item => item.type === "electives" && item.year === filters.year &&
+      !normalize(item.status).startsWith("inativ") && (!filters.classId || item.id === filters.classId) &&
+      (!filters.shift || !item.shift || normalize(item.shift) === "todos" || normalize(item.shift) === normalize(filters.shift)));
   }
 
   /* EXPORTAÇÃO | Planilha Office Open XML com texto literal (nenhuma fórmula).
@@ -187,54 +224,170 @@
     return Uint8Array.from([...String(text)].map(char => special[char] ?? (char.codePointAt(0) <= 255 ? char.codePointAt(0) : 63)));
   }
   function pdf(table, meta) {
-    const escape = value => String(value ?? "").replace(/[\r\n\t]/g, " ").replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
-    const objects = [null, '', '<< /Type /Catalog /Pages 1 0 R >>', '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>', '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>'];
-    const pageIds = [], pageSize = 25;
-    const pages = Math.max(1, Math.ceil(table.rows.length / pageSize));
-    for (let page = 0; page < pages; page++) {
+    const escape = value => String(value ?? "").replace(/[\r\n\t]/g, " ")
+      .replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+    const measure = (value, size) => [...String(value)].reduce((sum, char) => sum +
+      (/[ilI.,:;'!| ]/.test(char) ? .3 : /[MW@%]/.test(char) ? 1.05 : /[mw]/.test(char) ? .94 :
+        /[A-ZÁÀÂÃÉÊÍÓÔÕÚÇ]/.test(char) ? .85 : .65) * size, 0);
+    function wrap(value, width, size) {
+      const words = String(value ?? "—").replace(/\s+/g, " ").trim().split(" ");
       const lines = [];
-      const text = (value, x, y, size = 9, bold = false, color = '0.12 0.22 0.15') => lines.push(`${color} rg BT /${bold ? 'F2' : 'F1'} ${size} Tf ${x} ${y} Td (${escape(value)}) Tj ET`);
-      text(meta.school || 'AlunoTec', 34, 557, 12, true, '0.09 0.38 0.17');
-      text(table.title, 34, 535, 18, true);
-      text(meta.filters, 34, 515, 9);
-      text(meta.summary, 34, 498, 9);
-      text('Frequência = presenças / registros válidos. Justificadas permanecem no denominador.', 34, 482, 8);
-      const count = table.headers.length, first = count > 5 ? 174 : 220;
-      const widths = [first, ...Array.from({ length: count - 1 }, () => (774 - first) / Math.max(count - 1, 1))];
-      const positions = [34]; widths.slice(0, -1).forEach(width => positions.push(positions.at(-1) + width));
-      lines.push('0.91 0.96 0.91 rg 34 449 774 24 re f');
-      const fit = (value, width, size) => { const max = Math.max(3, Math.floor((width - 12) / (size * .56))); const text = String(value ?? '—'); return text.length > max ? `${text.slice(0, max - 3)}...` : text; };
-      table.headers.forEach((heading, c) => text(fit(heading, widths[c], 8), positions[c] + 6, 458, 8, true));
-      const rows = table.rows.slice(page * pageSize, (page + 1) * pageSize);
-      rows.forEach((row, r) => {
-        const y = 431 - r * 14;
-        if (r % 2 === 0) lines.push(`0.97 0.98 0.97 rg 34 ${y - 4} 774 14 re f`);
-        row.forEach((value, c) => text(fit(value, widths[c], 8), positions[c] + 6, y, 8));
+      let line = "";
+      words.forEach(word => {
+        const proposed = line ? `${line} ${word}` : word;
+        if (measure(proposed, size) <= width) { line = proposed; return; }
+        if (line) { lines.push(line); line = ""; }
+        for (const char of word) {
+          if (line && measure(line + char, size) > width) { lines.push(line); line = ""; }
+          line += char;
+        }
       });
-      if (!rows.length) text('Nenhum registro para os filtros escolhidos.', 40, 425, 10);
-      text('Fonte: registros locais de Turmas, Alunos e Frequência. Textos extensos podem ser abreviados; consulte o Excel para o conteúdo completo.', 34, 45, 7);
-      text(`${meta.generated}  |  Página ${page + 1} de ${pages}`, 34, 29, 8);
-      const content = lines.join('\n');
-      const streamId = objects.length;
+      if (line || !lines.length) lines.push(line);
+      return lines;
+    }
+    const weights = table.headers.map(header => /turma|^aluno$|^eletiva$|semana/i.test(header) ? 2.5 :
+      /data|mês|dias com falta|alunos cadastrados/i.test(header) ? 1.5 :
+        /turno|situação|justificad|frequência/i.test(header) ? 1.4 : 1);
+    const weightTotal = weights.reduce((sum, value) => sum + value, 0);
+    const widths = weights.map(value => 774 * value / weightTotal);
+    const positions = [34];
+    widths.slice(0, -1).forEach(width => positions.push(positions.at(-1) + width));
+    const headings = table.headers.map((heading, index) => wrap(heading, widths[index] - 12, 8));
+    const headerHeight = Math.max(...headings.map(lines => lines.length)) * 10 + 12;
+    const pages = [];
+    function text(page, value, x, y, size = 8, bold = false, color = "0.12 0.22 0.15") {
+      page.commands.push(`${color} rg BT /${bold ? "F2" : "F1"} ${size} Tf ${x.toFixed(2)} ${y.toFixed(2)} Td (${escape(value)}) Tj ET`);
+    }
+    function startPage() {
+      const page = { commands: [], y: 557 };
+      const block = (value, size, bold = false, color) => {
+        wrap(value, 774, size).forEach(line => {
+          text(page, line, 34, page.y, size, bold, color); page.y -= size + 4;
+        });
+        page.y -= 5;
+      };
+      block(meta.school || "AlunoTec", 11, true, "0.09 0.38 0.17");
+      block(table.title, 16, true);
+      block(meta.filters, 8);
+      block(meta.summary, 8);
+      page.bodyTop = page.y - headerHeight;
+      if (page.bodyTop < 120) throw new Error("Os títulos ou filtros são extensos demais para o cabeçalho do PDF.");
+      page.commands.push(`0.91 0.96 0.91 rg 34 ${page.bodyTop.toFixed(2)} 774 ${headerHeight} re f`);
+      headings.forEach((lines, column) => lines.forEach((line, index) =>
+        text(page, line, positions[column] + 6, page.y - 12 - index * 10, 8, true)));
+      page.y = page.bodyTop;
+      pages.push(page);
+      return page;
+    }
+    let page = startPage();
+    table.rows.forEach((row, rowIndex) => {
+      const cells = table.headers.map((_, index) => wrap(row[index], widths[index] - 12, 8));
+      const lineCount = Math.max(...cells.map(lines => lines.length));
+      const rowHeight = lineCount * 11 + 12;
+      if (page.y - rowHeight < 76 && rowHeight <= page.bodyTop - 76) page = startPage();
+      let offset = 0;
+      while (offset < lineCount) {
+        if (page.y - 23 < 76) page = startPage();
+        const capacity = Math.max(1, Math.floor((page.y - 76 - 12) / 11));
+        const length = Math.min(capacity, lineCount - offset);
+        const height = length * 11 + 12;
+        if (rowIndex % 2 === 0) page.commands.push(`0.97 0.98 0.97 rg 34 ${(page.y - height).toFixed(2)} 774 ${height} re f`);
+        cells.forEach((lines, column) => lines.slice(offset, offset + length).forEach((line, index) =>
+          text(page, line, positions[column] + 6, page.y - 14 - index * 11)));
+        page.y -= height;
+        offset += length;
+        if (offset < lineCount) page = startPage();
+      }
+    });
+    if (!table.rows.length) { text(page, "Nenhum registro para os filtros escolhidos.", 40, page.y - 18, 9); page.y -= 30; }
+    const note = wrap(table.note || "", 774, 7);
+    page.y -= 14;
+    note.forEach(line => {
+      if (page.y < 76) { page = startPage(); page.y -= 16; }
+      text(page, line, 34, page.y, 7, false, "0.35 0.43 0.37"); page.y -= 10;
+    });
+    const objects = [null, "", "<< /Type /Catalog /Pages 1 0 R >>",
+      "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
+      "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>"];
+    const pageIds = [];
+    pages.forEach((current, index) => {
+      text(current, "Fonte: registros locais do AlunoTec. Frequência = presenças / (presenças + faltas + justificadas).", 34, 43, 7);
+      text(current, `${meta.generated || ""} | Página ${index + 1} de ${pages.length}`, 34, 28, 8);
+      const content = current.commands.join("\n"), streamId = objects.length;
       objects.push(`<< /Length ${latinBytes(content).length} >>\nstream\n${content}\nendstream`);
       const pageId = objects.length;
       objects.push(`<< /Type /Page /Parent 1 0 R /MediaBox [0 0 842 595] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${streamId} 0 R >>`);
       pageIds.push(pageId);
-    }
-    objects[1] = `<< /Type /Pages /Count ${pageIds.length} /Kids [${pageIds.map(id => `${id} 0 R`).join(' ')}] >>`;
-    const chunks = [latinBytes('%PDF-1.4\n')], offsets = [0];
+    });
+    objects[1] = `<< /Type /Pages /Count ${pageIds.length} /Kids [${pageIds.map(id => `${id} 0 R`).join(" ")}] >>`;
+    const chunks = [latinBytes("%PDF-1.4\n")], offsets = [0];
     let length = chunks[0].length;
-    objects.slice(1).forEach((object, index) => { offsets.push(length); const chunk = latinBytes(`${index + 1} 0 obj\n${object}\nendobj\n`); chunks.push(chunk); length += chunk.length; });
+    objects.slice(1).forEach((object, index) => {
+      offsets.push(length);
+      const chunk = latinBytes(`${index + 1} 0 obj\n${object}\nendobj\n`);
+      chunks.push(chunk); length += chunk.length;
+    });
     const xref = length;
-    chunks.push(latinBytes(`xref\n0 ${objects.length}\n0000000000 65535 f \n${offsets.slice(1).map(offset => `${String(offset).padStart(10, '0')} 00000 n \n`).join('')}trailer\n<< /Size ${objects.length} /Root 2 0 R >>\nstartxref\n${xref}\n%%EOF`));
+    chunks.push(latinBytes(`xref\n0 ${objects.length}\n0000000000 65535 f \n${offsets.slice(1).map(offset => `${String(offset).padStart(10, "0")} 00000 n \n`).join("")}trailer\n<< /Size ${objects.length} /Root 2 0 R >>\nstartxref\n${xref}\n%%EOF`));
     return concat(chunks);
+  }
+
+  /* TABELAS | O mesmo modelo alimenta a tela, o PDF, o Excel e a impressão. */
+  function reportTable(data, filters, view = "overview", mode = "default", rows = filterRows(data, filters, view), studentName = "") {
+    const headers = ["Turma", "Chamadas", "Alunos", "Presenças", "Faltas", "Justificadas", "Frequência"];
+    const f = filters;
+    let result = { title: "Resumo por turma", headers, rows: [], rateIndex: 6, note: "Alunos são contados por identificador em cada grupo. Um aluno pode aparecer em mais de uma turma; o indicador geral conta cada identificador uma vez." };
+    if (mode === "absences") {
+      const students = grouped(rows, row => row.personId || row.studentId, row => row.studentName).filter(item => item.absent > 0).sort((a, b) => compare(a.name, b.name));
+      return { title: "Alunos com maior ausência", headers: ["Aluno", "Registros", "Presenças", "Faltas", "Dias com falta", "Justificadas", "Frequência"], rows: students.map(item => [item.name, item.records, item.present, item.absent, new Set(item.rows.filter(row => row.status === "ausente").map(row => row.date)).size, item.justified, percent(item.rate)]),
+        studentRefs: students.map(item => ({ id: item.key, name: item.name })),
+        rateIndex: 6, note: "Alunos em ordem alfabética. Os vínculos junto ao nome são os atuais do ano selecionado; os totais usam as chamadas do período. Dias com falta contam datas distintas." };
+    }
+    if (view === "student") {
+      const name = studentName;
+      return { title: name ? `Relatório individual · ${name}` : "Relatório individual do aluno", headers: ["Data", "Turma de origem", "Turma da chamada", "Turno", "Situação"], rows: [...rows].sort((a, b) => b.date.localeCompare(a.date) || compare(a.systemName, b.systemName)).map(row => [br(row.date), row.originName, row.systemName, row.shift, { presente: "Presente", ausente: "Falta", justificado: "Justificada" }[row.status]]), rateIndex: -1, note: "O histórico mostra os dados salvos em cada chamada. Remanejamentos atuais não reescrevem a turma das chamadas anteriores." };
+    }
+    if (view === "electives") {
+      const groups = new Map(grouped(rows, row => row.systemId, row => row.systemName).map(item => [item.key, item]));
+      activeElectives(data, f).forEach(item => { if (!groups.has(item.id)) groups.set(item.id, { key: item.id, name: item.name, ...totals([]) }); });
+      return { title: "Acompanhamento das eletivas", headers: ["Eletiva", "Alunos cadastrados", "Chamadas", "Presenças", "Faltas", "Justificadas", "Frequência"], rows: [...groups.values()].sort((a, b) => compare(a.name, b.name)).map(item => [item.name, new Set((data.classById.get(item.key)?.students || []).filter(student => student.id != null && student.status !== "Inativo").map(student => String(student.id))).size, item.calls, item.present, item.absent, item.justified, percent(item.rate)]), rateIndex: 6, note: "Eletivas sem chamada aparecem com frequência —. A aba Frequência atual registra chamadas das turmas da Base Comum; cadastros de eletiva, por si só, não geram presença ou falta." };
+    }
+    if (view === "weekly") {
+      const groups = grouped(rows, row => `${monday(row.date)}|${row.systemId}`, row => row.systemName)
+        .sort((a, b) => monday(a.rows[0].date).localeCompare(monday(b.rows[0].date)) || compare(a.name, b.name));
+      return { ...result, title: "Resumo semanal das turmas", headers: ["Semana (seg–dom)", ...headers],
+        rows: groups.map(item => { const start = monday(item.rows[0].date);
+          return [`${br(start)} a ${br(addDays(start, 6))}`, item.name, item.calls, item.students,
+            item.present, item.absent, item.justified, percent(item.rate)]; }),
+        rateIndex: 7, note: "Uma linha por turma e semana. Somente as chamadas dentro das datas aplicadas entram no cálculo; semanas podem estar parcialmente cobertas pelo filtro." };
+    }
+    if (["monthly", "period"].includes(mode)) {
+      const monthly = mode === "monthly";
+      const groups = grouped(rows, row => monthly ? row.date.slice(0, 7) : row.date, row => row.date).sort((a, b) => a.key.localeCompare(b.key));
+      const label = item => monthly ? new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(dateObject(`${item.key}-01`)) : br(item.key);
+      return { ...result, title: monthly ? "Evolução mensal da frequência" : "Frequência por período", headers: [monthly ? "Mês" : "Data", ...headers.slice(1)], rows: groups.map(item => [label(item), item.calls, item.students, item.present, item.absent, item.justified, percent(item.rate)]), note: "Cada linha considera somente chamadas dentro das datas aplicadas. Dias sem chamada não são tratados como falta." };
+    }
+    const room = view === "room";
+    const groups = grouped(rows, row => room ? row.originId : row.systemId, row => room ? row.originName : row.systemName);
+    groups.sort(mode === "comparison" ? (a, b) => (b.rate ?? -1) - (a.rate ?? -1) || compare(a.name, b.name) : (a, b) => compare(a.name, b.name));
+    result.rows = groups.map(item => [item.name, item.calls, item.students, item.present, item.absent, item.justified, percent(item.rate)]);
+    if (room) {
+      result.title = "Relatório por turma de sala";
+      result.headers = ["Turma de origem", ...headers.slice(1)];
+      result.note = "Agrupado pela turma de origem registrada na chamada. Um aluno remanejado permanece associado à sua origem nesta visão. Quando o campo histórico falta, é usado o cadastro/histórico disponível.";
+    } else if (view === "system") {
+      result.title = mode === "comparison" ? "Comparativo entre turmas" : "Relatório por turma do sistema";
+      result.headers = ["Turma da chamada", ...headers.slice(1)];
+      result.note = "Agrupado pela turma onde a chamada foi salva, incluindo alunos remanejados. Os registros não são redistribuídos usando a matrícula atual.";
+    } else if (mode === "closing") result.title = "Fechamento mensal da escola";
+    return result;
   }
 
   // Permite validar os cálculos e arquivos exportados sem navegador.
   function studentCatalog(data, rows, filters, studentAPI) {
     const school = { base: data.classes.filter(item => item.type === "base"),
       electives: data.classes.filter(item => item.type === "electives") };
-    const index = studentAPI?.createIndex(school, [], filters.year);
+    const index = studentAPI?.createIndex(school, data.movements || [], filters.year);
     const identity = new Map();
     index?.entities.forEach(entity => {
       const primary = entity.records.find(item => item.type === "base") || entity.records[0];
@@ -265,13 +418,16 @@
   }
 
   if (typeof module !== "undefined" && module.exports) {
-    module.exports = { prepareData, filterRows, totals, grouped, periodRange, previousRange, pdf, xlsx, studentCatalog };
+    module.exports = { prepareData, filterRows, totals, grouped, periodRange, previousRange,
+      classChoices, activeElectives, reportTable, pdf, xlsx, studentCatalog };
     return;
   }
 
   /* INTERFACE | Somente IDs e classes rp-* são controlados aqui. */
   const root = document.getElementById("rp-dashboard");
   if (!root) return;
+  if (root.dataset.reportsReady === "true") return;
+  root.dataset.reportsReady = "true";
   const $ = id => document.getElementById(`rp-${id}`);
   const icons = {
     grid: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
@@ -311,7 +467,7 @@
   function loadData() {
     state.readErrors = new Set();
     const savedClasses = read(KEYS.classes, {}), savedCalls = read(KEYS.calls, {});
-    state.data = prepareData(savedClasses, savedCalls, read(KEYS.movements, []));
+    state.data = prepareData(savedClasses, savedCalls, read(KEYS.movements, []), window.AlunoTecStudents);
     state.institution = read(KEYS.institution, {});
     const warnings = [];
     if (state.readErrors.size) warnings.push("Alguns dados locais não puderam ser lidos. Confira a cópia de segurança nas Configurações.");
@@ -405,9 +561,9 @@
     fillClassOptions();
   }
   function fillClassOptions() {
-    const classes = new Map(state.data.classes.filter(item => item.year === $("year").value && (!$("shift").value || !item.shift || normalize(item.shift) === "todos" || normalize(item.shift) === normalize($("shift").value))).map(item => [item.id, item.name]));
-    state.data.rows.filter(row => row.year === $("year").value).forEach(row => { if (!classes.has(row.systemId)) classes.set(row.systemId, row.systemName); if (!classes.has(row.originId)) classes.set(row.originId, row.originName); });
-    setOptions($("class"), [["", "Todas as turmas"], ...[...classes.entries()].sort((a, b) => compare(a[1], b[1]))], $("class").value);
+    const choices = classChoices(state.data, $("year").value, $("shift").value, state.view);
+    setOptions($("class"), [["", state.view === "electives" ? "Todas as eletivas" : "Todas as turmas"],
+      ...choices], $("class").value);
   }
   function setRange(anchor = anchorForYear($("year").value)) {
     const year = $("year").value;
@@ -444,20 +600,28 @@
       const options = studentOptions(rows);
       if (!options.some(([id]) => id === state.studentId)) state.studentId = options[0]?.[0] || "";
       setOptions($("student"), options.length ? options : [["", "Nenhum aluno disponível"]], state.studentId);
-      rows = rows.filter(row => state.studentCatalog.get(state.studentId)?.ids.has(row.studentId));
+      const selected = state.studentCatalog.get(state.studentId);
+      rows = rows.filter(row => selected?.ids.has(row.studentId) || selected?.ids.has(row.personId));
     }
     return rows;
   }
   function setView(view, mode = "default", scroll = false) {
     state.view = view; state.mode = mode;
+    if (state.applied?.classId && !classChoices(state.data, state.applied.year, state.applied.shift, view)
+      .some(([id]) => id === state.applied.classId)) {
+      state.applied = { ...state.applied, classId: "" };
+      $("class").value = "";
+      $("status").textContent = "O filtro de turma foi ajustado para esta visão do relatório.";
+    }
+    fillClassOptions();
     root.querySelectorAll("[data-view]").forEach(button => { const active = button.dataset.view === view; button.classList.toggle("is-active", active); button.setAttribute("aria-selected", String(active)); button.tabIndex = active ? 0 : -1; });
     $("view").setAttribute("aria-labelledby", `rp-tab-${view}`);
     closeSelects(); render();
     if (scroll) $("view").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
   }
   function scopedActiveElectives() {
-    const filters = state.applied;
-    return state.data.classes.filter(item => item.type === "electives" && item.year === filters.year && !normalize(item.status).startsWith("inativ") && (!filters.classId || item.id === filters.classId) && (!filters.shift || !item.shift || normalize(item.shift) === "todos" || normalize(item.shift) === normalize(filters.shift)));
+    const filters = state.view === "electives" ? state.applied : { ...state.applied, classId: "" };
+    return activeElectives(state.data, filters);
   }
   function changeNote(current, previous, name, unit = "") {
     if (current == null || previous == null) return `${name}: sem base no período anterior`;
@@ -467,7 +631,10 @@
   function renderMetrics(rows) {
     const summary = totals(rows), previousFilters = previousRange(state.applied);
     let previous = filterRows(state.data, previousFilters, state.view);
-    if (state.view === "student" && state.mode !== "absences") previous = previous.filter(row => state.studentCatalog.get(state.studentId)?.ids.has(row.studentId));
+    if (state.view === "student" && state.mode !== "absences") {
+      const selected = state.studentCatalog.get(state.studentId);
+      previous = previous.filter(row => selected?.ids.has(row.studentId) || selected?.ids.has(row.personId));
+    }
     const before = totals(previous);
     $("rate").textContent = percent(summary.rate);
     $("rate-note").textContent = changeNote(summary.rate, before.rate, "Comparação", " p.p.");
@@ -511,44 +678,8 @@
 
   /* TABELAS | Todas as visões usam as mesmas linhas filtradas dos indicadores. */
   function makeTable(rows) {
-    const headers = ["Turma", "Chamadas", "Alunos", "Presenças", "Faltas", "Justificadas", "Frequência"];
-    const f = state.applied;
-    let result = { title: "Resumo por turma", headers, rows: [], rateIndex: 6, note: "Alunos são contados por identificador em cada grupo. Um aluno pode aparecer em mais de uma turma; o indicador geral conta cada identificador uma vez." };
-    if (state.mode === "absences") {
-      const students = grouped(rows, row => row.studentId, row => row.studentName).filter(item => item.absent > 0).sort((a, b) => compare(a.name, b.name));
-      return { title: "Alunos com maior ausência", headers: ["Aluno", "Registros", "Presenças", "Faltas", "Dias com falta", "Justificadas", "Frequência"], rows: students.map(item => [item.name, item.records, item.present, item.absent, new Set(item.rows.filter(row => row.status === "ausente").map(row => row.date)).size, item.justified, percent(item.rate)]),
-        studentRefs: students.map(item => ({ id: item.key, name: item.name })),
-        rateIndex: 6, note: "Alunos em ordem alfabética. Os vínculos junto ao nome são os atuais do ano selecionado; os totais usam as chamadas do período. Dias com falta contam datas distintas." };
-    }
-    if (state.view === "student") {
-      const name = $("student").options[$("student").selectedIndex]?.textContent;
-      return { title: name ? `Relatório individual · ${name}` : "Relatório individual do aluno", headers: ["Data", "Turma de origem", "Turma da chamada", "Turno", "Situação"], rows: [...rows].sort((a, b) => b.date.localeCompare(a.date) || compare(a.systemName, b.systemName)).map(row => [br(row.date), row.originName, row.systemName, row.shift, { presente: "Presente", ausente: "Falta", justificado: "Justificada" }[row.status]]), rateIndex: -1, note: "O histórico mostra os dados salvos em cada chamada. Remanejamentos atuais não reescrevem a turma das chamadas anteriores." };
-    }
-    if (state.view === "electives") {
-      const groups = new Map(grouped(rows, row => row.systemId, row => row.systemName).map(item => [item.key, item]));
-      scopedActiveElectives().forEach(item => { if (!groups.has(item.id)) groups.set(item.id, { key: item.id, name: item.name, ...totals([]) }); });
-      return { title: "Acompanhamento das eletivas", headers: ["Eletiva", "Alunos cadastrados", "Chamadas", "Presenças", "Faltas", "Justificadas", "Frequência"], rows: [...groups.values()].sort((a, b) => compare(a.name, b.name)).map(item => [item.name, new Set((state.data.classById.get(item.key)?.students || []).filter(student => student.id != null && student.status !== "Inativo").map(student => String(student.id))).size, item.calls, item.present, item.absent, item.justified, percent(item.rate)]), rateIndex: 6, note: "Eletivas sem chamada aparecem com frequência —. A aba Frequência atual registra chamadas das turmas da Base Comum; cadastros de eletiva, por si só, não geram presença ou falta." };
-    }
-    if (state.view === "weekly" || ["monthly", "period"].includes(state.mode)) {
-      const weekly = state.view === "weekly", monthly = state.mode === "monthly";
-      const groups = grouped(rows, row => weekly ? monday(row.date) : monthly ? row.date.slice(0, 7) : row.date, row => row.date).sort((a, b) => a.key.localeCompare(b.key));
-      const label = item => weekly ? `${br(item.key)} a ${br(addDays(item.key, 6))}` : monthly ? new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(dateObject(`${item.key}-01`)) : br(item.key);
-      return { ...result, title: weekly ? "Resumo semanal das turmas" : monthly ? "Evolução mensal da frequência" : "Frequência por período", headers: [weekly ? "Semana (seg–dom)" : monthly ? "Mês" : "Data", ...headers.slice(1)], rows: groups.map(item => [label(item), item.calls, item.students, item.present, item.absent, item.justified, percent(item.rate)]), note: "Cada linha considera somente chamadas dentro das datas aplicadas. Semanas podem estar parcialmente cobertas pelo filtro." };
-    }
-    const room = state.view === "room";
-    const groups = grouped(rows, row => room ? row.originId : row.systemId, row => room ? row.originName : row.systemName);
-    groups.sort(state.mode === "comparison" ? (a, b) => (b.rate ?? -1) - (a.rate ?? -1) || compare(a.name, b.name) : (a, b) => compare(a.name, b.name));
-    result.rows = groups.map(item => [item.name, item.calls, item.students, item.present, item.absent, item.justified, percent(item.rate)]);
-    if (room) {
-      result.title = "Relatório por turma de sala";
-      result.headers = ["Turma de origem", ...headers.slice(1)];
-      result.note = "Agrupado pela turma de origem registrada na chamada. Um aluno remanejado permanece associado à sua origem nesta visão. Quando o campo histórico falta, é usado o cadastro/histórico disponível.";
-    } else if (state.view === "system") {
-      result.title = state.mode === "comparison" ? "Comparativo entre turmas" : "Relatório por turma do sistema";
-      result.headers = ["Turma da chamada", ...headers.slice(1)];
-      result.note = "Agrupado pela turma onde a chamada foi salva, incluindo alunos remanejados. Os registros não são redistribuídos usando a matrícula atual.";
-    } else if (state.mode === "closing") result.title = "Fechamento mensal da escola";
-    return result;
+    const label = state.studentId ? $("student").options[$("student").selectedIndex]?.textContent || "" : "";
+    return reportTable(state.data, state.applied, state.view, state.mode, rows, label);
   }
   function renderTable(rows) {
     const table = makeTable(rows); state.table = table;
@@ -572,7 +703,8 @@
       return row;
     }));
     $("empty").hidden = table.rows.length > 0;
-    $("empty").querySelector("h3").textContent = state.mode === "absences" && rows.length ? "Nenhuma falta registrada no período" : "Nenhuma chamada neste período";
+    $("empty").querySelector("h3").textContent = state.mode === "absences" && rows.length ? "Nenhuma falta registrada no período" :
+      state.view === "student" && state.mode !== "absences" ? "Nenhuma chamada para este aluno no período" : "Nenhuma chamada neste período";
     $("empty").querySelector("p").textContent = state.mode === "absences" && rows.length ? "Não há alunos com registros de ausência nos filtros aplicados." : "Registre a frequência das turmas ou ajuste os filtros para consultar outro período.";
     $("empty").previousElementSibling.hidden = !table.rows.length;
     $("result-note").textContent = table.note;
@@ -598,6 +730,7 @@
       const total = totals(rows), dates = new Set(rows.filter(row => row.status === "ausente").map(row => row.date));
       $("student-summary").innerHTML = `<div>Frequência<strong>${percent(total.rate)}</strong></div><div>Presenças<strong>${integer(total.present)}</strong></div><div>Faltas<strong>${integer(total.absent)}</strong></div><div>Dias com falta<strong>${integer(dates.size)}</strong></div><div>Justificadas<strong>${integer(total.justified)}</strong></div>`;
     }
+    $("export-description").textContent = `${table.title} · ${br(state.applied.start)} a ${br(state.applied.end)}`;
     [$("pdf"), $("excel"), $("print-button")].forEach(button => { button.disabled = !table.rows.length; button.title = table.rows.length ? "Exportar relatório aplicado" : "Não há resultados para exportar"; });
   }
   function render() {
@@ -620,29 +753,43 @@
     link.href = url; link.download = `alunotec-${state.view}-${state.applied.start}-${state.applied.end}.${extension}`;
     document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
+  function exportWithFeedback(action, message) {
+    if (!state.table?.rows.length) {
+      $("status").textContent = "Não há resultados nos filtros aplicados para exportar.";
+      return;
+    }
+    try {
+      action();
+      $("status").textContent = message;
+    } catch (error) {
+      console.error("Falha ao exportar relatório", error);
+      $("status").textContent = "Não foi possível gerar o arquivo. Ajuste os filtros e tente novamente.";
+    }
+  }
   function buildPrint() {
     const meta = metadata(), table = state.table;
     $("print").innerHTML = `<header><p>${escapeHTML(meta.school)}</p><h1>${escapeHTML(table.title)}</h1><p>${escapeHTML(meta.filters)}</p><p>${escapeHTML(meta.summary)}</p><p>${escapeHTML(meta.generated)}</p></header><table><thead><tr>${table.headers.map(value => `<th>${escapeHTML(value)}</th>`).join("")}</tr></thead><tbody>${table.rows.map(row => `<tr>${row.map(value => `<td>${escapeHTML(value)}</td>`).join("")}</tr>`).join("")}</tbody></table><p>${escapeHTML(table.note)}</p><p>Frequência = presenças ÷ (presenças + faltas + justificadas). Fonte: registros locais do AlunoTec.</p>`;
   }
   $("pdf").addEventListener("click", () => {
-    download(pdf(state.table, metadata()), "application/pdf", "pdf");
-    $("status").textContent = "PDF do relatório aplicado gerado.";
+    exportWithFeedback(() => download(pdf(state.table, metadata()), "application/pdf", "pdf"),
+      "PDF do relatório aplicado gerado.");
   });
   $("excel").addEventListener("click", () => {
+    exportWithFeedback(() => {
     const meta = metadata();
     const records = [...state.rows].sort((a, b) => compare(a.studentName, b.studentName) || a.date.localeCompare(b.date)).map(row => {
       const links = window.AlunoTecStudents?.info({ id: row.studentId, name: row.studentName }, { year: row.year });
-      return [row.date, row.year, row.studentId, row.studentName, row.originName, row.systemName, row.shift,
+      return [row.date, row.year, row.studentId, row.personId || row.studentId, row.studentName, row.originName, row.systemName, row.shift, row.classShift,
         { presente: "Presente", ausente: "Falta", justificado: "Justificada" }[row.status],
         links?.electives.map(item => item.name).join(", ") || "", links?.origin.name || "", links?.current.name || ""];
     });
     const sheets = [
       { name: "Resumo", rows: [state.table.headers, ...state.table.rows] },
-      { name: "Registros", rows: [["Data", "Ano letivo", "ID do aluno", "Aluno", "Turma de origem na chamada", "Turma da chamada", "Turno", "Situação", "Eletivas atuais", "Origem atual do cadastro", "Turma de frequência atual"], ...records] },
-      { name: "Critérios", rows: [["Campo", "Valor"], ["Escola", meta.school], ["Relatório", state.table.title], ["Filtros", meta.filters], ["Resumo", meta.summary], ["Geração", meta.generated], ["Critério", "Presenças / (presenças + faltas + justificadas). Um registro por aluno/chamada."], ["Observação", state.table.note]] },
+      { name: "Registros", rows: [["Data", "Ano letivo", "ID na chamada", "ID consolidado do aluno", "Aluno", "Turma de origem na chamada", "Turma da chamada", "Turno da chamada", "Turno cadastrado da turma", "Situação", "Eletivas atuais", "Origem atual do cadastro", "Turma de frequência atual"], ...records] },
+      { name: "Critérios", rows: [["Campo", "Valor"], ["Escola", meta.school], ["Relatório", state.table.title], ["Filtros", meta.filters], ["Resumo", meta.summary], ["Geração", meta.generated], ["Critério", "Presenças / (presenças + faltas + justificadas). Um registro por aluno/chamada."], ["Turno", "Chamadas salvas como Todos usam o turno cadastrado da turma para o filtro, quando disponível."], ["Observação", state.table.note]] },
     ];
     download(xlsx(sheets), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx");
-    $("status").textContent = "Excel gerado com resumo, registros e critérios aplicados.";
+    }, "Excel gerado com resumo, registros e critérios aplicados.");
   });
   $("print-button").addEventListener("click", () => { buildPrint(); window.print(); });
   window.addEventListener("beforeprint", () => { if (state.table) buildPrint(); });
@@ -667,7 +814,11 @@
   root.querySelectorAll("[data-report]").forEach(button => button.addEventListener("click", () => {
     const action = button.dataset.report;
     if (action === "closing" || action === "monthly") {
-      $("year").value = state.applied.year; $("period").value = action === "closing" ? "month" : "year";
+      fillFilters(state.applied.year);
+      $("shift").value = state.applied.shift;
+      fillClassOptions(); $("class").value = state.applied.classId;
+      refreshSelect($("shift")); refreshSelect($("class"));
+      $("period").value = action === "closing" ? "month" : "year";
       const anchor = state.applied.end > today() ? anchorForYear(state.applied.year) : state.applied.end;
       refreshSelect($("period")); setRange(anchor); applyFilters(); setView("overview", action, true); return;
     }
@@ -694,6 +845,7 @@
     } else if (!event.key || Object.values(KEYS).includes(event.key)) refreshFromStorage();
   });
   window.addEventListener("alunotec:frequency-updated", refreshFromStorage);
+  window.addEventListener("alunotec:datarestored", refreshFromStorage);
   window.addEventListener("focus", refreshFromStorage);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshFromStorage(); });
   loadData(); fillFilters();

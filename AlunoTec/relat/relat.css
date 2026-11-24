@@ -301,6 +301,12 @@
   line-height: 1.4;
 }
 
+#rp-export-description {
+  margin: 0;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
 .reports-app .rp-export > .rp-button {
   width: 100%;
   min-height: 44px;
