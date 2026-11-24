@@ -628,10 +628,14 @@ tbody tr:last-child td {
   padding: 0 4px;
   border: 2px solid #fff;
   border-radius: 999px;
-  background: #e84e50;
+  background: #278143;
   color: #fff;
   font-size: 10px;
   font-weight: 700;
+}
+
+.activity-bell.urgent .activity-bell-count {
+  background: #e84e50;
 }
 
 .activity-bell-count[hidden] {
@@ -1458,14 +1462,24 @@ tbody tr:last-child td {
 }
 
 .at-notification.is-unread {
+  border-color: #c3e0c9;
+  border-left: 3px solid #2e8545;
+  background: #f0faf2;
+  cursor: pointer;
+}
+
+.at-notification.is-unread:hover {
+  background: #e8f6ec;
+}
+
+.at-notification.is-alert.is-unread {
   border-color: #efc5c8;
   border-left: 3px solid #d94b56;
   background: #fff5f5;
 }
 
-.at-notification.is-alert:not(.is-unread) {
-  border-color: #e9dfc7;
-  background: #fffdf7;
+.at-notification.is-alert.is-unread:hover {
+  background: #ffedef;
 }
 
 .at-notification-dot {
@@ -1478,12 +1492,13 @@ tbody tr:last-child td {
 }
 
 .at-notification.is-unread .at-notification-dot {
-  background: #d94b56;
-  box-shadow: 0 0 0 3px #fde5e7;
+  background: #2e8545;
+  box-shadow: 0 0 0 3px #e0f2e4;
 }
 
-.at-notification.is-alert:not(.is-unread) .at-notification-dot {
-  background: #bb9347;
+.at-notification.is-alert.is-unread .at-notification-dot {
+  background: #d94b56;
+  box-shadow: 0 0 0 3px #fde5e7;
 }
 
 .at-notification-content {
@@ -1498,8 +1513,12 @@ tbody tr:last-child td {
 }
 
 .at-notification.is-unread .at-notification-content p {
-  color: #473c3e;
+  color: #274c34;
   font-weight: 600;
+}
+
+.at-notification.is-alert.is-unread .at-notification-content p {
+  color: #473c3e;
 }
 
 .at-notification-content time {
@@ -1513,11 +1532,16 @@ tbody tr:last-child td {
   flex: 0 0 auto;
   padding: 3px 7px;
   border-radius: 6px;
-  background: #fbe0e3;
-  color: #ad3540;
+  background: #e0f2e4;
+  color: #277a3c;
   font-size: 10px;
   font-weight: 700;
   white-space: nowrap;
+}
+
+.at-notification.is-alert.is-unread .at-notification-state {
+  background: #fbe0e3;
+  color: #ad3540;
 }
 
 .at-notifications-footer {

@@ -588,9 +588,15 @@
         { dateStyle: "short", timeStyle: "short" }).format(date);
     }
 
+    function noticeIdentity(item) {
+      return JSON.stringify(["id", "signature", "year", "date", "createdAt", "message"]
+        .map(field => String(item[field] ?? "")));
+    }
+
     function renderNotices(state) {
       if (!noticesDialog?.open) return;
       const list = noticesDialog.querySelector(".at-notifications-list");
+      const scrollTop = list.scrollTop;
       list.replaceChildren();
       const section = (title, items, alert, emptyText) => {
         const heading = document.createElement("h3");
@@ -606,6 +612,9 @@
           const row = document.createElement("article");
           row.className = `at-notification${unread ? " is-unread" : ""}${alert ? " is-alert" : ""}`;
           row.dataset.notificationId = String(item.id || item.signature || "");
+          row.dataset.notificationKind = alert ? "alert" : "activity";
+          row.dataset.notificationKey = noticeIdentity(item);
+          row.tabIndex = unread ? 0 : -1;
           const dot = document.createElement("span");
           dot.className = "at-notification-dot"; dot.setAttribute("aria-hidden", "true");
           const content = document.createElement("div"); content.className = "at-notification-content";
@@ -616,6 +625,15 @@
           if (unread) {
             const label = document.createElement("span"); label.className = "at-notification-state";
             label.textContent = "Não lida"; row.append(label);
+            row.setAttribute("role", "button");
+            row.setAttribute("aria-label", `Marcar como lida: ${message.textContent}`);
+            row.title = "Clique para marcar como lida";
+            row.addEventListener("click", () => markNoticeRead(item, alert));
+            row.addEventListener("keydown", event => {
+              if (event.key !== "Enter" && event.key !== " ") return;
+              event.preventDefault();
+              markNoticeRead(item, alert);
+            });
           }
           list.append(row);
         });
@@ -624,6 +642,7 @@
       section("Alterações recentes", state.activities, false, "Nenhuma alteração recente.");
       noticesDialog.querySelector("[data-notices-read]").disabled = !state.unread;
       noticesDialog.querySelector("[data-notices-clear]").disabled = !state.total;
+      list.scrollTop = scrollTop;
     }
 
     function updateNotices() {
@@ -656,6 +675,27 @@
       updateNotices();
       window.dispatchEvent(new CustomEvent("alunotec:notifications-updated"));
       return true;
+    }
+
+    function markNoticeRead(item, alert = false) {
+      const key = alert ? alertsKey : activityKey;
+      const identity = noticeIdentity(item);
+      const records = readNoticeArray(key);
+      const index = records.findIndex(record => record && typeof record === "object" &&
+        !Array.isArray(record) && record.read !== true && noticeIdentity(record) === identity);
+      if (index < 0) return;
+
+      records[index] = { ...records[index], read: true };
+      if (!saveNoticeChanges({ [key]: records })) return;
+      feedback("Notificação marcada como lida.");
+
+      if (noticesDialog?.open) {
+        const list = noticesDialog.querySelector(".at-notifications-list");
+        const row = Array.from(list.children).find(element =>
+          element.dataset.notificationKind === (alert ? "alert" : "activity") &&
+          element.dataset.notificationKey === identity);
+        row?.focus({ preventScroll: true });
+      }
     }
 
     function markNoticesRead() {
@@ -718,7 +758,7 @@
     }
 
     window.AlunoTecNotifications = Object.freeze({ open: openNotices, update: updateNotices,
-      markAllRead: markNoticesRead, clear: clearNotices, getState: noticeState });
+      markRead: markNoticeRead, markAllRead: markNoticesRead, clear: clearNotices, getState: noticeState });
     bell.dataset.headerNotices = "ready";
     bell.setAttribute("aria-haspopup", "dialog");
     // Esta é a única ação do sino; os módulos das páginas apenas atualizam os dados.
