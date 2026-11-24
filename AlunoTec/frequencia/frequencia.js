@@ -931,7 +931,7 @@
           ...prior,
           ...alert,
           id: prior?.id || uid(),
-          read: prior?.read || false,
+          read: prior?.read === true && prior.message === alert.message && prior.date === alert.date,
           active: true,
           createdAt: prior?.createdAt || new Date().toISOString(),
         };
@@ -941,6 +941,7 @@
   }
 
   function updateBell() {
+    if (window.AlunoTecNotifications) { window.AlunoTecNotifications.update(); return; }
     const selectedYear = String(localStorage.getItem(KEYS.year) || "");
     const active = read(KEYS.alerts, []).filter(
       (alert) =>
@@ -1267,7 +1268,7 @@
     });
     $("saveJustificationButton").addEventListener("click", saveJustification);
 
-    $("activityBell").addEventListener("click", openNotifications);
+    if (!window.AlunoTecNotifications) $("activityBell").addEventListener("click", openNotifications);
     $("closeNotificationDialog").addEventListener("click", () =>
       $("notificationDialog").close(),
     );

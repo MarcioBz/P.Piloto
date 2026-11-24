@@ -743,6 +743,7 @@
   }
 
   function updateBell() {
+    if (window.AlunoTecNotifications) { window.AlunoTecNotifications.update(); return; }
     const count = readActivities().filter(
       (item) => localDateKey(item.date || item.createdAt) === todayKey(),
     ).length;
@@ -864,7 +865,7 @@
     (card || $("#searchInput")).focus({ preventScroll: true });
   });
 
-  $("#activityBell").addEventListener("click", showNotifications);
+  if (!window.AlunoTecNotifications) $("#activityBell").addEventListener("click", showNotifications);
   $$(".notification-dialog [data-close-notifications]").forEach((button) =>
     button.addEventListener("click", () => $("#notificationDialog").close()),
   );

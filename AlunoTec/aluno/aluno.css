@@ -1734,3 +1734,8 @@ body[data-app-page="students"] .summary-card {
     transition: none;
   }
 }
+
+/* Oculta as etiquetas abaixo do nome somente na tabela de Alunos. */
+body[data-app-page="students"] #studentRows .at-student-label-details {
+  display: none;
+}

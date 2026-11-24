@@ -1323,3 +1323,285 @@ tbody tr:last-child td {
 .custom-select-menu[hidden] {
   display: none !important;
 }
+
+/* Central de notificações compartilhada entre todas as abas. */
+#at-notifications-dialog {
+  position: fixed;
+  inset: 0;
+  box-sizing: border-box;
+  width: min(700px, calc(100vw - 28px));
+  max-width: calc(100vw - 28px);
+  height: fit-content;
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 28px 32px 24px;
+  overflow: hidden;
+  border: 1px solid #dfe8df;
+  border-radius: 24px;
+  background: #fff;
+  color: #34493d;
+  font: 14px/1.5 Inter, "Segoe UI", Arial, sans-serif;
+  box-shadow: 0 24px 80px rgb(16 43 26 / 24%);
+}
+
+#at-notifications-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+#at-notifications-dialog::backdrop {
+  background: rgb(24 47 31 / 38%);
+  backdrop-filter: blur(7px);
+}
+
+.at-notifications-heading {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.at-notifications-heading > div {
+  min-width: 0;
+}
+
+.at-notifications-heading h2 {
+  margin: 0 0 4px;
+  color: #253e2d;
+  font-size: 26px;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.at-notifications-heading p {
+  margin: 0;
+  color: #7a877e;
+  font-size: 13px;
+}
+
+.at-notifications-icon {
+  display: grid;
+  flex: 0 0 56px;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: #eaf5ec;
+  color: #278143;
+}
+
+.at-notifications-icon svg {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.at-notifications-close {
+  display: grid;
+  flex: 0 0 32px;
+  align-self: flex-start;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #f2f6f2;
+  color: #78867c;
+  font: 24px/1 Arial, sans-serif;
+  cursor: pointer;
+}
+
+.at-notifications-list {
+  min-height: 0;
+  max-height: min(480px, 55dvh);
+  padding: 0 7px 0 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.at-notifications-section {
+  margin: 0 0 10px;
+  color: #7a877d;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.at-notifications-section:not(:first-child) {
+  margin-top: 22px;
+}
+
+.at-notifications-empty {
+  margin: 0;
+  padding: 22px 12px;
+  color: #8a948d;
+  text-align: center;
+}
+
+.at-notification {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 9px;
+  padding: 14px;
+  border: 1px solid #e8eee8;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.at-notification.is-unread {
+  border-color: #efc5c8;
+  border-left: 3px solid #d94b56;
+  background: #fff5f5;
+}
+
+.at-notification.is-alert:not(.is-unread) {
+  border-color: #e9dfc7;
+  background: #fffdf7;
+}
+
+.at-notification-dot {
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: #a5b3a8;
+}
+
+.at-notification.is-unread .at-notification-dot {
+  background: #d94b56;
+  box-shadow: 0 0 0 3px #fde5e7;
+}
+
+.at-notification.is-alert:not(.is-unread) .at-notification-dot {
+  background: #bb9347;
+}
+
+.at-notification-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.at-notification-content p {
+  margin: 0;
+  color: #4e6154;
+  overflow-wrap: anywhere;
+}
+
+.at-notification.is-unread .at-notification-content p {
+  color: #473c3e;
+  font-weight: 600;
+}
+
+.at-notification-content time {
+  display: block;
+  margin-top: 5px;
+  color: #8a958d;
+  font-size: 11px;
+}
+
+.at-notification-state {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: #fbe0e3;
+  color: #ad3540;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.at-notifications-footer {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #edf1ed;
+}
+
+.at-notifications-footer > button {
+  min-height: 44px;
+  padding: 11px 18px;
+  border: 1px solid #d8e4d9;
+  border-radius: 11px;
+  background: #fff;
+  color: #326640;
+  font: 650 12px/1.4 Inter, "Segoe UI", Arial, sans-serif;
+  cursor: pointer;
+}
+
+.at-notifications-footer > [data-notices-read] {
+  background: #edf7ef;
+}
+
+.at-notifications-footer > button:hover:not(:disabled) {
+  border-color: #9cbd9e;
+  background: #e8f4eb;
+}
+
+.at-notifications-footer > button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.at-notifications-feedback {
+  flex: 0 0 auto;
+  margin: 12px 0 0;
+  color: #57735e;
+  font-size: 12px;
+}
+
+.at-notifications-feedback:empty {
+  display: none;
+}
+
+#at-notifications-dialog :is(button, [tabindex]):focus-visible {
+  outline: 3px solid #8eba96;
+  outline-offset: 3px;
+}
+
+@media (max-width: 520px) {
+  #at-notifications-dialog {
+    padding: 22px 18px 18px;
+  }
+
+  .at-notifications-heading {
+    gap: 12px;
+  }
+
+  .at-notifications-heading h2 {
+    font-size: 21px;
+  }
+
+  .at-notifications-heading p {
+    font-size: 11px;
+  }
+
+  .at-notification {
+    flex-wrap: wrap;
+    gap: 9px;
+    padding: 12px;
+  }
+
+  .at-notification-state {
+    margin-left: 17px;
+  }
+
+  .at-notifications-footer > button {
+    flex: 1;
+    min-width: 0;
+    padding-inline: 10px;
+  }
+}

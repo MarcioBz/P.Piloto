@@ -278,7 +278,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let activityDialog=null;
     const activityBell=byId("activityBell");
     function readActivities(){try{const x=JSON.parse(localStorage.getItem(ACTIVITY_KEY)||"[]");return Array.isArray(x)?x:[]}catch{return []}}
-    function updateActivityBell(){if(!activityBell)return;const count=byId("activityBellCount");const unread=readActivities().filter(x=>!x.read).length;if(count){count.textContent=unread>99?"99+":String(unread);count.hidden=!unread}activityBell.classList.toggle("has-activity",unread>0);activityBell.setAttribute("aria-label",unread?"Notificações das turmas: "+unread+" não lidas":"Notificações das turmas")}
+    function updateActivityBell(){if(window.AlunoTecNotifications){window.AlunoTecNotifications.update();return}if(!activityBell)return;const count=byId("activityBellCount");const unread=readActivities().filter(x=>!x.read).length;if(count){count.textContent=unread>99?"99+":String(unread);count.hidden=!unread}activityBell.classList.toggle("has-activity",unread>0);activityBell.setAttribute("aria-label",unread?"Notificações das turmas: "+unread+" não lidas":"Notificações das turmas")}
     function recordActivity(message){const items=readActivities();items.unshift({id:generateId("notice"),message,date:new Date().toISOString(),read:false});localStorage.setItem(ACTIVITY_KEY,JSON.stringify(items.slice(0,100)));updateActivityBell()}
     function describeChanges(before,after){
         const messages=[],classes=new Map(),students=new Map();
@@ -3930,7 +3930,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderTables();
 
     byId("connectionStatus")?.addEventListener("click",()=>{if(!navigator.onLine){showToast("Sem internet. As alterações ficam guardadas neste dispositivo.","warning");return}if(!supabaseIsConfigured()||!getSupabaseSession())openSupabaseLogin();else syncWithSupabase()});
-    activityBell?.addEventListener("click",()=>{
+    if (!window.AlunoTecNotifications) activityBell?.addEventListener("click",()=>{
         if(activityDialog){activityDialog.close();activityDialog.remove();activityDialog=null;activityBell.setAttribute("aria-expanded","false");return}
         const items=readActivities().map(item=>({...item,read:true}));localStorage.setItem(ACTIVITY_KEY,JSON.stringify(items));updateActivityBell();
         activityDialog=document.createElement("dialog");activityDialog.className="alunotec-notice activity-dialog";activityDialog.innerHTML='<div class="activity-heading"><div class="notice-symbol"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></div><div><h2>Atividades das turmas</h2><p>Alterações recentes</p></div></div><div class="activity-list"></div><div class="notice-actions"><button type="button" class="notice-clear">Limpar notificações</button></div>';

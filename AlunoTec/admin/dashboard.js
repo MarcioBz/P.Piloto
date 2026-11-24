@@ -72,6 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateActivityBell() {
+    if (window.AlunoTecNotifications) { window.AlunoTecNotifications.update(); return; }
     if (!activityBell) return;
     const badge = document.getElementById("activityBellCount");
     const alerts = activeAttendanceAlerts();
@@ -197,6 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   function openActivityDialog() {
+    if (window.AlunoTecNotifications) return;
     if (activityDialog) {
       closeActivityDialog();
       return;
@@ -263,9 +265,10 @@ document.addEventListener("DOMContentLoaded", () => {
     activityBell?.setAttribute("aria-expanded", "true");
   }
 
-  activityBell?.addEventListener("click", openActivityDialog);
+  if (!window.AlunoTecNotifications) activityBell?.addEventListener("click", openActivityDialog);
   updateActivityBell();
   renderTodayActivities();
+  window.addEventListener("alunotec:notifications-updated", renderTodayActivities);
   window.addEventListener("storage", (event) => {
     if (event.key === ACTIVITY_KEY) {
       updateActivityBell();

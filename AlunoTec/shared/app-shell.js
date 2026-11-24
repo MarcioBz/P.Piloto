@@ -550,180 +550,185 @@
   updateGenericConnection();
 
   /* ==========================================================
-     NOTIFICAÇÕES DO CABEÇALHO COMPARTILHADO
-     Páginas funcionais mantêm seus próprios painéis de avisos.
-     As demais usam as mesmas atividades e alertas já salvos.
+     CENTRAL ÚNICA DE NOTIFICAÇÕES
+     Abrir preserva as não lidas. Contador, destaque e ações compartilham
+     os mesmos registros em todas as páginas, sem alterar as chamadas.
   ========================================================== */
-  if (!["dashboard", "students", "frequency", "classes"].includes(page)) {
+  {
     const bell = document.getElementById("activityBell");
     const badge = document.getElementById("activityBellCount");
     const activityKey = "alunotec_turmas_activity_v1";
     const alertsKey = "alunotec_frequencia_alertas_v1";
+    const dismissedKey = "alunotec_frequencia_alertas_ocultos_v1";
     let noticesDialog = null;
 
-    function readNotices(key) {
+    function readNoticeArray(key) {
       try {
-        const items = JSON.parse(localStorage.getItem(key) || "[]");
-        return Array.isArray(items)
-          ? items.filter(item => item && typeof item === "object")
-          : [];
-      } catch {
-        return [];
-      }
+        const data = JSON.parse(localStorage.getItem(key) || "[]");
+        return Array.isArray(data) ? data : [];
+      } catch { return []; }
     }
 
-    function currentNoticeYear() {
-      return String(yearInput.value || new Date().getFullYear());
+    function noticeState() {
+      const year = String(yearInput.value || new Date().getFullYear());
+      const valid = item => item && typeof item === "object" && !Array.isArray(item);
+      const byDate = (a, b) => (Date.parse(b.date || b.createdAt) || 0) - (Date.parse(a.date || a.createdAt) || 0);
+      const activities = readNoticeArray(activityKey).filter(valid).sort(byDate);
+      const alerts = readNoticeArray(alertsKey).filter(item => valid(item) &&
+        item.active !== false && String(item.year || year) === year).sort(byDate);
+      const unread = [...alerts, ...activities].filter(item => item.read !== true).length;
+      return { year, activities, alerts, unread, total: activities.length + alerts.length };
     }
 
-    function activeHeaderAlerts() {
-      const year = currentNoticeYear();
-      return readNotices(alertsKey).filter(item =>
-        item.active !== false && String(item.year || year) === year
-      );
-    }
-
-    function updateHeaderBell() {
-      const alerts = activeHeaderAlerts();
-      const activities = readNotices(activityKey);
-      const count = [...alerts, ...activities].filter(item => !item.read).length;
-
-      badge.textContent = count > 99 ? "99+" : String(count);
-      badge.hidden = count === 0;
-      bell.classList.toggle("has-activity", count > 0);
-      bell.classList.toggle("urgent", alerts.length > 0);
-      bell.setAttribute("aria-label", alerts.length
-        ? `${alerts.length} alerta(s) de frequência; ${count} notificação(ões) não lida(s)`
-        : `Notificações: ${count} não lida(s)`);
-    }
-
-    function noticeTime(value, dateOnly) {
-      const raw = String(value || "");
-      const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(raw)
-        ? `${raw}T12:00:00`
-        : raw);
-
+    function noticeDate(item, dateOnly) {
+      const raw = String(item.date || item.createdAt || "");
+      const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(raw) ? `${raw}T12:00:00` : raw);
       if (Number.isNaN(date.getTime())) return "";
-      return new Intl.DateTimeFormat("pt-BR", dateOnly
-        ? { dateStyle: "short" }
-        : { dateStyle: "short", timeStyle: "short" }).format(date);
+      return new Intl.DateTimeFormat("pt-BR", dateOnly ? { dateStyle: "short" } :
+        { dateStyle: "short", timeStyle: "short" }).format(date);
     }
 
-    function renderHeaderNotices() {
-      if (!noticesDialog) return;
-      const list = noticesDialog.querySelector(".at-header-notices-list");
+    function renderNotices(state) {
+      if (!noticesDialog?.open) return;
+      const list = noticesDialog.querySelector(".at-notifications-list");
       list.replaceChildren();
-      const alerts = activeHeaderAlerts();
-      const activities = readNotices(activityKey);
-      const entries = [
-        ...alerts.map(item => ({ item, urgent: true })),
-        ...activities.map(item => ({ item, urgent: false })),
-      ];
-
-      if (!entries.length) {
-        const empty = document.createElement("p");
-        empty.className = "at-header-notices-empty";
-        empty.textContent = "Nenhuma notificação por enquanto.";
-        list.append(empty);
-      }
-
-      entries.forEach(({ item, urgent }) => {
-        const article = document.createElement("article");
-        article.className = `at-header-notice${urgent ? " is-urgent" : ""}`;
-        const category = document.createElement("strong");
-        category.textContent = urgent ? "Alerta de frequência" : "Atividade do sistema";
-        const message = document.createElement("p");
-        message.textContent = item.message || (urgent
-          ? "Aluno com faltas repetidas. Confira a aba Frequência."
-          : "Atualização registrada nas turmas.");
-        const time = document.createElement("time");
-        time.textContent = noticeTime(item.date, urgent);
-        article.append(category, message, time);
-        list.append(article);
-      });
-
-      noticesDialog.querySelector("[data-mark-read]").disabled =
-        !entries.some(({ item }) => !item.read);
-    }
-
-    function openHeaderNotices() {
-      if (noticesDialog) return;
-      closeYearMenu();
-      closeProfile();
-      const dialog = document.createElement("dialog");
-      dialog.className = "at-header-notices";
-      dialog.id = "at-header-notices";
-      dialog.setAttribute("aria-labelledby", "at-header-notices-title");
-      dialog.innerHTML = `
-        <header class="at-header-notices-heading">
-          <div>
-            <h2 id="at-header-notices-title">Notificações</h2>
-            <p>Alertas de frequência e atividades das turmas</p>
-          </div>
-          <button type="button" data-close-notices aria-label="Fechar notificações">×</button>
-        </header>
-        <div class="at-header-notices-list"></div>
-        <footer class="at-header-notices-footer">
-          <button type="button" data-mark-read>Marcar como lidas</button>
-          <a href="../frequencia/frequencia.html">Ver Frequência →</a>
-        </footer>
-        <p class="at-header-notices-feedback" role="status"></p>`;
-
-      noticesDialog = dialog;
-      document.body.append(dialog);
-      renderHeaderNotices();
-      dialog.querySelector("[data-close-notices]").addEventListener("click", () => dialog.close());
-      dialog.querySelector("[data-mark-read]").addEventListener("click", () => {
-        try {
-          const year = currentNoticeYear();
-          localStorage.setItem(activityKey, JSON.stringify(
-            readNotices(activityKey).map(item => ({ ...item, read: true }))
-          ));
-          localStorage.setItem(alertsKey, JSON.stringify(
-            readNotices(alertsKey).map(item =>
-              String(item.year || year) === year ? { ...item, read: true } : item
-            )
-          ));
-          dialog.querySelector(".at-header-notices-feedback").textContent = "Notificações marcadas como lidas.";
-        } catch {
-          dialog.querySelector(".at-header-notices-feedback").textContent = "Não foi possível salvar o estado de leitura neste navegador.";
+      const section = (title, items, alert, emptyText) => {
+        const heading = document.createElement("h3");
+        heading.className = "at-notifications-section"; heading.textContent = title;
+        list.append(heading);
+        if (!items.length) {
+          const empty = document.createElement("p");
+          empty.className = "at-notifications-empty"; empty.textContent = emptyText;
+          list.append(empty); return;
         }
-        updateHeaderBell();
-        renderHeaderNotices();
-      });
-
-      dialog.addEventListener("click", event => {
-        if (event.target !== dialog) return;
-        const rect = dialog.getBoundingClientRect();
-        if (event.clientX < rect.left || event.clientX > rect.right ||
-            event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
-      });
-      dialog.addEventListener("close", () => {
-        noticesDialog = null;
-        dialog.remove();
-        bell.setAttribute("aria-expanded", "false");
-        bell.focus();
-      });
-      bell.setAttribute("aria-expanded", "true");
-      dialog.showModal();
+        items.forEach(item => {
+          const unread = item.read !== true;
+          const row = document.createElement("article");
+          row.className = `at-notification${unread ? " is-unread" : ""}${alert ? " is-alert" : ""}`;
+          row.dataset.notificationId = String(item.id || item.signature || "");
+          const dot = document.createElement("span");
+          dot.className = "at-notification-dot"; dot.setAttribute("aria-hidden", "true");
+          const content = document.createElement("div"); content.className = "at-notification-content";
+          const message = document.createElement("p");
+          message.textContent = String(item.message || (alert ? "Alerta importante de frequência." : "Alteração nas turmas."));
+          const time = document.createElement("time"); time.textContent = noticeDate(item, alert);
+          content.append(message, time); row.append(dot, content);
+          if (unread) {
+            const label = document.createElement("span"); label.className = "at-notification-state";
+            label.textContent = "Não lida"; row.append(label);
+          }
+          list.append(row);
+        });
+      };
+      section("Alertas de frequência", state.alerts, true, "Nenhum alerta importante de frequência.");
+      section("Alterações recentes", state.activities, false, "Nenhuma alteração recente.");
+      noticesDialog.querySelector("[data-notices-read]").disabled = !state.unread;
+      noticesDialog.querySelector("[data-notices-clear]").disabled = !state.total;
     }
 
+    function updateNotices() {
+      const state = noticeState();
+      const count = state.unread > 99 ? "99+" : String(state.unread);
+      if (badge.textContent !== count) badge.textContent = count;
+      badge.hidden = !state.unread;
+      bell.classList.toggle("has-activity", state.unread > 0);
+      bell.classList.toggle("urgent", state.alerts.some(item => item.read !== true));
+      bell.setAttribute("aria-label", state.unread ? `Notificações: ${state.unread} não lida(s)` : "Notificações: nenhuma não lida");
+      renderNotices(state);
+      return state;
+    }
+
+    function feedback(message) {
+      if (noticesDialog) noticesDialog.querySelector(".at-notifications-feedback").textContent = message;
+    }
+
+    function saveNoticeChanges(updates) {
+      const before = new Map(Object.keys(updates).map(key => [key, localStorage.getItem(key)]));
+      try {
+        Object.entries(updates).forEach(([key, value]) => localStorage.setItem(key, JSON.stringify(value)));
+      } catch (error) {
+        before.forEach((value, key) => {
+          try { if (value === null) localStorage.removeItem(key); else localStorage.setItem(key, value); } catch {}
+        });
+        updateNotices(); feedback("Não foi possível salvar a alteração das notificações neste navegador.");
+        return false;
+      }
+      updateNotices();
+      window.dispatchEvent(new CustomEvent("alunotec:notifications-updated"));
+      return true;
+    }
+
+    function markNoticesRead() {
+      const state = noticeState();
+      if (!state.unread) return;
+      const updates = {
+        [activityKey]: readNoticeArray(activityKey).map(item => item && typeof item === "object" ? { ...item, read: true } : item),
+        [alertsKey]: readNoticeArray(alertsKey).map(item => item && item.active !== false &&
+          String(item.year || state.year) === state.year ? { ...item, read: true } : item),
+      };
+      if (saveNoticeChanges(updates)) feedback("Notificações marcadas como lidas.");
+    }
+
+    function clearNotices() {
+      const state = noticeState();
+      if (!state.total) return;
+      const dismissed = new Set(readNoticeArray(dismissedKey));
+      state.alerts.forEach(item => { if (item.signature) dismissed.add(item.signature); });
+      // Leitura nova dos registros: identifica os alertas visíveis pelo ano e atividade.
+      const remaining = readNoticeArray(alertsKey).filter(item => !item || item.active === false ||
+        String(item.year || state.year) !== state.year);
+      if (saveNoticeChanges({ [activityKey]: [], [alertsKey]: remaining, [dismissedKey]: [...dismissed] }))
+        feedback("Notificações limpas.");
+    }
+
+    function openNotices() {
+      closeYearMenu(); closeProfile();
+      if (!noticesDialog) {
+        const dialog = document.createElement("dialog");
+        dialog.id = "at-notifications-dialog";
+        dialog.setAttribute("aria-labelledby", "at-notifications-title");
+        dialog.innerHTML = `<header class="at-notifications-heading">
+          <span class="at-notifications-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span>
+          <div><h2 id="at-notifications-title">Notificações</h2><p>Alertas importantes e alterações recentes</p></div>
+          <button type="button" class="at-notifications-close" data-notices-close aria-label="Fechar notificações">×</button>
+        </header>
+        <div class="at-notifications-list" tabindex="0" role="region" aria-label="Lista de notificações"></div>
+        <footer class="at-notifications-footer">
+          <button type="button" data-notices-read>Marcar como lidas</button>
+          <button type="button" data-notices-clear>Limpar notificações</button>
+        </footer>
+        <p class="at-notifications-feedback" role="status" aria-live="polite"></p>`;
+        noticesDialog = dialog; document.body.append(dialog);
+        dialog.querySelector("[data-notices-close]").addEventListener("click", () => dialog.close());
+        dialog.querySelector("[data-notices-read]").addEventListener("click", markNoticesRead);
+        dialog.querySelector("[data-notices-clear]").addEventListener("click", clearNotices);
+        dialog.addEventListener("click", event => {
+          if (event.target !== dialog) return;
+          const rect = dialog.getBoundingClientRect();
+          if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
+        });
+        dialog.addEventListener("close", () => {
+          bell.setAttribute("aria-expanded", "false"); bell.focus();
+          dialog.querySelector(".at-notifications-feedback").textContent = "";
+        });
+      }
+      if (!noticesDialog.open) noticesDialog.showModal();
+      bell.setAttribute("aria-expanded", "true");
+      updateNotices();
+    }
+
+    window.AlunoTecNotifications = Object.freeze({ open: openNotices, update: updateNotices,
+      markAllRead: markNoticesRead, clear: clearNotices, getState: noticeState });
     bell.dataset.headerNotices = "ready";
     bell.setAttribute("aria-haspopup", "dialog");
-    bell.addEventListener("click", openHeaderNotices);
-    document.addEventListener("alunotec:yearchange", () => {
-      updateHeaderBell();
-      renderHeaderNotices();
-    });
+    // Esta é a única ação do sino; os módulos das páginas apenas atualizam os dados.
+    bell.addEventListener("click", openNotices);
+    document.addEventListener("alunotec:yearchange", updateNotices);
     window.addEventListener("storage", event => {
-      if (!event.key || [activityKey, alertsKey, "alunotecSchoolYear"].includes(event.key)) {
-        updateHeaderBell();
-        renderHeaderNotices();
-      }
+      if (!event.key || [activityKey, alertsKey, dismissedKey, "alunotecSchoolYear"].includes(event.key)) updateNotices();
     });
-    window.addEventListener("focus", updateHeaderBell);
-    window.addEventListener("alunotec:frequency-updated", updateHeaderBell);
-    updateHeaderBell();
+    ["focus", "alunotec:frequency-updated", "alunotec:datarestored"].forEach(name => window.addEventListener(name, updateNotices));
+    updateNotices();
   }
 
   /* ==========================================================
