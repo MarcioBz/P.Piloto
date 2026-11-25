@@ -22,6 +22,7 @@
 
   const $ = (id) => document.getElementById(id);
   let classes = [],
+    classType = "base",
     roster = [],
     draft = {},
     toastTimer,
@@ -78,13 +79,25 @@
   }
   function loadClasses() {
     const data = read(KEYS.classes, {});
-    return (Array.isArray(data?.base) ? data.base : [])
+    return ["base", "electives"].flatMap((type) => (Array.isArray(data?.[type]) ? data[type] : [])
       .filter((c) => c && c.id != null)
       .map((c) => ({
         ...c,
+        type,
         id: String(c.id),
         students: Array.isArray(c.students) ? c.students : [],
-      }));
+      })));
+  }
+  function availableClasses(year, type = classType) {
+    return classes.filter((c) => c.type === type && classSchoolYear(c) === String(year) &&
+      !normalize(c.status).startsWith("inativ"))
+      .sort((a, b) => collator.compare(a.name || "", b.name || ""));
+  }
+  function callClassType(call) {
+    if (call.type === "elective" || call.type === "electives") return "electives";
+    if (call.type === "base") return "base";
+    return classes.find((item) => item.id === String(call.classId) &&
+      (!call.year || classSchoolYear(item) === String(call.year)))?.type || "base";
   }
   function classSchoolYear(classItem) {
     return String(
@@ -98,6 +111,7 @@
     );
   }
   function attendanceSchoolYear(call) {
+    if (/^\d{4}$/.test(String(call?.year || ""))) return String(call.year);
     const classItem = classes.find(
       (item) => String(item.id) === String(call?.classId),
     );
@@ -163,6 +177,7 @@
           item.classToId ??
           "",
       ),
+      sourceId: String(item.sourceClassId ?? item.fromClassId ?? item.turmaOrigemId ?? item.origemId ?? ""),
       date: movementDateKey(
         item.date ??
           item.data ??
@@ -171,13 +186,39 @@
           item.dataRemanejamento ??
           "0000-00-00",
       ),
-      cancelled: item.status === "Cancelado",
+      cancelled: item.status === "Cancelado" || item.cancelled === true || item.active === false,
     };
   }
   function effectiveClassFor(student, source, date) {
     const links = window.AlunoTecStudents?.info(student, {
       classId: source.id, year: classSchoolYear(source), date,
     });
+    if (source.type === "electives") {
+      const raw = links?.history || [
+        ...(Array.isArray(student.transferHistory) ? student.transferHistory.map(event => ({ ...event, type: event.type || "elective" })) : []),
+        ...flattenRemaps(),
+      ];
+      const history = raw.filter(event => ["elective", "electives"].includes(event.type))
+        .map(movementFields).filter(event => !event.cancelled && event.sourceId && event.destinationId &&
+          (!event.studentId || event.studentId === String(student.id)))
+        .sort((a, b) => a.date.localeCompare(b.date));
+      // Restringe o histórico à eletiva desta matrícula, mesmo com o mesmo ID em várias eletivas.
+      const related = new Set([source.id]);
+      let expanded = true;
+      while (expanded) {
+        expanded = false;
+        history.forEach(event => {
+          if (!related.has(event.sourceId) && !related.has(event.destinationId)) return;
+          for (const id of [event.sourceId, event.destinationId]) {
+            if (!related.has(id)) { related.add(id); expanded = true; }
+          }
+        });
+      }
+      const changes = history.filter(event => related.has(event.sourceId) && related.has(event.destinationId));
+      let destination = changes[0]?.sourceId || source.id;
+      changes.filter(event => event.date <= date).forEach(event => { destination = event.destinationId; });
+      return String(destination);
+    }
     if (links?.current.id) return links.current.id;
     const direct =
       student.frequencyClassId ??
@@ -186,6 +227,7 @@
     if (direct) return String(direct);
     let destination = source.id;
     flattenRemaps()
+      .filter(item => !["elective", "electives"].includes(item.type))
       .map(movementFields)
       .filter(
         (item) =>
@@ -250,6 +292,7 @@
     const wrap = select.parentElement;
     const trigger = wrap.querySelector(".custom-select-trigger");
     const menu = wrap.querySelector(".custom-select-menu");
+    trigger.disabled = select.disabled;
     trigger.querySelector(".select-label").textContent =
       select.options[select.selectedIndex]?.textContent || "Selecione";
     menu.innerHTML = [...select.options]
@@ -265,7 +308,8 @@
      Localiza a turma, a chamada do dia e os estudantes que devem aparecer na tabela.
   ========================================================== */
   function selectedClass() {
-    return classes.find((c) => c.id === $("classSelect").value);
+    return classes.find((c) => c.id === $("classSelect").value && c.type === classType &&
+      classSchoolYear(c) === localStorage.getItem(KEYS.year));
   }
   function callId(classId, date, shift) {
     return `${localStorage.getItem(KEYS.year)}|${classId}|${date}|${shift || "Todos"}`;
@@ -274,9 +318,10 @@
   function getRoster(classItem, date) {
     if (!classItem) return [];
     const students = [];
-    classes.filter((source) => classSchoolYear(source) === classSchoolYear(classItem)).forEach((source) =>
+    classes.filter((source) => source.type === classItem.type && classSchoolYear(source) === classSchoolYear(classItem)).forEach((source) =>
       source.students.forEach((student) => {
         if (!student || student.status === "Inativo") return;
+        if (source.type === "electives" && student.linkedAt && movementDateKey(student.linkedAt) > date) return;
         if (effectiveClassFor(student, source, date) !== classItem.id) return;
         const links = window.AlunoTecStudents?.info(student, {
           classId: source.id, year: classSchoolYear(source), date,
@@ -284,9 +329,12 @@
         students.push({
           ...student,
           id: String(student.id),
+          originStudentId: String(student.originStudentId || student.sourceStudentId ||
+            links?.linked.find(item => item.type === "base")?.id || student.id),
           originClassId: links?.origin.id || source.id,
           originClassName: links?.origin.name || source.name,
-          remanejado: links ? Boolean(links.baseRemapped) : source.id !== classItem.id,
+          remanejado: links ? Boolean(links.baseRemapped ||
+            (source.type === "electives" && links.electiveRemapped)) : source.id !== classItem.id,
         });
       }),
     );
@@ -295,13 +343,15 @@
     ].sort((a, b) => collator.compare(a.name || "", b.name || ""));
   }
 
-  function monthlyAbsences(studentId, date) {
+  function monthlyAbsences(studentId, date, classItem = selectedClass()) {
     const month = date.slice(0, 7);
     let absent = 0,
       justified = 0;
     Object.values(calls()).forEach((call) => {
       if (
         attendanceSchoolYear(call) !== localStorage.getItem(KEYS.year) ||
+        (classItem && (callClassType(call) !== classItem.type ||
+          (classItem.type === "electives" && String(call.classId) !== classItem.id))) ||
         !call.date?.startsWith(month)
       )
         return;
@@ -353,7 +403,7 @@
         const saved = Boolean(savedCall?.students?.[student.id]);
         const editing = editingRows.has(student.id);
         const dirty = dirtyRows.has(student.id);
-        const origin = student.remanejado
+        const origin = student.remanejado && classItem.type === "base"
           ? `${esc(student.originClassName)}<span class="student-sub">Remanejado de ${esc(student.originClassName)} para ${esc(classItem.name)}</span>`
           : esc(student.originClassName);
         const attachment = record.attachment
@@ -435,6 +485,7 @@
       .filter(
         (call) =>
           attendanceSchoolYear(call) === localStorage.getItem(KEYS.year) &&
+          callClassType(call) === classItem.type &&
           String(call.classId) === classItem.id &&
           String(call.shift || "Todos") === selectedShift,
       )
@@ -488,9 +539,11 @@
         )
           return;
 
-        if (!students.has(studentId))
-          students.set(studentId, { days: new Map() });
-        const student = students.get(studentId);
+        const type = callClassType(call);
+        const scopeId = type === "electives" ? `electives:${call.classId}:${studentId}` : studentId;
+        if (!students.has(scopeId))
+          students.set(scopeId, { studentId, type, days: new Map() });
+        const student = students.get(scopeId);
         const day = student.days.get(call.date) || {
           date: call.date,
           absent: false,
@@ -511,7 +564,7 @@
     });
 
     const alerts = [];
-    students.forEach((student, studentId) => {
+    students.forEach((student, scopeId) => {
       const days = [...student.days.values()].sort((a, b) =>
         a.date.localeCompare(b.date),
       );
@@ -547,9 +600,10 @@
         reasons.push(`${weeklyAbsences.length} faltas nesta semana`);
 
       alerts.push({
-        signature: `${selectedYear}|${studentId}|${missedThisWeek ? currentWeek : ""}|${missedConsecutively ? consecutiveStreak[0].date : ""}`,
+        signature: `${selectedYear}|${scopeId}|${missedThisWeek ? currentWeek : ""}|${missedConsecutively ? consecutiveStreak[0].date : ""}`,
         year: String(selectedYear),
-        studentId: String(studentId),
+        studentId: String(student.studentId),
+        type: student.type,
         message: `${exampleDay.name} teve ${reasons.join(" e ")} em ${exampleDay.className}.`,
         date: exampleDay.date,
       });
@@ -659,9 +713,11 @@
     attachment,
   ) {
     classes = loadClasses();
-    const source = classes.find((item) =>
-      item.students.some((student) => String(student.id) === String(studentId)),
-    );
+    const selected = selectedClass();
+    if (!selected) return 0;
+    const source = classes.find((item) => item.type === selected.type &&
+      classSchoolYear(item) === classSchoolYear(selected) && item.students.some((student) =>
+        String(student.id) === String(studentId) && effectiveClassFor(student, item, startDate) === selected.id));
     if (!source) return 0;
 
     const student = source.students.find(
@@ -675,11 +731,13 @@
       const date = new Date(`${startDate}T12:00:00`);
       date.setDate(date.getDate() + offset);
       const dateKey = isoDate(date);
+      if (dateKey.slice(0, 4) !== classSchoolYear(source)) continue;
       const links = window.AlunoTecStudents?.info(student, {
         classId: source.id, year: classSchoolYear(source), date: dateKey,
       });
       const effectiveClassId = effectiveClassFor(student, source, dateKey);
-      const targetClass = classes.find((item) => item.id === effectiveClassId);
+      const targetClass = classes.find((item) => item.id === effectiveClassId &&
+        item.type === source.type && classSchoolYear(item) === classSchoolYear(source));
       if (!targetClass) continue;
 
       const key = callId(targetClass.id, dateKey, shift);
@@ -688,6 +746,7 @@
         year: classSchoolYear(targetClass),
         classId: targetClass.id,
         className: targetClass.name,
+        type: targetClass.type,
         date: dateKey,
         shift,
         updatedAt: new Date().toISOString(),
@@ -700,6 +759,8 @@
         status: "justificado",
         attachment,
         studentId: String(studentId),
+        originStudentId: String(student.originStudentId || student.sourceStudentId ||
+          links?.linked.find(item => item.type === "base")?.id || studentId),
         studentName: student.name,
         originClassId: links?.origin.id || source.id,
         originClassName: links?.origin.name || source.name,
@@ -735,19 +796,25 @@
     window.AlunoTecShell?.setYears(years.length ? years : [selected], selected);
 
     const previous = $("classSelect").value;
-    const options = classes
-      .filter((c) => classSchoolYear(c) === selected && !normalize(c.status).startsWith("inativ"))
-      .sort((a, b) => collator.compare(a.name || "", b.name || ""));
+    const options = availableClasses(selected);
+    $("baseClassCount").textContent = availableClasses(selected, "base").length;
+    $("electiveClassCount").textContent = availableClasses(selected, "electives").length;
+    document.querySelectorAll("[data-class-type]").forEach(button => {
+      const active = button.dataset.classType === classType;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
     $("classSelect").innerHTML =
-      `<option value="">Selecione uma turma</option>` +
+      `<option value="">${options.length ? (classType === "electives" ? "Selecione uma eletiva" : "Selecione uma turma") : "Nenhuma turma disponível neste ano"}</option>` +
       options
         .map(
           (c) =>
-            `<option value="${esc(c.id)}">${esc(c.name)} · ${esc(c.grade || "")}</option>`,
+            `<option value="${esc(c.id)}">${esc([c.name, c.grade].filter(Boolean).join(" · "))}</option>`,
         )
         .join("");
     if (options.some((c) => c.id === previous))
       $("classSelect").value = previous;
+    $("classSelect").disabled = !options.length;
     refreshCustomSelect($("classSelect"));
   }
 
@@ -826,6 +893,7 @@
       updatedAt: new Date().toISOString(),
     };
     call.updatedAt = new Date().toISOString();
+    call.type = classItem.type;
     data[key] = call;
     write(KEYS.attendance, data);
     addActivity(
@@ -862,6 +930,7 @@
       year: classSchoolYear(classItem),
       classId: classItem.id,
       className: classItem.name,
+      type: classItem.type,
       date: $("attendanceDate").value,
       shift: $("shiftSelect").value || "Todos",
       updatedAt: new Date().toISOString(),
@@ -871,6 +940,7 @@
           {
             ...draft[student.id],
             studentId: student.id,
+            originStudentId: student.originStudentId || student.id,
             studentName: student.name,
             originClassId: student.originClassId,
             originClassName: student.originClassName,
@@ -1141,6 +1211,14 @@
     });
     setupCustomSelect($("classSelect"));
     setupCustomSelect($("shiftSelect"));
+    document.querySelectorAll("[data-class-type]").forEach(button => {
+      button.addEventListener("click", () => {
+        if (!["base", "electives"].includes(button.dataset.classType) || button.dataset.classType === classType) return;
+        classType = button.dataset.classType;
+        $("classSelect").value = "";
+        populateYears(); resetForFilterChange();
+      });
+    });
 
     document.addEventListener("click", (event) => {
       document.querySelectorAll(".custom-select.open").forEach((wrap) => {

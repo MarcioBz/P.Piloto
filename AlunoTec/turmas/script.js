@@ -2337,7 +2337,7 @@ document.addEventListener("DOMContentLoaded", () => {
             studentsTableBody.innerHTML = `
                 <tr>
                     <td
-                        colspan="4"
+                        colspan="5"
                         class="empty-state"
                     >
                         <div class="empty-state-content">
@@ -2373,6 +2373,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     const inactive =
                         student.status === "Inativo";
 
+                    const links = window.AlunoTecStudents?.info(student, {
+                        classId: item.id,
+                        year: String(item.year || item.date?.slice(0, 4) || CURRENT_YEAR)
+                    });
+                    const originName = links?.origin.name || student.originBaseClassName ||
+                        student.originClassName || (state.openedClassType === "base" ? item.name : "Não identificada");
+
                     return `
                         <tr class="${
                             inactive
@@ -2385,10 +2392,10 @@ document.addEventListener("DOMContentLoaded", () => {
                             </td>
 
                             <td>
-                                ${window.AlunoTecStudents?.label(student, {
-                                    classId: item.id,
-                                    year: String(item.year || item.date?.slice(0, 4) || CURRENT_YEAR)
-                                }) || `<strong>${escapeHTML(student.name)}</strong>`}
+                                <span class="at-student-label">
+                                    <span class="at-student-label-name">${escapeHTML(student.name || "Aluno sem nome")}</span>
+                                    ${links?.remapped ? '<span class="at-student-label-details"><span class="at-student-remapped">Remanejado</span></span>' : ""}
+                                </span>
                             </td>
 
                             <td>
@@ -2410,6 +2417,10 @@ document.addEventListener("DOMContentLoaded", () => {
                                             </span>
                                         `
                                 }
+                            </td>
+
+                            <td class="student-origin-cell">
+                                ${escapeHTML(originName)}
                             </td>
 
                             <td>

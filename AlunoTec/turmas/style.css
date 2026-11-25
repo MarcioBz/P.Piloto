@@ -1272,6 +1272,15 @@ tbody tr:hover {
 .students-table th:nth-child(3) {
   min-width: 190px;
 }
+.students-table th:nth-child(4),
+.students-table .student-origin-cell {
+  min-width: 160px;
+}
+.students-table .student-origin-cell {
+  color: #657569;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 .student-actions-column,
 .students-table td:last-child {
   min-width: 500px;
