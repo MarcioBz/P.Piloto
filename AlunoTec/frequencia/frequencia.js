@@ -386,10 +386,27 @@
      CHAMADA
      Renderiza os estudantes e liga os controles para marcar presença, ausência ou justificativa.
   ========================================================== */
+  function attendanceIdentity(student, classItem, date) {
+    const links = window.AlunoTecStudents?.info(student, {
+      classId: classItem.id, year: classSchoolYear(classItem), date,
+    });
+    const badge = value => `<span class="attendance-link-badge">${esc(value)}</span>`;
+    const originName = student.originClassName || links?.origin.name;
+    const electives = [...new Set((links?.electives || []).map(item => item.name).filter(Boolean))];
+    return {
+      name: `<span class="at-student-label"><span class="at-student-label-name">${esc(student.name || "Aluno sem nome")}</span>${student.remanejado ? '<span class="at-student-label-details"><span class="at-student-remapped">Remanejado</span></span>' : ""}</span>`,
+      origin: originName ? badge(originName) : "—",
+      electives: electives.length ? `<span class="attendance-link-list">${electives.map(badge).join("")}</span>` : "—",
+    };
+  }
+
   function render() {
     classes = loadClasses();
     const classItem = selectedClass();
     renderClassBrowser(classItem);
+    const showElectives = (classItem?.type || classType) === "base";
+    const headers = ["Nº", "Aluno", "Turma de origem", ...(showElectives ? ["Eletiva"] : []), "Status", "Justificativa / anexo", "Ações"];
+    $("attendanceTableHead").innerHTML = `<tr>${headers.map(label => `<th>${esc(label)}</th>`).join("")}</tr>`;
     const date = $("attendanceDate").value;
     const validDate = isAttendanceDate(date);
     const savedCall = classItem && validDate
@@ -409,7 +426,7 @@
 
     if (!classItem || !roster.length) {
       $("studentsTable").innerHTML =
-        `<tr><td colspan="7" class="empty-cell">${!classItem ? "Selecione uma turma para iniciar a chamada." : !validDate ? `Selecione uma data válida do ano letivo ${esc(localStorage.getItem(KEYS.year))}.` : "Não há alunos ativos nesta turma para a data selecionada."}</td></tr>`;
+        `<tr><td colspan="${headers.length}" class="empty-cell">${!classItem ? "Selecione uma turma para iniciar a chamada." : !validDate ? `Selecione uma data válida do ano letivo ${esc(localStorage.getItem(KEYS.year))}.` : "Não há alunos ativos nesta turma para a data selecionada."}</td></tr>`;
       $("tableSummary").textContent = classItem
         ? "0 alunos encontrados."
         : "Nenhum aluno carregado.";
@@ -421,13 +438,10 @@
     $("studentsTable").innerHTML = roster
       .map((student, index) => {
         const record = draft[student.id];
-        const month = monthlyAbsences(student.id, date);
+        const identity = attendanceIdentity(student, classItem, date);
         const saved = Boolean(savedCall?.students?.[student.id]);
         const editing = editingRows.has(student.id);
         const dirty = dirtyRows.has(student.id);
-        const origin = student.remanejado && classItem.type === "base"
-          ? `${esc(student.originClassName)}<span class="student-sub">Remanejado de ${esc(student.originClassName)} para ${esc(classItem.name)}</span>`
-          : esc(student.originClassName);
         const attachment = record.attachment
           ? `<div class="attachment-cell"><span class="attachment-info" title="${esc(record.attachment.name)}">${esc(record.attachment.name)}</span><button class="row-action view-attachment" type="button" data-view-attachment="${esc(record.attachment.id)}" data-attachment-name="${esc(record.attachment.name)}" data-attachment-type="${esc(record.attachment.type || "")}">Ver anexo</button></div>`
           : record.status === "justificado"
@@ -446,16 +460,14 @@
         const locked = saved && !editing ? "disabled" : "";
         return `<tr>
         <td>${index + 1}</td>
-        <td>${window.AlunoTecStudents?.label(student, {
-          classId: classItem.id, year: classSchoolYear(classItem), date,
-        }) || `<span class="student-name">${esc(student.name || "Aluno sem nome")}</span>`}</td>
-        <td>${origin}</td>
+        <td>${identity.name}</td>
+        <td>${identity.origin}</td>
+        ${showElectives ? `<td>${identity.electives}</td>` : ""}
         <td><div class="status-actions">
           ${statusButton(student.id, "presente", "Presente", record.status, locked)}
           ${statusButton(student.id, "ausente", "Ausente", record.status, locked)}
           ${statusButton(student.id, "justificado", "Justificado", record.status, locked)}
         </div></td>
-        <td class="absence-month">${month.total}<small>${month.absent} sem justificativa · ${month.justified} justificadas</small></td>
         <td>${attachment}</td><td>${actions}</td>
       </tr>`;
       })
@@ -845,6 +857,7 @@
     const year = localStorage.getItem(KEYS.year);
     $("attendanceClassBrowser").hidden = Boolean(classItem);
     $("attendanceCallPanel").hidden = !classItem;
+    $("attendanceBackToClasses").hidden = !classItem;
     if (classItem) {
       $("attendanceSelectedClassTitle").textContent = classItem.name || "Turma sem nome";
       $("attendanceSelectedClassSubtitle").textContent = [classItem.grade, classItem.shift, `Ano letivo ${year}`].filter(Boolean).join(" · ");

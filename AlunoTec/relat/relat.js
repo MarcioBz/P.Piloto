@@ -313,9 +313,7 @@
       student: "Relatório individual", weekly: "Resumo semanal", electives: "Acompanhamento das eletivas" };
     return modes[mode] || views[view] || "Relatório";
   }
-  function pdf(table, meta, paper) {
-    const escape = value => String(value ?? "").replace(/[\r\n\t]/g, " ")
-      .replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+  const reportTextMetrics = (() => {
     const fontWidths = [
       [278, 278, 355, 556, 556, 889, 667, 191, 333, 333, 389, 584, 278, 333, 278, 278, 556, 556, 556, 556, 556, 556, 556, 556, 556, 556, 278, 278, 584, 584, 584, 556, 1015, 667, 667, 722, 722, 667, 611, 778, 722, 278, 500, 667, 556, 833, 722, 778, 667, 778, 722, 667, 611, 722, 667, 944, 667, 667, 611, 278, 278, 278, 469, 556, 333, 556, 556, 500, 556, 556, 278, 556, 556, 222, 222, 500, 222, 833, 556, 556, 556, 556, 333, 500, 278, 556, 500, 722, 500, 500, 500, 334, 260, 334, 584],
       [278, 333, 474, 556, 556, 889, 722, 238, 333, 333, 389, 584, 278, 333, 278, 278, 556, 556, 556, 556, 556, 556, 556, 556, 556, 556, 333, 333, 584, 584, 584, 611, 975, 722, 722, 722, 722, 667, 611, 778, 722, 278, 556, 722, 611, 833, 722, 778, 667, 778, 722, 667, 611, 722, 667, 944, 667, 667, 611, 333, 278, 333, 584, 556, 333, 556, 611, 556, 611, 556, 333, 611, 611, 278, 278, 556, 278, 889, 611, 611, 611, 611, 389, 556, 333, 611, 556, 778, 556, 556, 500, 389, 280, 389, 584]
@@ -340,6 +338,20 @@
       if (line || !lines.length) lines.push(line);
       return lines;
     }
+    return { measure, wrap };
+  })();
+  function reportTitleLayout(value) {
+    const title = String(value || "Relatório");
+    const { measure, wrap } = reportTextMetrics;
+    let fontSize = 15;
+    while (fontSize > 10 && (wrap(title, 90, fontSize, true).length > 3 ||
+        title.split(/\s+/).some(word => measure(word, fontSize, true) > 90))) fontSize -= .5;
+    return { lines: wrap(title, 90, fontSize, true), fontSize, lineHeight: fontSize + 2 };
+  }
+  function pdf(table, meta, paper) {
+    const escape = value => String(value ?? "").replace(/[\r\n\t]/g, " ")
+      .replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+    const { measure, wrap } = reportTextMetrics;
     const weights = table.headers.map(header => /turma|^aluno$|^eletiva$|semana/i.test(header) ? 2.5 :
       /data|mês|dias com falta|alunos cadastrados/i.test(header) ? 1.5 :
         /turno|situação|justificad|frequência/i.test(header) ? 1.4 : 1);
@@ -360,12 +372,12 @@
     function startPage() {
       const page = { commands: [], y: 710 };
       if (paper) page.commands.push(`q ${pageWidth} 0 0 ${pageHeight} 0 0 cm /Paper Do Q`);
-      const title = meta.reportTitle || table.title;
-      let titleSize = 15;
-      while (titleSize > 10 && (wrap(title, 90, titleSize, true).length > 3 ||
-          String(title).split(/\s+/).some(word => measure(word, titleSize, true) > 90))) titleSize -= .5;
-      wrap(title, 90, titleSize, true).forEach((line, index) =>
-        text(page, line, 320, 792 - index * (titleSize + 2), titleSize, true, "0.02 0.25 0.16"));
+      const title = reportTitleLayout(meta.reportTitle || table.title);
+      // Centraliza o bloco completo na altura do ícone, mesmo com várias linhas.
+      const center = pageHeight - 23.25 * 72 / 25.4;
+      const firstBaseline = center + (title.lines.length - 1) * title.lineHeight / 2 - title.fontSize * .2555;
+      title.lines.forEach((line, index) =>
+        text(page, line, 320, firstBaseline - index * title.lineHeight, title.fontSize, true, "0.02 0.25 0.16"));
       const block = (value, size, bold = false, color) => {
         wrap(value, contentWidth, size, bold).forEach(line => {
           text(page, line, margin, page.y, size, bold, color); page.y -= size + 4;
@@ -548,7 +560,7 @@
 
   if (typeof module !== "undefined" && module.exports) {
     module.exports = { prepareData, filterRows, totals, grouped, periodRange, previousRange,
-      classChoices, activeElectives, reportClasses, reportRange, absenceClasses, frequencyEvolution, dateRangeError, calendarMonthDays, reportTable, letterheadTitle, pdf, xlsx, studentCatalog, individualSelection };
+      classChoices, activeElectives, reportClasses, reportRange, absenceClasses, frequencyEvolution, dateRangeError, calendarMonthDays, reportTable, letterheadTitle, reportTitleLayout, pdf, xlsx, studentCatalog, individualSelection };
     return;
   }
 
@@ -1113,8 +1125,12 @@
     report.className = "reports-app rp-print-report";
     const title = document.createElement("h1");
     title.className = "rp-print-letterhead-title";
-    title.textContent = meta.reportTitle;
-    if (meta.reportTitle.split(/\s+/).some(word => word.length > 13)) title.classList.add("rp-print-title-small");
+    const titleLayout = reportTitleLayout(meta.reportTitle);
+    title.style.fontSize = `${titleLayout.fontSize}pt`;
+    title.style.lineHeight = `${titleLayout.lineHeight}pt`;
+    const titleText = document.createElement("span");
+    titleText.textContent = titleLayout.lines.join("\n");
+    title.append(titleText);
     const artwork = document.createElement("img");
     artwork.className = "rp-print-paper";
     artwork.src = window.AlunoTecReportPaper.dataUrl;

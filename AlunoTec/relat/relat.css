@@ -1740,18 +1740,23 @@ body[data-app-page="reports"]
 
   .rp-print-letterhead-title {
     position: fixed;
+    display: flex;
+    align-items: center;
     z-index: 2;
-    top: 16.5mm;
+    top: 17mm;
     left: 113mm;
     width: 32mm;
+    height: 12.5mm;
     margin: 0;
     color: #06432b;
     font: 700 15pt/1.13 Arial, Helvetica, sans-serif;
     overflow-wrap: normal;
   }
 
-  .rp-print-title-small {
-    font-size: 10pt;
+  .rp-print-letterhead-title > span {
+    display: block;
+    width: 100%;
+    white-space: pre-line;
   }
 
   .rp-print-metadata,

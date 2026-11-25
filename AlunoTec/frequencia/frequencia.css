@@ -506,15 +506,6 @@ td {
   border-color: #1683e8;
   color: #fff;
 }
-.absence-month {
-  font-weight: 700;
-}
-.absence-month small {
-  display: block;
-  color: #8a978e;
-  font-weight: 400;
-  margin-top: 2px;
-}
 .attachment-info {
   color: #41724b;
   font-size: 10px;
@@ -1370,4 +1361,36 @@ td {
   .attendance-call-panel .toolbar {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* Navegação e vínculos da chamada: nomes sem informações repetidas. */
+.attendance-class-types {
+  align-items: center;
+}
+.attendance-class-types > .attendance-back-button {
+  margin-left: auto;
+}
+.attendance-back-button[hidden] {
+  display: none !important;
+}
+.attendance-selected-class {
+  gap: 0;
+}
+.attendance-link-badge {
+  display: inline-block;
+  max-width: 100%;
+  padding: 3px 8px;
+  border: 1px solid #dfecdf;
+  border-radius: 7px;
+  background: #edf6ec;
+  color: #3b6d40;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.attendance-link-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 7px;
 }

@@ -230,6 +230,9 @@
             <div class="attendance-class-types" role="group" aria-label="Tipo de turma">
               <button type="button" class="attendance-class-type is-active" data-class-type="base" aria-pressed="true" aria-controls="attendanceClassBrowser">Base Comum <span id="baseClassCount">0</span></button>
               <button type="button" class="attendance-class-type" data-class-type="electives" aria-pressed="false" aria-controls="attendanceClassBrowser">Eletivas <span id="electiveClassCount">0</span></button>
+              <button id="attendanceBackToClasses" class="attendance-back-button" type="button" hidden>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg>Voltar às turmas
+              </button>
             </div>
             <section id="attendanceClassBrowser" class="attendance-class-browser" aria-labelledby="attendanceClassesTitle">
               <h3 id="attendanceClassesTitle">Turmas da Base Comum</h3>
@@ -238,9 +241,6 @@
             </section>
             <div id="attendanceCallPanel" class="attendance-call-panel" hidden>
               <div class="attendance-selected-class">
-                <button id="attendanceBackToClasses" class="attendance-back-button" type="button">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg>Voltar às turmas
-                </button>
                 <div><h3 id="attendanceSelectedClassTitle"></h3><p id="attendanceSelectedClassSubtitle"></p></div>
               </div>
             <div class="toolbar">
@@ -291,13 +291,13 @@
             </div>
             <div class="table-wrap">
               <table>
-                <thead>
+                <thead id="attendanceTableHead">
                   <tr>
                     <th>Nº</th>
                     <th>Aluno</th>
                     <th>Turma de origem</th>
+                    <th>Eletiva</th>
                     <th>Status</th>
-                    <th>Faltas no mês</th>
                     <th>Justificativa / anexo</th>
                     <th>Ações</th>
                   </tr>
