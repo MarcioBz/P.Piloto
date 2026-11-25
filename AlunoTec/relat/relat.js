@@ -1,6 +1,6 @@
 /* ALUNOTEC | CENTRAL DE RELATÓRIOS
    1. Leitura e cálculos puros. 2. Exportação PDF/XLSX sem bibliotecas externas.
-   3. Filtros, gráficos e tabelas da interface.
+   3. Seleção de relatórios/turmas, gráficos e tabelas da interface.
    As chaves de Turmas/Frequência são apenas lidas; este módulo não altera chamadas.
    "Sala" agrupa pela origem salva; "Sistema" agrupa pela turma da chamada. */
 (() => {
@@ -18,6 +18,11 @@
   const integer = value => Number(value).toLocaleString("pt-BR");
   const percent = value => value == null ? "—" : `${Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
   const normalize = value => String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+  const FREQUENCY_SERIES = [
+    { key: "present", label: "Presenças", color: "#176c32", dash: "" },
+    { key: "absent", label: "Faltas", color: "#e34e58", dash: "8 4" },
+    { key: "justified", label: "Justificadas", color: "#2f80d0", dash: "3 4" },
+  ];
   function today() {
     const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
     const part = name => parts.find(item => item.type === name).value;
@@ -155,6 +160,83 @@
     return data.classes.filter(item => item.type === "electives" && item.year === filters.year &&
       !normalize(item.status).startsWith("inativ") && (!filters.classId || item.id === filters.classId) &&
       (!filters.shift || !item.shift || normalize(item.shift) === "todos" || normalize(item.shift) === normalize(filters.shift)));
+  }
+
+  function reportClasses(data, year, view = "system") {
+    const baseRoster = data.classes.filter(item => item.year === year && item.type === "base")
+      .flatMap(item => item.students.map((student, index) => ({ student, index, classId: item.id })));
+    return classChoices(data, year, "", view).map(([id, name]) => {
+      const registered = data.classes.find(item => item.id === id && item.year === year);
+      const history = data.rows.filter(row => row.year === year &&
+        (view === "room" ? row.originId === id && row.type === "base" : row.systemId === id));
+      const roster = view === "room" ? baseRoster.filter(({ student, classId }) =>
+        String(student.originBaseClassId || student.originClassId || classId) === id) :
+        (registered?.students || []).map((student, index) => ({ student, index, classId: id }));
+      const students = new Set(roster.filter(({ student }) => String(student.name || "").trim())
+        .map(({ student, index, classId }) => String(student.originStudentId || student.sourceStudentId ||
+          student.id || `${classId}:${index}`)));
+      return { id, name, type: view === "room" ? "base" : registered?.type || history[0]?.type || "base",
+        grade: String(registered?.grade || ""), shift: String(registered?.shift || ""),
+        students: registered ? students.size : new Set(history.map(row => row.personId || row.studentId)).size,
+        historical: !registered };
+    });
+  }
+
+  function reportRange(data, year, report = "overview", referenceDate = today()) {
+    year = String(year);
+    const dates = data.rows.filter(row => row.year === year && row.date.slice(0, 4) === year &&
+      row.date <= referenceDate).map(row => row.date).sort();
+    const anchor = dates.at(-1) || (year === referenceDate.slice(0, 4) ? referenceDate : `${year}-12-31`);
+    const period = report === "weekly" ? "week" : report === "closing" ? "month" : "year";
+    return { year, period: report === "period" ? "custom" : period, shift: "", classId: "",
+      ...periodRange(period, anchor, year) };
+  }
+
+  function absenceClasses(data, filters) {
+    const people = new Map();
+    filterRows(data, { ...filters, classId: "" }, "student").forEach(row => {
+      if (row.status !== "ausente") return;
+      if (!people.has(row.systemId)) people.set(row.systemId, new Set());
+      people.get(row.systemId).add(row.personId || row.studentId);
+    });
+    return reportClasses(data, filters.year, "student").map(item => ({ ...item,
+      absentStudents: people.get(item.id)?.size || 0 }));
+  }
+
+  function frequencyEvolution(rows, filters) {
+    const duration = (dateObject(filters.end) - dateObject(filters.start)) / 86400000;
+    const unit = duration > 62 ? "month" : duration > 14 ? "week" : "day";
+    const keyFor = date => unit === "month" ? date.slice(0, 7) : unit === "week" ? monday(date) : date;
+    const groups = new Map(grouped(rows, row => keyFor(row.date), row => row.date).map(item => [item.key, item]));
+    const keys = [];
+    for (let date = filters.start; date <= filters.end; date = addDays(date, 1)) {
+      const key = keyFor(date);
+      if (keys.at(-1) !== key) keys.push(key);
+    }
+    return { unit, series: FREQUENCY_SERIES, points: keys.map(key => {
+      const summary = groups.get(key);
+      return { key, records: summary?.records || 0,
+        values: Object.fromEntries(FREQUENCY_SERIES.map(({ key }) => [key,
+          summary?.records ? summary[key] / summary.records * 100 : null])),
+        counts: Object.fromEntries(FREQUENCY_SERIES.map(({ key }) => [key, summary?.[key] || 0])) };
+    }) };
+  }
+
+  function dateRangeError(start, end, year) {
+    if (!start || !end) return "Escolha a data inicial e a data final.";
+    if (!validDate(start) || !validDate(end)) return "Escolha datas válidas.";
+    if (start.slice(0, 4) !== String(year) || end.slice(0, 4) !== String(year)) return `Escolha datas do ano letivo ${year}.`;
+    return start > end ? "A data final deve ser igual ou posterior à data inicial." : "";
+  }
+
+  function calendarMonthDays(month, year) {
+    const first = `${month}-01`;
+    const offset = (dateObject(first).getDay() + 6) % 7;
+    return Array.from({ length: 42 }, (_, index) => {
+      const date = addDays(first, index - offset);
+      return { date, day: Number(date.slice(-2)), outside: date.slice(0, 7) !== month,
+        disabled: date.slice(0, 4) !== String(year) };
+    });
   }
 
   /* EXPORTAÇÃO | Planilha Office Open XML com texto literal (nenhuma fórmula).
@@ -341,7 +423,7 @@
       const students = grouped(rows, row => row.personId || row.studentId, row => row.studentName).filter(item => item.absent > 0).sort((a, b) => compare(a.name, b.name));
       return { title: "Alunos com maior ausência", headers: ["Aluno", "Registros", "Presenças", "Faltas", "Dias com falta", "Justificadas", "Frequência"], rows: students.map(item => [item.name, item.records, item.present, item.absent, new Set(item.rows.filter(row => row.status === "ausente").map(row => row.date)).size, item.justified, percent(item.rate)]),
         studentRefs: students.map(item => ({ id: item.key, name: item.name })),
-        rateIndex: 6, note: "Alunos em ordem alfabética. Os vínculos junto ao nome são os atuais do ano selecionado; os totais usam as chamadas do período. Dias com falta contam datas distintas." };
+        rateIndex: 6, note: "Alunos em ordem alfabética. Os vínculos junto ao nome são os atuais do ano selecionado; os totais usam as chamadas do período. Dias com falta contam datas distintas. O contador de cada turma conta alunos distintos com faltas naquela turma; justificadas não entram nesse número." };
     }
     if (view === "student") {
       const name = studentName;
@@ -372,11 +454,11 @@
     groups.sort(mode === "comparison" ? (a, b) => (b.rate ?? -1) - (a.rate ?? -1) || compare(a.name, b.name) : (a, b) => compare(a.name, b.name));
     result.rows = groups.map(item => [item.name, item.calls, item.students, item.present, item.absent, item.justified, percent(item.rate)]);
     if (room) {
-      result.title = "Relatório por turma de sala";
+      result.title = "Realidade de sala";
       result.headers = ["Turma de origem", ...headers.slice(1)];
       result.note = "Agrupado pela turma de origem registrada na chamada. Um aluno remanejado permanece associado à sua origem nesta visão. Quando o campo histórico falta, é usado o cadastro/histórico disponível.";
     } else if (view === "system") {
-      result.title = mode === "comparison" ? "Comparativo entre turmas" : "Relatório por turma do sistema";
+      result.title = mode === "comparison" ? "Comparativo entre turmas" : "Realidade do sistema";
       result.headers = ["Turma da chamada", ...headers.slice(1)];
       result.note = "Agrupado pela turma onde a chamada foi salva, incluindo alunos remanejados. Os registros não são redistribuídos usando a matrícula atual.";
     } else if (mode === "closing") result.title = "Fechamento mensal da escola";
@@ -417,9 +499,21 @@
     })).sort((a, b) => compare(a.name, b.name) || compare(a.id, b.id));
   }
 
+  function individualSelection(data, filters, classId = "", studentId = "", studentAPI) {
+    const rosterFilters = { ...filters, classId };
+    const registered = classId && data.classes.some(item => item.id === classId && item.year === filters.year);
+    const rosterRows = registered ? [] : filterRows(data, { ...rosterFilters,
+      start: `${filters.year}-01-01`, end: `${filters.year}-12-31` }, "student");
+    const catalog = studentCatalog(data, rosterRows, rosterFilters, studentAPI);
+    const selected = catalog.find(item => item.id === studentId) || catalog[0];
+    const history = filterRows(data, { ...filters, classId: "" }, "student");
+    return { catalog, selectedId: selected?.id || "", rows: history.filter(row =>
+      selected?.ids.has(row.studentId) || selected?.ids.has(row.personId)) };
+  }
+
   if (typeof module !== "undefined" && module.exports) {
     module.exports = { prepareData, filterRows, totals, grouped, periodRange, previousRange,
-      classChoices, activeElectives, reportTable, pdf, xlsx, studentCatalog };
+      classChoices, activeElectives, reportClasses, reportRange, absenceClasses, frequencyEvolution, dateRangeError, calendarMonthDays, reportTable, pdf, xlsx, studentCatalog, individualSelection };
     return;
   }
 
@@ -450,13 +544,15 @@
     check: '<path d="m5 12 4 4L19 6"/>',
     close: '<path d="m6 6 12 12M6 18 18 6"/>',
     list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+    chevron: '<path d="m9 5 7 7-7 7"/>',
   };
   const iconHTML = name => `<span class="rp-icon" aria-hidden="true"><svg viewBox="0 0 24 24">${icons[name] || icons.file}</svg></span>`;
   root.querySelectorAll("[data-rp-icon]").forEach(element => { element.innerHTML = `<svg viewBox="0 0 24 24">${icons[element.dataset.rpIcon] || icons.file}</svg>`; });
-  const viewLabels = { overview: "Visão Geral", room: "Realidade de Sala", system: "Realidade do Sistema", student: "Por Aluno", weekly: "Resumo Semanal", electives: "Eletivas" };
-  const state = { view: "overview", mode: "default", studentId: "", applied: null, data: null, table: null, rows: [] };
+  const viewLabels = { overview: "Visão geral", room: "Realidade de sala", system: "Realidade do sistema", student: "Relatório individual", weekly: "Resumo semanal", electives: "Eletivas" };
+  const state = { view: "overview", mode: "default", studentId: "", applied: null,
+    data: null, table: null, rows: [], pickerOpen: false, classType: "base", stage: "catalog", rosterClassId: "",
+    chartDraft: { start: "", end: "" }, calendar: null };
   const customSelects = new Map();
-  let syncingYear = false;
 
   function read(key, fallback) {
     try {
@@ -546,76 +642,215 @@
     if (options.some(([value]) => value === String(preferred))) select.value = String(preferred);
     refreshSelect(select);
   }
-  function anchorForYear(year) {
+  function selectedYear() {
+    const year = String(window.AlunoTecShell?.getYear?.() || read(KEYS.year, "") || today().slice(0, 4));
+    return /^\d{4}$/.test(year) ? year : today().slice(0, 4);
+  }
+  function activeReport() {
+    return state.mode === "default" ? state.view : state.mode;
+  }
+  function isClassReport() {
+    return (["room", "system", "student"].includes(state.view) && state.mode === "default") || state.mode === "absences";
+  }
+  function isIndividualReport() {
+    return state.view === "student" && state.mode === "default";
+  }
+  function isClassChart() {
+    return state.mode === "default" && ["room", "system"].includes(state.view);
+  }
+  function hasDateRange() {
+    return isClassChart() || isIndividualReport();
+  }
+  function selectedClassId() {
+    return isIndividualReport() ? state.rosterClassId : state.applied.classId;
+  }
+  function chosenClass() {
+    return reportClasses(state.data, state.applied.year, state.view)
+      .find(item => item.id === selectedClassId());
+  }
+  function scrollToSection(id) {
+    const section = $(id);
+    section.focus({ preventScroll: true });
+    section.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
+  }
+  function syncDateControls() {
+    const f = state.applied;
+    $("period-query").hidden = state.mode !== "period";
+    $("weekly-query").hidden = state.view !== "weekly";
+    $("monthly-query").hidden = state.mode !== "closing";
+    [$("start"), $("end"), $("weekly-date")].forEach(input => {
+      input.min = `${f.year}-01-01`; input.max = `${f.year}-12-31`;
+      input.setCustomValidity("");
+    });
+    $("start").value = f.start; $("end").value = f.end;
+    $("weekly-date").value = f.start;
+    $("closing-month").min = `${f.year}-01`; $("closing-month").max = `${f.year}-12`;
+    $("closing-month").value = f.start.slice(0, 7);
+    $("closing-month").setCustomValidity("");
+    state.chartDraft = { start: f.start, end: f.end };
+    updateChartDates();
+  }
+
+  /* CALENDÁRIO | Datas pendentes só alteram a consulta ao aplicar o período. */
+  function updateChartDates(error = "") {
+    for (const field of ["start", "end"]) {
+      const value = state.chartDraft[field];
+      $("chart-" + field + "-label").textContent = value ? br(value) : "Selecione a data";
+      $("chart-" + field + "-button").setAttribute("aria-invalid", String(Boolean(error)));
+    }
+    $("chart-range-error").textContent = error;
+    $("chart-range-error").hidden = !error;
+  }
+  function closeCalendar() {
+    if ($("calendar-dialog").open) $("calendar-dialog").close();
+  }
+  function drawCalendar(focusDay = false) {
+    const calendar = state.calendar;
+    if (!calendar) return;
+    const year = state.applied.year, selected = state.chartDraft[calendar.field];
     const current = today();
-    const dates = state.data.rows.filter(row => row.year === year && row.date.slice(0, 4) === year && row.date <= current).map(row => row.date).sort();
-    return dates.at(-1) || (year === current.slice(0, 4) ? current : `${year}-12-31`);
+    const annual = { ...state.applied, start: `${year}-01-01`, end: `${year}-12-31` };
+    const rows = isIndividualReport() ? individualSelection(state.data, annual, state.rosterClassId,
+      state.studentId, window.AlunoTecStudents).rows : filterRows(state.data, annual, state.view);
+    const dates = new Set(rows.map(row => row.date));
+    $("calendar-month").textContent = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(dateObject(`${calendar.month}-01`));
+    $("calendar-prev").disabled = calendar.month <= `${year}-01`;
+    $("calendar-next").disabled = calendar.month >= `${year}-12`;
+    $("calendar-today").disabled = current.slice(0, 4) !== year;
+    $("calendar-today").title = current.slice(0, 4) === year ? "Selecionar a data de hoje" : "Hoje está fora do ano letivo selecionado";
+    const weekdays = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"];
+    $("calendar-grid").innerHTML = weekdays.map(day => `<span class="rp-calendar-weekday" title="${day}" aria-hidden="true">${day[0]}</span>`).join("") +
+      calendarMonthDays(calendar.month, year).map(day => {
+        const classes = ["rp-calendar-day", day.outside ? "is-outside" : "", dates.has(day.date) ? "has-call" : "",
+          day.date === current ? "is-today" : "", day.date === selected ? "is-selected" : ""].filter(Boolean).join(" ");
+        return `<button type="button" class="${classes}" data-rp-date="${day.date}" ${day.disabled ? "disabled" : ""}
+          tabindex="${day.date === calendar.focusDate && !day.disabled ? 0 : -1}" aria-label="${br(day.date)}${dates.has(day.date) ? ", com chamada" : ""}"
+          aria-pressed="${day.date === selected}"${day.date === current ? ' aria-current="date"' : ""}>${day.day}</button>`;
+      }).join("");
+    if (focusDay) $("calendar-grid").querySelector(`[data-rp-date="${calendar.focusDate}"]:not(:disabled)`)?.focus();
   }
-  function fillFilters(preferredYear = "") {
-    const years = [...new Set([...state.data.classes.map(item => item.year), ...state.data.rows.map(row => row.year), ...(window.AlunoTecShell?.getYears?.() || [])])].filter(year => /^\d{4}$/.test(year)).sort((a, b) => Number(b) - Number(a));
-    if (!years.length) years.push(today().slice(0, 4));
-    const year = String(preferredYear || $("year").value || window.AlunoTecShell?.getYear?.() || years[0]);
-    setOptions($("year"), years.map(item => [item, item]), year);
-    const shifts = [...new Set([...state.data.classes.filter(item => item.year === $("year").value).map(item => String(item.shift || "Todos")), ...state.data.rows.filter(row => row.year === $("year").value).map(row => row.shift)])].filter(shift => normalize(shift) !== "todos" && shift.trim()).sort(compare);
-    setOptions($("shift"), [["", "Todos"], ...shifts.map(shift => [shift, shift])], $("shift").value);
-    fillClassOptions();
+  function openCalendar(field) {
+    if (!hasDateRange() || state.stage !== "report") return;
+    const year = state.applied.year;
+    const anchor = state.chartDraft[field] || (today().slice(0, 4) === year ? today() : `${year}-01-01`);
+    state.calendar = { field, month: anchor.slice(0, 7), focusDate: anchor };
+    $("calendar-title").textContent = field === "start" ? "Data inicial" : "Data final";
+    drawCalendar();
+    $("chart-" + field + "-button").setAttribute("aria-expanded", "true");
+    $("calendar-dialog").showModal();
+    $("calendar-grid").querySelector(`[data-rp-date="${anchor}"]`)?.focus();
   }
-  function fillClassOptions() {
-    const choices = classChoices(state.data, $("year").value, $("shift").value, state.view);
-    setOptions($("class"), [["", state.view === "electives" ? "Todas as eletivas" : "Todas as turmas"],
-      ...choices], $("class").value);
+  function selectCalendarDate(date) {
+    if (!state.calendar || (date && (!validDate(date) || date.slice(0, 4) !== state.applied.year))) return;
+    state.chartDraft[state.calendar.field] = date;
+    updateChartDates(); closeCalendar();
   }
-  function setRange(anchor = anchorForYear($("year").value)) {
-    const year = $("year").value;
-    const range = periodRange($("period").value === "custom" ? "week" : $("period").value, anchor, year);
-    $("start").value = range.start; $("end").value = range.end;
-    [$("start"), $("end")].forEach(input => { input.min = `${year}-01-01`; input.max = `${year}-12-31`; });
+  function moveCalendarMonth(amount) {
+    const next = dateObject(`${state.calendar.month}-01`);
+    next.setMonth(next.getMonth() + amount);
+    const date = iso(next);
+    if (date.slice(0, 4) !== state.applied.year) return;
+    state.calendar.month = date.slice(0, 7); state.calendar.focusDate = date;
+    drawCalendar();
   }
-  function readFilters() { return { year: $("year").value, period: $("period").value, shift: $("shift").value, classId: $("class").value, start: $("start").value, end: $("end").value }; }
-  function markDirty() { $("filter-feedback").textContent = "Filtros alterados. Clique em Aplicar filtros para atualizar os resultados."; $("filter-feedback").classList.add("is-dirty"); }
-  function applyFilters() {
-    $("end").setCustomValidity("");
-    if (!$("filters").reportValidity()) return;
-    const filters = readFilters();
-    if (!validDate(filters.start) || !validDate(filters.end) || filters.start > filters.end) {
-      $("end").setCustomValidity("A data final deve ser igual ou posterior à data inicial."); $("end").reportValidity(); return;
+  function renderClassPicker() {
+    const absences = state.mode === "absences";
+    const classes = absences ? absenceClasses(state.data, state.applied) :
+      reportClasses(state.data, state.applied.year, state.view);
+    const visible = classes.filter(item => item.type === state.classType);
+    $("picker-title").textContent = absences ? "Alunos com maior ausência" : viewLabels[state.view];
+    $("picker-year").textContent = `Ano letivo ${state.applied.year}`;
+    $("picker-description").textContent = absences ? "Escolha a turma. Cada aluno é contado uma vez, mesmo com várias faltas." :
+      state.view === "room" ? "Escolha a turma de origem." :
+      state.view === "student" ? "Escolha a turma para localizar o aluno." : "Escolha a turma da chamada.";
+    root.querySelectorAll("[data-class-type]").forEach(button => {
+      const type = button.dataset.classType;
+      button.hidden = state.view === "room" && type === "electives";
+      button.classList.toggle("is-active", type === state.classType);
+      button.setAttribute("aria-pressed", String(type === state.classType));
+      button.querySelector("span").textContent = integer(classes.filter(item => item.type === type).length);
+    });
+    $("picker-list-title").textContent = state.classType === "base" ? "Turmas da Base Comum" : "Turmas eletivas";
+    $("picker-grid").innerHTML = visible.map(item => {
+      const info = [item.grade, item.shift, `${integer(item.students)} ${item.students === 1 ? "aluno" : "alunos"}`,
+        item.historical ? "Histórico" : ""].filter(Boolean).join(" · ");
+      const label = absences ? `${integer(item.absentStudents)} ${item.absentStudents === 1 ? "aluno" : "alunos"} com faltas` :
+        `${integer(item.students)} ${item.students === 1 ? "aluno" : "alunos"}`;
+      const badge = absences ? `<span class="rp-class-absences${item.absentStudents ? " has-absences" : ""}" aria-hidden="true">
+        <strong>${integer(item.absentStudents)}</strong><small>com faltas</small></span>` : "";
+      return `<button type="button" class="rp-class-card" data-report-class="${escapeHTML(item.id)}"
+        aria-label="Consultar ${escapeHTML(item.name)}, ${label}">
+        <span class="rp-class-symbol">${iconHTML(item.type === "electives" ? "cap" : "users")}</span>
+        <span class="rp-class-copy"><strong>${escapeHTML(item.name)}</strong><small>${escapeHTML(info)}</small></span>
+        ${badge}
+        <span class="rp-class-arrow">${iconHTML("chevron")}</span></button>`;
+    }).join("");
+    $("picker-empty").hidden = visible.length > 0;
+    $("picker-empty-title").textContent = state.classType === "base" ?
+      "Nenhuma turma da Base Comum neste ano" : "Nenhuma eletiva neste ano";
+    $("all-classes").disabled = !classes.length;
+  }
+  function showCatalog(scroll = true) {
+    closeCalendar();
+    state.stage = "catalog"; state.pickerOpen = false;
+    $("status").textContent = "";
+    closeSelects(); render();
+    if (scroll) scrollToSection("catalog");
+  }
+  function chooseReport(action, scroll = true) {
+    const actions = ["overview", "room", "system", "student", "weekly", "period", "electives", "comparison", "absences", "monthly", "closing"];
+    if (!actions.includes(action)) return;
+    closeCalendar();
+    state.view = action === "comparison" ? "system" : action === "absences" ? "student" :
+      ["room", "system", "student", "weekly", "electives"].includes(action) ? action : "overview";
+    state.mode = ["comparison", "absences", "period", "monthly", "closing"].includes(action) ? action : "default";
+    state.applied = reportRange(state.data, selectedYear(), action);
+    state.pickerOpen = isClassReport();
+    state.stage = state.pickerOpen ? "classes" : "report";
+    state.studentId = ""; state.rosterClassId = "";
+    const classes = reportClasses(state.data, state.applied.year, state.view);
+    state.classType = state.view !== "room" && !classes.some(item => item.type === "base") &&
+      classes.some(item => item.type === "electives") ? "electives" : "base";
+    $("status").textContent = "";
+    [$("analysis-details"), $("methodology")].forEach(details => { details.open = false; });
+    closeSelects(); syncDateControls(); render();
+    if (scroll) scrollToSection(state.pickerOpen ? "class-picker" : "view");
+  }
+  function openClassPicker() {
+    state.pickerOpen = true; state.stage = "classes";
+    $("status").textContent = "";
+    const current = chosenClass();
+    if (current) state.classType = current.type;
+    render(); scrollToSection("class-picker");
+  }
+  function selectReportClass(id) {
+    if (!isClassReport()) return;
+    if (id && !reportClasses(state.data, state.applied.year, state.view).some(item => item.id === id)) {
+      $("status").textContent = "Esta turma não está disponível no ano letivo selecionado.";
+      return;
     }
-    closeSelects(); loadData(); state.applied = filters;
-    if (window.AlunoTecShell?.getYears?.().includes(filters.year) && window.AlunoTecShell.getYear() !== filters.year) {
-      syncingYear = true;
-      try { window.AlunoTecShell.setYears(window.AlunoTecShell.getYears(), filters.year, true); }
-      finally { syncingYear = false; }
-    }
-    $("filter-feedback").classList.remove("is-dirty");
-    render();
-  }
-  function studentOptions(rows) {
-    const items = studentCatalog(state.data, rows, state.applied, window.AlunoTecStudents);
-    state.studentCatalog = new Map(items.map(item => [item.id, item]));
-    return items.map(item => [item.id, item.label]);
+    if (isIndividualReport()) {
+      state.rosterClassId = id;
+      state.studentId = "";
+    } else state.applied = { ...state.applied, classId: id };
+    state.pickerOpen = false; state.stage = "report";
+    $("analysis-details").open = false;
+    $("methodology").open = false;
+    $("status").textContent = "";
+    syncDateControls(); render(); scrollToSection("view");
   }
   function currentRows() {
-    let rows = filterRows(state.data, state.applied, state.view);
-    if (state.view === "student" && state.mode !== "absences") {
-      const options = studentOptions(rows);
-      if (!options.some(([id]) => id === state.studentId)) state.studentId = options[0]?.[0] || "";
+    if (isIndividualReport()) {
+      const selection = individualSelection(state.data, state.applied, state.rosterClassId,
+        state.studentId, window.AlunoTecStudents);
+      const options = selection.catalog.map(item => [item.id, item.label]);
+      state.studentCatalog = new Map(selection.catalog.map(item => [item.id, item]));
+      state.studentId = selection.selectedId;
+      $("student").disabled = !options.length;
       setOptions($("student"), options.length ? options : [["", "Nenhum aluno disponível"]], state.studentId);
-      const selected = state.studentCatalog.get(state.studentId);
-      rows = rows.filter(row => selected?.ids.has(row.studentId) || selected?.ids.has(row.personId));
+      return selection.rows;
     }
-    return rows;
-  }
-  function setView(view, mode = "default", scroll = false) {
-    state.view = view; state.mode = mode;
-    if (state.applied?.classId && !classChoices(state.data, state.applied.year, state.applied.shift, view)
-      .some(([id]) => id === state.applied.classId)) {
-      state.applied = { ...state.applied, classId: "" };
-      $("class").value = "";
-      $("status").textContent = "O filtro de turma foi ajustado para esta visão do relatório.";
-    }
-    fillClassOptions();
-    closeSelects(); render();
-    if (scroll) $("view").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
+    return filterRows(state.data, state.applied, state.view);
   }
   function scopedActiveElectives() {
     const filters = state.view === "electives" ? state.applied : { ...state.applied, classId: "" };
@@ -644,47 +879,61 @@
     $("donut-rate").textContent = percent(summary.rate);
     const fraction = key => summary.records ? summary[key] / summary.records * 100 : 0;
     const present = fraction("present"), absent = fraction("absent");
-    $("donut").style.background = summary.records ? `conic-gradient(#176c32 0 ${present}%, #e34e58 ${present}% ${present + absent}%, #a8b3a8 ${present + absent}% 100%)` : "#edf1ed";
+    $("donut").style.background = summary.records ? `conic-gradient(#176c32 0 ${present}%, #e34e58 ${present}% ${present + absent}%, #2f80d0 ${present + absent}% 100%)` : "#edf1ed";
     $("donut").setAttribute("role", "img"); $("donut").setAttribute("aria-label", `${summary.records} registros: ${summary.present} presenças, ${summary.absent} faltas e ${summary.justified} justificadas.`);
-    $("legend").innerHTML = [["present", "Presenças", "#176c32"], ["absent", "Faltas", "#e34e58"], ["justified", "Justificadas", "#a8b3a8"]].map(([key, label, color]) => `<li style="--legend-color:${color}"><strong>${label}</strong>${integer(summary[key])} (${summary.records ? percent(fraction(key)) : "—"})</li>`).join("");
+    $("legend").innerHTML = FREQUENCY_SERIES.map(({ key, label, color }) => `<li style="--legend-color:${color}"><strong>${label}</strong>${integer(summary[key])} (${summary.records ? percent(fraction(key)) : "—"})</li>`).join("");
     const day = rows.map(row => row.date).sort().at(-1), daySummary = totals(rows.filter(row => row.date === day));
     $("day-date").textContent = day ? `Último dia com chamada no filtro: ${br(day)}` : "Nenhuma chamada nos filtros aplicados";
     $("day-values").innerHTML = [["users", "Presentes", integer(daySummary.present)], ["close", "Faltas", integer(daySummary.absent)], ["list", "Justificadas", integer(daySummary.justified)], ["check", "Frequência", percent(daySummary.rate)]].map(([icon, label, value]) => `<div class="rp-day-stat">${iconHTML(icon)}<small>${label}</small><strong>${value}</strong></div>`).join("");
   }
   function renderLine(rows) {
     const f = state.applied;
-    $("chart-period").textContent = `${br(f.start)} a ${br(f.end)} · dias sem chamada ficam sem percentual`;
+    const model = frequencyEvolution(rows, f);
+    const cadence = { month: "Percentuais por mês", week: "Percentuais por semana", day: "Percentuais por dia" }[model.unit];
+    $("chart-period").textContent = `${br(f.start)} a ${br(f.end)} · ${cadence.toLowerCase()}`;
+    $("evolution-legend").innerHTML = model.series.map(({ label, color }) =>
+      `<li style="--series-color:${color}">${label}</li>`).join("");
     if (!rows.length) { $("line-chart").innerHTML = '<div class="rp-chart-empty">O gráfico aparecerá quando houver chamadas neste período.</div>'; return; }
-    const duration = (dateObject(f.end) - dateObject(f.start)) / 86400000;
-    const keyFor = date => duration > 62 ? date.slice(0, 7) : duration > 14 ? monday(date) : date;
-    const groups = new Map(grouped(rows, row => keyFor(row.date), row => row.date).map(item => [item.key, item]));
-    const keys = [];
-    for (let date = f.start; date <= f.end; date = addDays(date, 1)) { const key = keyFor(date); if (keys.at(-1) !== key) keys.push(key); }
-    const width = 460, height = 190, left = 39, right = 425, top = 20, bottom = 152;
-    const points = keys.map((key, index) => ({ key, x: keys.length === 1 ? (left + right) / 2 : left + index / (keys.length - 1) * (right - left), y: groups.has(key) ? bottom - groups.get(key).rate / 100 * (bottom - top) : null, rate: groups.get(key)?.rate }));
-    const segments = []; let segment = [];
-    points.forEach(point => { if (point.y == null) { if (segment.length) segments.push(segment); segment = []; } else segment.push(point); });
-    if (segment.length) segments.push(segment);
+    const width = Math.max(220, Math.min(960, $("line-chart").clientWidth || 760));
+    const height = 245, left = 40, right = width - 20, top = 20, bottom = 205;
+    const points = model.points.map((point, index) => ({ ...point,
+      x: model.points.length === 1 ? (left + right) / 2 : left + index / (model.points.length - 1) * (right - left) }));
     const path = segment => segment.map((point, index) => `${index ? "L" : "M"}${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(" ");
     const grid = [0, 25, 50, 75, 100].map(value => { const y = bottom - value / 100 * (bottom - top); return `<path d="M${left} ${y}H${right}" stroke="#edf1ec" stroke-width="1"/><text x="${left - 7}" y="${y + 4}" fill="#849185" text-anchor="end" font-size="10">${value}%</text>`; }).join("");
-    const areas = segments.filter(s => s.length > 1).map(s => `<path d="${path(s)} L${s.at(-1).x},${bottom} L${s[0].x},${bottom}Z" fill="url(#rp-area-fill)"/><path d="${path(s)}" fill="none" stroke="#299347" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`).join("");
-    const dots = points.filter(point => point.y != null).map(point => `<circle cx="${point.x}" cy="${point.y}" r="4" fill="#fff" stroke="#299347" stroke-width="2.5"><title>${escapeHTML(point.key)}: ${percent(point.rate)}</title></circle>${keys.length <= 8 ? `<text x="${point.x}" y="${point.y - 10}" text-anchor="middle" fill="#275c35" font-size="10" font-weight="650">${percent(point.rate)}</text>` : ""}`).join("");
-    const labels = points.filter((_, index) => index % Math.ceil(keys.length / 7) === 0 || index === keys.length - 1).map(point => `<text x="${point.x}" y="177" text-anchor="middle" fill="#78877b" font-size="10">${escapeHTML(duration > 62 ? new Intl.DateTimeFormat("pt-BR", { month: "short" }).format(dateObject(`${point.key}-01`)) : br(point.key).slice(0, 5))}</text>`).join("");
-    const description = points.filter(point => point.y != null).map(point => `${point.key}: ${percent(point.rate)}`).join("; ");
-    $("line-chart").innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="rp-chart-title rp-chart-desc"><title id="rp-chart-title">Evolução da frequência</title><desc id="rp-chart-desc">${escapeHTML(description)}</desc><defs><linearGradient id="rp-area-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8ae59a" stop-opacity=".45"/><stop offset="100%" stop-color="#e9f9eb" stop-opacity=".7"/></linearGradient></defs>${grid}${areas}${dots}${labels}</svg>`;
+    const plots = model.series.map(({ key, label, color, dash }) => {
+      const segments = []; let segment = [];
+      points.forEach(point => {
+        if (point.values[key] == null) {
+          if (segment.length) segments.push(segment);
+          segment = [];
+        } else segment.push({ ...point, y: bottom - point.values[key] / 100 * (bottom - top) });
+      });
+      if (segment.length) segments.push(segment);
+      const lines = segments.filter(s => s.length > 1).map(s => `<path d="${path(s)}" fill="none" stroke="${color}" stroke-width="3" stroke-dasharray="${dash}" stroke-linecap="round" stroke-linejoin="round"/>`).join("");
+      const dots = segments.flat().map(point => `<circle cx="${point.x}" cy="${point.y}" r="4" fill="#fff" stroke="${color}" stroke-width="2.5"><title>${escapeHTML(point.key)} · ${label}: ${integer(point.counts[key])} (${percent(point.values[key])})</title></circle>`).join("");
+      return `<g data-rp-series="${key}">${lines}${dots}</g>`;
+    }).join("");
+    const tickCount = Math.min(points.length, Math.max(2, Math.min(7, Math.floor((right - left) / 45) + 1)));
+    const tickIndexes = new Set(Array.from({ length: tickCount }, (_, index) =>
+      tickCount === 1 ? 0 : Math.round(index * (points.length - 1) / (tickCount - 1))));
+    const labels = points.filter((_, index) => tickIndexes.has(index)).map(point => `<text x="${point.x}" y="231" text-anchor="middle" fill="#78877b" font-size="10">${escapeHTML(model.unit === "month" ? new Intl.DateTimeFormat("pt-BR", { month: "short" }).format(dateObject(`${point.key}-01`)) : br(point.key).slice(0, 5))}</text>`).join("");
+    const description = points.filter(point => point.records).map(point => `${point.key}: ${model.series.map(({ key, label }) => `${label} ${percent(point.values[key])}`).join(", ")}`).join("; ");
+    $("line-chart").innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="rp-chart-title rp-chart-desc"><title id="rp-chart-title">Evolução da frequência</title><desc id="rp-chart-desc">${escapeHTML(description)}. Períodos sem chamada ficam sem percentual.</desc>${grid}${plots}${labels}</svg>`;
   }
 
   /* TABELAS | Todas as visões usam as mesmas linhas filtradas dos indicadores. */
   function makeTable(rows) {
     const label = state.studentId ? $("student").options[$("student").selectedIndex]?.textContent || "" : "";
-    return reportTable(state.data, state.applied, state.view, state.mode, rows, label);
+    const table = reportTable(state.data, state.applied, state.view, state.mode, rows, label);
+    if (isIndividualReport()) table.note += " A turma escolhida organiza a lista de alunos; o histórico reúne as chamadas do aluno em todas as turmas dentro do período selecionado.";
+    return table;
   }
   function renderTable(rows) {
     const table = makeTable(rows); state.table = table;
     $("result-title").textContent = table.title;
     $("table-caption").textContent = table.title;
-    $("result-eyebrow").textContent = viewLabels[state.view].toLocaleUpperCase("pt-BR");
-    $("result-description").textContent = `${br(state.applied.start)} a ${br(state.applied.end)} · ${integer(totals(rows).calls)} chamada(s) · ${integer(rows.length)} registro(s)`;
+    const calls = totals(rows).calls;
+    $("result-description").textContent = `${br(state.applied.start)} a ${br(state.applied.end)} · ${integer(calls)} ${calls === 1 ? "chamada" : "chamadas"}`;
     $("result-count").textContent = `${integer(table.rows.length)} ${state.view === "student" && state.mode !== "absences" ? "registro(s)" : "resultado(s)"}`;
     $("table-head").innerHTML = `<tr>${table.headers.map(heading => `<th scope="col">${escapeHTML(heading)}</th>`).join("")}</tr>`;
     $("table-body").replaceChildren(...table.rows.map((values, rowIndex) => {
@@ -703,54 +952,95 @@
     $("empty").hidden = table.rows.length > 0;
     $("empty").querySelector("h3").textContent = state.mode === "absences" && rows.length ? "Nenhuma falta registrada no período" :
       state.view === "student" && state.mode !== "absences" ? "Nenhuma chamada para este aluno no período" : "Nenhuma chamada neste período";
-    $("empty").querySelector("p").textContent = state.mode === "absences" && rows.length ? "Não há alunos com registros de ausência nos filtros aplicados." : "Registre a frequência das turmas ou ajuste os filtros para consultar outro período.";
+    $("empty").querySelector("p").textContent = state.mode === "absences" && rows.length ? "Não há alunos com registros de ausência neste período." : "Não há chamadas salvas para esta consulta. Confira o ano letivo ou registre a frequência da turma.";
     $("empty").previousElementSibling.hidden = !table.rows.length;
     $("result-note").textContent = table.note;
     const individual = state.view === "student" && state.mode !== "absences";
+    const noStudent = individual && !state.studentId;
+    if (noStudent) {
+      $("empty").querySelector("h3").textContent = "Nenhum aluno para consultar";
+      $("empty").querySelector("p").textContent = state.rosterClassId ?
+        "Esta turma não possui alunos cadastrados. Use Trocar turma para escolher outra." :
+        "Não há alunos cadastrados ou com histórico neste ano letivo.";
+    }
+    $("empty").querySelector("a").hidden = noStudent;
     $("student-field").hidden = !individual;
     $("student-summary").hidden = !individual;
-    let links = document.getElementById("rp-student-current-links");
-    if (!links && window.AlunoTecStudents) {
-      links = document.createElement("div");
-      links.id = "rp-student-current-links";
-      links.className = "at-student-current-links";
-      $("student-field").after(links);
-    }
-    if (links) {
-      links.hidden = !individual || !state.studentId;
-      links.innerHTML = individual && state.studentId ?
-        `<p>Vínculos atuais no ano letivo ${escapeHTML(state.applied.year)}</p>` +
-        window.AlunoTecStudents.label({ id: state.studentId,
-          name: state.studentCatalog?.get(state.studentId)?.name || "Aluno" },
-          { year: state.applied.year }) : "";
-    }
     if (individual) {
       const total = totals(rows), dates = new Set(rows.filter(row => row.status === "ausente").map(row => row.date));
       $("student-summary").innerHTML = `<div>Frequência<strong>${percent(total.rate)}</strong></div><div>Presenças<strong>${integer(total.present)}</strong></div><div>Faltas<strong>${integer(total.absent)}</strong></div><div>Dias com falta<strong>${integer(dates.size)}</strong></div><div>Justificadas<strong>${integer(total.justified)}</strong></div>`;
     }
-    $("export-description").textContent = `${table.title} · ${br(state.applied.start)} a ${br(state.applied.end)}`;
+    $("export-description").textContent = [table.title, selectedClassId() ? chosenClass()?.name : "",
+      `${br(state.applied.start)} a ${br(state.applied.end)}`].filter(Boolean).join(" · ");
     [$("pdf"), $("excel"), $("print-button")].forEach(button => { button.disabled = !table.rows.length; button.title = table.rows.length ? "Exportar relatório aplicado" : "Não há resultados para exportar"; });
   }
   function render() {
     if (!state.applied) return;
-    const selectedReport = state.mode === "default" ? state.view : state.mode;
+    const selectedReport = activeReport();
     root.querySelectorAll("[data-report]").forEach(button => {
-      const active = button.dataset.report === selectedReport;
+      const active = state.stage !== "catalog" && button.dataset.report === selectedReport;
       button.classList.toggle("is-active", active);
       button.setAttribute("aria-pressed", String(active));
     });
+    root.dataset.stage = state.stage;
+    $("catalog-context").textContent = `Ano letivo ${state.applied.year}`;
+    $("catalog").hidden = state.stage !== "catalog";
+    $("flow-nav").hidden = state.stage === "catalog";
+    $("class-picker").hidden = state.stage !== "classes";
+    $("workspace").hidden = state.stage !== "report";
+    $("metrics").hidden = state.stage !== "report" || selectedReport !== "overview";
+    if (state.stage !== "report") {
+      if (state.stage === "classes") renderClassPicker();
+      state.rows = []; state.table = null;
+      $("print").replaceChildren();
+      $("export-description").textContent = "";
+      [$("pdf"), $("excel"), $("print-button")].forEach(button => {
+        button.disabled = true; button.title = "Selecione uma turma para abrir o relatório";
+      });
+      return;
+    }
+    $("class-context").hidden = !isClassReport();
+    if (isClassReport()) {
+      $("selected-class-name").textContent = chosenClass()?.name || "Todas as turmas";
+      $("selected-class-meta").textContent = selectedClassId() ?
+        (state.mode === "absences" ? "Faltas registradas na turma" : state.view === "room" ? "Turma de origem" : isIndividualReport() ? "Turma para buscar o aluno" : "Turma da chamada") :
+        (isIndividualReport() ? "Seleção de alunos" : "Consulta consolidada");
+    }
     state.rows = currentRows();
-    renderMetrics(state.rows); renderLine(state.rows); renderTable(state.rows);
-    if (!$("filter-feedback").classList.contains("is-dirty")) $("filter-feedback").textContent = `Aplicado: ${br(state.applied.start)} a ${br(state.applied.end)} · ano letivo ${state.applied.year}.`;
+    $("metrics").hidden = selectedReport !== "overview" || !state.rows.length;
+    const classChart = isClassChart();
+    const individual = isIndividualReport();
+    const query = $("chart-query");
+    query.classList.toggle("is-individual", individual);
+    $("individual-controls").hidden = !individual;
+    if (individual) {
+      if ($("student-field").parentElement !== query) query.prepend($("student-field"));
+      if (query.parentElement !== $("individual-controls")) $("individual-controls").append(query);
+    } else {
+      if ($("student-field").parentElement !== $("individual-controls")) $("individual-controls").append($("student-field"));
+      if (query.parentElement !== $("evolution")) $("evolution").insertBefore(query, $("evolution-legend"));
+    }
+    $("date-range-hint").textContent = individual ?
+      "O período vale para o histórico, os indicadores e as exportações do aluno." :
+      "O período vale para o gráfico, a tabela e as exportações.";
+    const chartParent = classChart ? $("class-evolution") : $("charts");
+    if ($("evolution").parentElement !== chartParent) chartParent.prepend($("evolution"));
+    $("class-evolution").hidden = !classChart;
+    query.hidden = !hasDateRange();
+    $("analysis-details").hidden = individual || classChart || !state.rows.length;
+    if (individual) $("line-chart").replaceChildren();
+    else { renderMetrics(state.rows); renderLine(state.rows); }
+    renderTable(state.rows);
   }
 
   /* EXPORTAÇÕES DA INTERFACE | Capturam o relatório aplicado, nunca campos pendentes. */
   function metadata() {
     const f = state.applied, summary = totals(state.rows);
-    const classItem = state.data.classById.get(f.classId);
-    const recordClass = state.data.rows.find(row => row.systemId === f.classId || row.originId === f.classId);
+    const classItem = state.data.classes.find(item => item.id === f.classId && item.year === f.year);
+    const recordClass = state.data.rows.find(row => row.year === f.year && (row.systemId === f.classId || row.originId === f.classId));
     const classLabel = classItem?.name || (recordClass?.systemId === f.classId ? recordClass?.systemName : recordClass?.originName) || "Todas as turmas";
-    return { school: state.institution?.schoolName || "AlunoTec · Central de Relatórios", filters: `Ano letivo ${f.year} | ${br(f.start)} a ${br(f.end)} | Turno: ${f.shift || "Todos"} | Turma: ${classLabel}`, summary: `${summary.calls} chamada(s) | ${summary.students} aluno(s) | Presenças: ${summary.present} | Faltas: ${summary.absent} | Justificadas: ${summary.justified} | Frequência: ${percent(summary.rate)}`, generated: `Gerado em ${new Date().toLocaleString("pt-BR")}` };
+    const scope = isIndividualReport() ? `Turma usada na seleção: ${chosenClass()?.name || "Todas as turmas"} | Histórico: todas as turmas do aluno` : `Turma: ${classLabel}`;
+    return { school: state.institution?.schoolName || "AlunoTec · Central de Relatórios", filters: `Ano letivo ${f.year} | ${br(f.start)} a ${br(f.end)} | Turno: ${f.shift || "Todos"} | ${scope}`, summary: `${summary.calls} chamada(s) | ${summary.students} aluno(s) | Presenças: ${summary.present} | Faltas: ${summary.absent} | Justificadas: ${summary.justified} | Frequência: ${percent(summary.rate)}`, generated: `Gerado em ${new Date().toLocaleString("pt-BR")}` };
   }
   function download(bytes, type, extension) {
     const link = document.createElement("a"), url = URL.createObjectURL(new Blob([bytes], { type }));
@@ -759,7 +1049,7 @@
   }
   function exportWithFeedback(action, message) {
     if (!state.table?.rows.length) {
-      $("status").textContent = "Não há resultados nos filtros aplicados para exportar.";
+      $("status").textContent = "Não há resultados neste relatório para exportar.";
       return;
     }
     try {
@@ -767,10 +1057,11 @@
       $("status").textContent = message;
     } catch (error) {
       console.error("Falha ao exportar relatório", error);
-      $("status").textContent = "Não foi possível gerar o arquivo. Ajuste os filtros e tente novamente.";
+      $("status").textContent = "Não foi possível gerar o arquivo. Tente novamente.";
     }
   }
   function buildPrint() {
+    if (!state.table) { $("print").replaceChildren(); return; }
     const meta = metadata(), table = state.table;
     $("print").innerHTML = `<header><p>${escapeHTML(meta.school)}</p><h1>${escapeHTML(table.title)}</h1><p>${escapeHTML(meta.filters)}</p><p>${escapeHTML(meta.summary)}</p><p>${escapeHTML(meta.generated)}</p></header><table><thead><tr>${table.headers.map(value => `<th>${escapeHTML(value)}</th>`).join("")}</tr></thead><tbody>${table.rows.map(row => `<tr>${row.map(value => `<td>${escapeHTML(value)}</td>`).join("")}</tr>`).join("")}</tbody></table><p>${escapeHTML(table.note)}</p><p>Frequência = presenças ÷ (presenças + faltas + justificadas). Fonte: registros locais do AlunoTec.</p>`;
   }
@@ -790,7 +1081,7 @@
     const sheets = [
       { name: "Resumo", rows: [state.table.headers, ...state.table.rows] },
       { name: "Registros", rows: [["Data", "Ano letivo", "ID na chamada", "ID consolidado do aluno", "Aluno", "Turma de origem na chamada", "Turma da chamada", "Turno da chamada", "Turno cadastrado da turma", "Situação", "Eletivas atuais", "Origem atual do cadastro", "Turma de frequência atual"], ...records] },
-      { name: "Critérios", rows: [["Campo", "Valor"], ["Escola", meta.school], ["Relatório", state.table.title], ["Filtros", meta.filters], ["Resumo", meta.summary], ["Geração", meta.generated], ["Critério", "Presenças / (presenças + faltas + justificadas). Um registro por aluno/chamada."], ["Turno", "Chamadas salvas como Todos usam o turno cadastrado da turma para o filtro, quando disponível."], ["Observação", state.table.note]] },
+      { name: "Critérios", rows: [["Campo", "Valor"], ["Escola", meta.school], ["Relatório", state.table.title], ["Consulta", meta.filters], ["Resumo", meta.summary], ["Geração", meta.generated], ["Critério", "Presenças / (presenças + faltas + justificadas). Um registro por aluno/chamada."], ["Turno", isIndividualReport() ? "Todos os turnos das chamadas do aluno." : "Todos os turnos da turma selecionada."], ["Observação", state.table.note]] },
     ];
     download(xlsx(sheets), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx");
     }, "Excel gerado com resumo, registros e critérios aplicados.");
@@ -798,52 +1089,145 @@
   $("print-button").addEventListener("click", () => { buildPrint(); window.print(); });
   window.addEventListener("beforeprint", () => { if (state.table) buildPrint(); });
 
-  /* EVENTOS | Sincronização com o ano do topbar e dados de outras abas. */
-  $("filters").addEventListener("submit", event => { event.preventDefault(); applyFilters(); });
-  $("year").addEventListener("change", () => { fillFilters($("year").value); setRange(); markDirty(); });
-  $("period").addEventListener("change", () => { if ($("period").value !== "custom") setRange($("end").value || anchorForYear($("year").value)); markDirty(); });
-  $("shift").addEventListener("change", () => { fillClassOptions(); markDirty(); });
-  $("class").addEventListener("change", markDirty);
-  [$("start"), $("end")].forEach(input => input.addEventListener("input", () => { $("end").setCustomValidity(""); $("period").value = "custom"; refreshSelect($("period")); markDirty(); }));
+  /* EVENTOS | O ano vem do cabeçalho. Cada relatório mostra apenas seus próprios controles. */
+  $("back-catalog").addEventListener("click", () => showCatalog());
   $("student").addEventListener("change", () => { state.studentId = $("student").value; render(); });
-  root.querySelectorAll("[data-report]").forEach(button => button.addEventListener("click", () => {
-    const action = button.dataset.report;
-    if (action === "closing" || action === "monthly") {
-      fillFilters(state.applied.year);
-      $("shift").value = state.applied.shift;
-      fillClassOptions(); $("class").value = state.applied.classId;
-      refreshSelect($("shift")); refreshSelect($("class"));
-      $("period").value = action === "closing" ? "month" : "year";
-      const anchor = state.applied.end > today() ? anchorForYear(state.applied.year) : state.applied.end;
-      refreshSelect($("period")); setRange(anchor); applyFilters(); setView("overview", action, true); return;
-    }
-    if (action === "comparison") return setView("system", "comparison", true);
-    if (action === "absences") return setView("student", "absences", true);
-    if (action === "period") return setView("overview", "period", true);
-    setView(action, "default", true);
+  root.querySelectorAll("[data-report]").forEach(button => button.addEventListener("click", () => chooseReport(button.dataset.report)));
+  root.querySelectorAll("[data-class-type]").forEach(button => button.addEventListener("click", () => {
+    if (!state.pickerOpen || (state.view === "room" && button.dataset.classType !== "base")) return;
+    state.classType = button.dataset.classType;
+    renderClassPicker();
   }));
+  $("picker-grid").addEventListener("click", event => {
+    const button = event.target.closest("[data-report-class]");
+    if (button) selectReportClass(button.dataset.reportClass);
+  });
+  $("all-classes").addEventListener("click", () => selectReportClass(""));
+  $("change-class").addEventListener("click", openClassPicker);
+  root.querySelectorAll("[data-chart-date]").forEach(button => button.addEventListener("click", () => openCalendar(button.dataset.chartDate)));
+  $("calendar-close").addEventListener("click", closeCalendar);
+  $("calendar-dialog").addEventListener("close", () => {
+    // Um close anterior pode chegar depois que outro campo já abriu o calendário.
+    if ($("calendar-dialog").open) return;
+    for (const field of ["start", "end"]) $("chart-" + field + "-button").setAttribute("aria-expanded", "false");
+    state.calendar = null;
+  });
+  $("calendar-dialog").addEventListener("click", event => {
+    if (event.target !== $("calendar-dialog")) return;
+    const box = $("calendar-dialog").getBoundingClientRect();
+    if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) closeCalendar();
+  });
+  $("calendar-prev").addEventListener("click", () => moveCalendarMonth(-1));
+  $("calendar-next").addEventListener("click", () => moveCalendarMonth(1));
+  $("calendar-today").addEventListener("click", () => selectCalendarDate(today()));
+  $("calendar-clear").addEventListener("click", () => selectCalendarDate(""));
+  $("calendar-grid").addEventListener("click", event => {
+    const button = event.target.closest("[data-rp-date]");
+    if (button && !button.disabled) selectCalendarDate(button.dataset.rpDate);
+  });
+  $("calendar-grid").addEventListener("keydown", event => {
+    const button = event.target.closest("[data-rp-date]");
+    if (!button || !state.calendar) return;
+    const date = button.dataset.rpDate, offset = (dateObject(date).getDay() + 6) % 7;
+    const steps = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7, Home: -offset, End: 6 - offset };
+    let next;
+    if (event.key in steps) next = addDays(date, steps[event.key]);
+    else if (["PageUp", "PageDown"].includes(event.key)) {
+      const month = dateObject(`${date.slice(0, 7)}-01`);
+      month.setMonth(month.getMonth() + (event.key === "PageUp" ? -1 : 1));
+      const lastDay = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+      month.setDate(Math.min(Number(date.slice(-2)), lastDay)); next = iso(month);
+    } else return;
+    event.preventDefault();
+    if (next.slice(0, 4) !== state.applied.year) return;
+    state.calendar.month = next.slice(0, 7); state.calendar.focusDate = next;
+    drawCalendar(true);
+  });
+  $("chart-query").addEventListener("submit", event => {
+    event.preventDefault();
+    if (!hasDateRange()) return;
+    const { start, end } = state.chartDraft;
+    const error = dateRangeError(start, end, state.applied.year);
+    updateChartDates(error);
+    if (error) return;
+    state.applied = { ...state.applied, period: "custom", start, end };
+    $("status").textContent = "";
+    syncDateControls(); render();
+  });
+  $("chart-year").addEventListener("click", () => {
+    if (!hasDateRange()) return;
+    state.applied = { ...state.applied, period: "year", ...periodRange("year", today(), state.applied.year) };
+    $("status").textContent = "";
+    syncDateControls(); render();
+  });
+  $("period-query").addEventListener("submit", event => {
+    event.preventDefault();
+    if (state.mode !== "period") return;
+    $("end").setCustomValidity("");
+    if (!$("period-query").reportValidity()) return;
+    const start = $("start").value, end = $("end").value;
+    if (!validDate(start) || !validDate(end) || start > end ||
+      start.slice(0, 4) !== state.applied.year || end.slice(0, 4) !== state.applied.year) {
+      $("end").setCustomValidity("Escolha datas válidas do ano letivo, com a data final igual ou posterior à inicial.");
+      $("end").reportValidity(); return;
+    }
+    state.applied = { ...state.applied, period: "custom", start, end };
+    render();
+  });
+  [$("start"), $("end")].forEach(input => input.addEventListener("input", () => $("end").setCustomValidity("")));
+  $("weekly-date").addEventListener("change", () => {
+    const input = $("weekly-date");
+    if (!input.reportValidity() || !validDate(input.value) || input.value.slice(0, 4) !== state.applied.year) return;
+    state.applied = { ...state.applied, ...periodRange("week", input.value, state.applied.year) };
+    syncDateControls(); render();
+  });
+  $("closing-month").addEventListener("change", () => {
+    const input = $("closing-month");
+    if (!input.reportValidity() || !/^\d{4}-\d{2}$/.test(input.value) || input.value.slice(0, 4) !== state.applied.year) return;
+    state.applied = { ...state.applied, ...periodRange("month", `${input.value}-01`, state.applied.year) };
+    syncDateControls(); render();
+  });
   document.addEventListener("click", event => { if (!event.target.closest(".rp-select")) closeSelects(); });
-  document.addEventListener("keydown", event => { if (event.key === "Escape") { const opened = [...customSelects.values()].find(custom => custom.wrapper.classList.contains("is-open")); if (opened) { closeSelects(); opened.button.focus(); } } });
-  document.addEventListener("alunotec:yearchange", event => {
-    if (syncingYear) return;
-    loadData(); fillFilters(String(event.detail?.year || window.AlunoTecShell?.getYear?.() || "")); setRange(); applyFilters();
+  document.addEventListener("keydown", event => {
+    if (event.key !== "Escape") return;
+    const opened = [...customSelects.values()].find(custom => custom.wrapper.classList.contains("is-open"));
+    if (opened) { closeSelects(); opened.button.focus(); }
   });
   function refreshFromStorage() {
-    const applied = state.applied;
-    const pendingYear = $("year").value;
-    loadData(); fillFilters(pendingYear || applied?.year);
-    if (applied) { state.applied = applied; render(); }
+    const action = activeReport();
+    loadData();
+    if (!state.applied || state.applied.year !== selectedYear()) {
+      if (state.stage === "catalog") {
+        state.applied = reportRange(state.data, selectedYear(), action);
+        syncDateControls(); render(); return;
+      }
+      chooseReport(action, false); return;
+    }
+    if (state.stage !== "catalog" && isClassReport() && selectedClassId() && !chosenClass()) {
+      state.pickerOpen = true; state.stage = "classes"; state.classType = "base";
+      $("status").textContent = "A turma selecionada não está mais disponível. Escolha outra turma.";
+    }
+    render();
   }
+  document.addEventListener("alunotec:yearchange", refreshFromStorage);
   window.addEventListener("storage", event => {
-    if (event.key === KEYS.year) {
-      loadData(); fillFilters(event.newValue || window.AlunoTecShell?.getYear?.()); setRange(); applyFilters();
-    } else if (!event.key || Object.values(KEYS).includes(event.key)) refreshFromStorage();
+    if (!event.key || Object.values(KEYS).includes(event.key)) refreshFromStorage();
   });
   window.addEventListener("alunotec:frequency-updated", refreshFromStorage);
   window.addEventListener("alunotec:datarestored", refreshFromStorage);
   window.addEventListener("focus", refreshFromStorage);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshFromStorage(); });
-  loadData(); fillFilters();
+  if (typeof ResizeObserver !== "undefined") {
+    let chartWidth = 0;
+    new ResizeObserver(([entry]) => {
+      const width = entry.contentRect.width;
+      if (state.stage !== "report" || isIndividualReport() || !width || Math.abs(width - chartWidth) < 1) return;
+      chartWidth = width;
+      renderLine(state.rows);
+    }).observe($("line-chart"));
+  }
+  loadData();
   root.querySelectorAll("[data-rp-select]").forEach(enhanceSelect);
-  setRange(); applyFilters();
+  state.applied = reportRange(state.data, selectedYear(), "overview");
+  syncDateControls(); render();
 })();

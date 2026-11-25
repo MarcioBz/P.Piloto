@@ -24,18 +24,9 @@
 .rp-card h2 > .rp-icon { color: var(--rp-green); }
 .rp-muted { color: var(--rp-muted); font-size: 12px; }
 .rp-card { min-width: 0; padding: 18px; border: 1px solid var(--rp-line); border-radius: 16px; background: #fff; box-shadow: 0 3px 12px #1d3b2005; }
-/* Controles do relatório. Classes exclusivas evitam interferência no topbar. */
-.rp-filter-card { display: grid; grid-template-columns: .75fr .95fr .85fr 1.15fr 2.15fr auto; align-items: end; gap: 14px; padding: 16px; margin: 0 0 12px; border: 1px solid var(--rp-line); border-radius: 16px; background: #fff; }
+/* Controles específicos de cada relatório. */
 .rp-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.rp-field > label, .rp-dates > legend { color: #283e30; font-size: 12px; font-weight: 700; }
-.rp-dates { min-width: 0; margin: 0; padding: 0; border: 0; }
-.rp-dates > legend { margin-bottom: 6px; }
-.rp-dates > div { display: flex; align-items: center; gap: 5px; min-height: 42px; padding: 0 9px; border: 1px solid #d8e3d8; border-radius: 10px; }
-.rp-dates input { min-width: 0; width: 100%; height: 40px; padding: 0; border: 0; background: transparent; color: #294535; font-size: 12px; }
-.rp-dates input::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .65; }
-.rp-filter-feedback:empty { display: none; }
-.rp-filter-feedback { grid-column: 1 / -1; color: #6a7c6e; font-size: 12px; }
-.rp-filter-feedback.is-dirty { color: #94601a; }
+.rp-field > label { color: #283e30; font-size: 12px; font-weight: 700; }
 .rp-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 10px 15px; border: 1px solid transparent; border-radius: 10px; font-weight: 650 !important; line-height: 1.35; transition: filter .15s; }
 .rp-button:hover { filter: brightness(.95); }
 .rp-primary { color: #fff; background: #176c32; }
@@ -83,17 +74,10 @@
 .rp-day-stat { display: flex; align-items: center; flex-direction: column; gap: 7px; padding: 13px 5px; border-radius: 10px; color: #2b4f31; background: #eff8ee; }
 .rp-day-stat svg { width: 24px; height: 24px; }
 .rp-day-stat:nth-child(2) .rp-icon { color: #d8404e; }
-.rp-day-stat:nth-child(3) .rp-icon { color: #7d897e; }
+.rp-day-stat:nth-child(3) .rp-icon { color: #2f80d0; }
 .rp-day-stat small { font-size: 10px; }
 .rp-day-stat strong { color: #1b3022; font-size: clamp(18px, 1.7vw, 25px); line-height: 1.15; }
 /* Um único catálogo reúne todos os modelos de relatório. */
-.rp-bottom {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 250px;
-  align-items: start;
-  gap: 16px;
-  margin-bottom: 16px;
-}
 
 .rp-catalog {
   padding: 22px;
@@ -259,8 +243,303 @@
   display: inline-flex;
 }
 
+/* Seleção de turmas, no mesmo estilo da aba Alunos. */
+.rp-class-picker {
+  margin-bottom: 18px;
+  padding: 24px;
+  scroll-margin-top: 24px;
+}
+
+.rp-picker-header,
+.rp-picker-list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.rp-picker-header h2 {
+  font-size: 19px;
+}
+
+.rp-picker-header p,
+.rp-picker-list-heading p {
+  margin-top: 5px;
+  color: var(--rp-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.rp-picker-year {
+  padding: 7px 11px;
+  border: 1px solid #dfe9dd;
+  border-radius: 9px;
+  background: #f5f9f3;
+  color: #55715b;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.rp-class-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 22px 0;
+}
+
+.rp-class-type {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 10px 18px;
+  border: 1px solid transparent;
+  border-radius: 24px;
+  background: #f3f8f3;
+  color: #637668;
+  font-weight: 650 !important;
+}
+
+.rp-class-type span {
+  display: grid;
+  place-items: center;
+  min-width: 21px;
+  height: 21px;
+  padding: 0 5px;
+  border-radius: 50%;
+  background: #fff;
+  color: #45654b;
+  font-size: 11px;
+}
+
+.rp-class-type.is-active {
+  background: #2c632d;
+  color: #fff;
+}
+
+.rp-class-type:hover {
+  border-color: #9fbea3;
+}
+
+.rp-picker-list-heading h3 {
+  color: #304e37;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.rp-class-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.rp-class-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  min-height: 96px;
+  padding: 18px;
+  border: 1px solid #e1e9df;
+  border-radius: 14px;
+  background: #fff;
+  color: #294c32;
+  text-align: left;
+  box-shadow: 0 2px 7px rgb(29 59 32 / 3%);
+  transition: border-color .18s, background .18s;
+}
+
+.rp-class-card:hover {
+  border-color: #9cbea1;
+  background: #f5faf3;
+}
+
+.rp-class-symbol {
+  display: grid;
+  place-items: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #edf6ee;
+  color: #4a8155;
+}
+
+.rp-class-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.rp-class-copy strong {
+  color: #304e37;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.rp-class-copy small {
+  color: #7c8b7e;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.rp-class-arrow {
+  flex: 0 0 auto;
+  color: #557f5d;
+}
+
+.rp-class-arrow svg {
+  width: 16px;
+  height: 16px;
+}
+
+.rp-class-absences {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 46px;
+  margin-left: auto;
+}
+
+.rp-class-absences strong {
+  display: grid;
+  place-items: center;
+  min-width: 32px;
+  height: 30px;
+  padding: 0 7px;
+  border: 1px solid #e0e7dc;
+  border-radius: 10px;
+  background: #f3f6f0;
+  color: #81917e;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.rp-class-absences.has-absences strong {
+  border-color: #2c632d;
+  background: #2c632d;
+  color: #fff;
+}
+
+.rp-class-absences small {
+  color: #7b8e7c;
+  font-size: 10px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.rp-picker-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  margin-top: 18px;
+  padding: 30px 18px;
+  border: 1px dashed #d9e5d7;
+  border-radius: 13px;
+  background: #fafcf9;
+  color: #738378;
+  text-align: center;
+}
+
+.rp-picker-empty h3 {
+  color: #36583e;
+  font-size: 15px;
+}
+
+.rp-picker-empty a {
+  color: #28713b;
+  font-weight: 650;
+}
+
+.rp-picker-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #edf1eb;
+}
+
+.rp-class-context {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+  padding: 14px 16px;
+  border: 1px solid #dfeadd;
+  border-radius: 12px;
+  background: #f4f9f1;
+  color: #397045;
+}
+
+.rp-class-context > div {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.rp-class-context strong {
+  color: #2d4d35;
+  font-size: 14px;
+}
+
+.rp-class-context small {
+  color: #738378;
+  font-size: 11px;
+}
+
+.rp-query-controls {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 22px;
+  padding: 16px;
+  border: 1px solid #e1eadf;
+  border-radius: 12px;
+  background: #f7faf5;
+}
+
+.rp-query-controls input {
+  min-width: 0;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid #d8e3d6;
+  border-radius: 9px;
+  background: #fff;
+  color: #294535;
+}
+
+.rp-query-controls p {
+  align-self: center;
+  color: #738378;
+  font-size: 12px;
+}
+
+#rp-view {
+  scroll-margin-top: 24px;
+}
+
 @media (max-width: 1050px) {
-  .rp-bottom {
+
+  .rp-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .rp-charts {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -273,6 +552,31 @@
   .rp-report-link {
     min-height: 100px;
     padding: 14px;
+  }
+
+  .rp-class-picker {
+    padding: 18px;
+  }
+
+  .rp-metrics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rp-class-context {
+    flex-wrap: wrap;
+  }
+
+  .rp-class-context .rp-button {
+    width: 100%;
+  }
+
+  .rp-query-controls .rp-field,
+  .rp-query-controls .rp-button {
+    width: 100%;
+  }
+
+  .rp-query-controls input {
+    width: 100%;
   }
 }
 
@@ -753,5 +1057,595 @@ body[data-app-page="reports"]
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+/* Organização por etapas: catálogo, escolha da turma e resultado. */
+.rp-catalog-groups {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: 22px;
+  margin-top: 22px;
+}
+
+.rp-catalog-group {
+  min-width: 0;
+}
+
+.rp-catalog-group h3 {
+  padding-bottom: 11px;
+  border-bottom: 1px solid #e7eee3;
+  color: #617663;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.rp-catalog-group .rp-report-links {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.rp-catalog-group .rp-report-link {
+  align-items: center;
+  min-height: 94px;
+  padding: 14px;
+  background: #fbfdf9;
+}
+
+.rp-flow-nav {
+  display: flex;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.rp-class-types {
+  margin: 18px 0 0;
+}
+
+.rp-class-grid {
+  margin-top: 16px;
+}
+
+.rp-back-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid #dce6d9;
+  border-radius: 10px;
+  background: #fff;
+  color: #45684b;
+  font-weight: 600 !important;
+}
+
+.rp-back-button:hover {
+  background: #f1f7ee;
+}
+
+.rp-back-icon svg {
+  width: 16px;
+  height: 16px;
+  transform: rotate(180deg);
+}
+
+.rp-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 230px;
+  align-items: start;
+  gap: 16px;
+}
+
+.rp-workspace #rp-view {
+  min-width: 0;
+}
+
+.rp-workspace #rp-metrics {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.rp-workspace > .rp-export {
+  gap: 12px;
+  padding: 18px;
+}
+
+.rp-workspace > .rp-export h2 {
+  margin-bottom: 4px;
+  font-size: 15px;
+}
+
+.rp-supplement {
+  margin-top: 18px;
+  border-top: 1px solid #e6ede2;
+}
+
+.rp-supplement > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  color: #56705b;
+  font-size: 12px;
+  font-weight: 650;
+  list-style: none;
+  cursor: pointer;
+}
+
+.rp-supplement > summary::-webkit-details-marker {
+  display: none;
+}
+
+.rp-supplement > summary::after {
+  content: "";
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  margin-right: 3px;
+  border-right: 1.5px solid #69866d;
+  border-bottom: 1.5px solid #69866d;
+  transform: rotate(45deg);
+}
+
+.rp-supplement[open] > summary {
+  margin-bottom: 12px;
+}
+
+.rp-supplement[open] > summary::after {
+  transform: rotate(225deg);
+}
+
+.rp-supplement > summary:focus-visible {
+  outline: 3px solid #77aa80;
+  outline-offset: 3px;
+}
+
+.rp-supplement .rp-charts {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 0;
+}
+
+.rp-supplement .rp-evolution {
+  grid-column: 1 / -1;
+}
+
+.rp-class-evolution {
+  margin-bottom: 24px;
+}
+
+.rp-chart-query {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 16px 0;
+  border-bottom: 1px solid #e5ece2;
+}
+
+.rp-date-button {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-height: 50px;
+  padding: 11px 14px;
+  border: 1px solid #cddfd0;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fff, #fbfdfb);
+  box-shadow: 0 2px 5px rgb(22 58 23 / 6%);
+  color: #304d3b;
+  text-align: left;
+}
+
+.rp-date-button .rp-icon {
+  color: #2b7b43;
+}
+
+.rp-date-button:hover,
+.rp-date-button[aria-expanded="true"] {
+  border-color: #82b18a;
+  box-shadow: 0 0 0 3px rgb(48 131 65 / 7%);
+}
+
+.rp-range-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rp-range-actions > .rp-button {
+  min-height: 50px;
+}
+
+.rp-chart-query.is-individual {
+  grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(0, 1fr));
+  margin: 0 0 20px;
+  padding: 0 0 18px;
+}
+
+.rp-chart-query.is-individual .rp-student-field {
+  max-width: none;
+  margin: 0;
+}
+
+.rp-chart-query.is-individual .rp-select-button {
+  min-height: 50px;
+  padding: 11px 14px;
+  border-radius: 14px;
+}
+
+.rp-chart-query.is-individual .rp-range-actions {
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+}
+
+.rp-chart-year {
+  min-height: 50px;
+  padding: 10px;
+  border: 0;
+  background: transparent;
+  color: #487452;
+  font-weight: 650 !important;
+}
+
+.rp-chart-range-hint,
+.rp-chart-range-error {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.rp-chart-range-hint {
+  color: #7c8c7e;
+}
+
+.rp-chart-range-error {
+  color: #b33340;
+}
+
+.rp-date-button[aria-invalid="true"] {
+  border-color: #ce6d76;
+}
+
+.rp-calendar-dialog {
+  position: fixed;
+  inset: 0;
+  width: min(450px, calc(100vw - 28px));
+  max-height: calc(100dvh - 28px);
+  margin: auto;
+  padding: 30px 32px;
+  overflow-y: auto;
+  border: 0;
+  border-radius: 26px;
+  background: #fff;
+  color: #31473a;
+  box-shadow: 0 20px 70px rgb(14 42 24 / 20%);
+}
+
+.rp-calendar-dialog::backdrop {
+  background: rgb(20 47 31 / 38%);
+  backdrop-filter: blur(5px);
+}
+
+.rp-calendar-dialog h2 {
+  padding-right: 30px;
+  color: #172f27;
+  font-size: 24px;
+}
+
+.rp-calendar-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #f3f7f3;
+  color: #6d8175;
+}
+
+.rp-calendar-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 24px 0 15px;
+}
+
+.rp-calendar-controls strong {
+  font-size: 17px;
+  text-align: center;
+}
+
+.rp-calendar-controls button,
+.rp-calendar-footer button {
+  min-width: 40px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 11px;
+  background: #f2f8f1;
+  color: #2d743f;
+  font-weight: 700 !important;
+}
+
+.rp-calendar-controls button {
+  display: grid;
+  place-items: center;
+  padding: 8px;
+}
+
+.rp-calendar-controls svg {
+  width: 17px;
+  height: 17px;
+}
+
+#rp-calendar-prev svg {
+  transform: rotate(180deg);
+}
+
+.rp-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+  text-align: center;
+}
+
+.rp-calendar-weekday {
+  padding: 7px 0 11px;
+  color: #819087;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.rp-calendar-day {
+  position: relative;
+  min-width: 0;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  color: #3f5347;
+  font-size: 17px !important;
+}
+
+.rp-calendar-day:hover,
+.rp-calendar-day.is-selected {
+  background: #e9f5ed;
+}
+
+.rp-calendar-day.has-call::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  left: calc(50% - 2px);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #205d2c;
+}
+
+.rp-calendar-day.is-outside {
+  color: #aeb9b1;
+}
+
+.rp-calendar-day.is-today {
+  background: #1988d8;
+  color: #fff;
+  font-weight: 700 !important;
+}
+
+.rp-calendar-day.is-today::after {
+  background: #fff;
+}
+
+.rp-calendar-day.is-selected {
+  box-shadow: inset 0 0 0 2px #4b8d5c;
+}
+
+.rp-calendar-day:disabled,
+.rp-calendar-controls button:disabled,
+.rp-calendar-footer button:disabled {
+  opacity: .4;
+  cursor: default;
+}
+
+.rp-calendar-dialog button:focus-visible,
+.rp-date-button:focus-visible,
+.rp-chart-year:focus-visible {
+  outline: 3px solid #78a982;
+  outline-offset: 3px;
+}
+
+.rp-calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 21px;
+  color: #7c8c81;
+  font-size: 11px;
+}
+
+.rp-calendar-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.rp-calendar-legend i {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+}
+
+.rp-calendar-key-call {
+  background: #205d2c;
+}
+
+.rp-calendar-key-today {
+  background: #1988d8;
+}
+
+.rp-calendar-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 18px;
+}
+
+.rp-class-evolution > .rp-evolution {
+  padding: 20px;
+  border-color: #e4ece2;
+  background: #fcfefb;
+  box-shadow: none;
+}
+
+.rp-evolution-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 22px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rp-evolution-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #54675a;
+  font-size: 12px;
+}
+
+.rp-evolution-legend li::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--series-color);
+}
+
+.rp-evolution .rp-line-chart svg {
+  max-height: 280px;
+}
+
+.rp-class-evolution .rp-line-chart {
+  min-height: 200px;
+}
+
+.rp-methodology-content {
+  display: grid;
+  gap: 12px;
+  padding-bottom: 8px;
+}
+
+.rp-methodology .rp-table-note,
+.rp-methodology .rp-footnote {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #7b8c7d;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.rp-status {
+  min-height: 0;
+  margin: 0 0 14px !important;
+  padding: 11px 14px;
+  border: 1px solid #dce8d6;
+  border-radius: 10px;
+  background: #f1f8ee;
+  color: #416b47;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.rp-status:empty {
+  display: none;
+}
+
+@media (max-width: 1050px) {
+  .rp-chart-query {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rp-range-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+
+  .rp-catalog-groups {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .rp-catalog-group .rp-report-links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rp-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .rp-chart-query.is-individual {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rp-chart-query.is-individual .rp-student-field {
+    grid-column: 1 / -1;
+  }
+
+  .rp-calendar-dialog {
+    padding: 26px 20px;
+  }
+
+  .rp-calendar-day {
+    height: 39px;
+    font-size: 15px !important;
+  }
+
+  .rp-chart-query {
+    gap: 10px;
+  }
+
+  .rp-catalog-group .rp-report-links,
+  .rp-supplement .rp-charts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rp-workspace #rp-view {
+    padding: 18px;
+  }
+
+  .rp-class-evolution > .rp-evolution {
+    padding: 15px 10px;
+  }
+
+  .rp-class-evolution .rp-line-chart {
+    min-height: 140px;
+  }
+
+  .rp-evolution-legend {
+    gap: 10px 14px;
+  }
+
+  .rp-supplement .rp-situation-content {
+    flex-direction: column;
+    gap: 16px;
+  }
 }
 
