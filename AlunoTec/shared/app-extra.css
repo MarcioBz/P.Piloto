@@ -55,20 +55,57 @@
   text-decoration: underline;
 }
 
-.at-dialog-close {
+.at-app-dialog .at-dialog-close {
   position: absolute;
   top: 14px;
   right: 16px;
   display: grid;
   place-items: center;
+  box-sizing: border-box;
   width: 32px;
   height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  margin: 0;
+  padding: 0;
   border: 0;
   border-radius: 50%;
   background: #f0f5ef;
   color: #657a69;
-  font-size: 23px;
+  font-size: 0;
+  line-height: 1;
   cursor: pointer;
+}
+
+.at-app-dialog .at-dialog-close::before,
+.at-app-dialog .at-dialog-close::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  pointer-events: none;
+}
+
+.at-app-dialog .at-dialog-close::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.at-app-dialog .at-dialog-close::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.at-app-dialog .at-dialog-close:hover {
+  background: #e3eee2;
+  color: #355b3d;
+}
+
+.at-app-dialog .at-dialog-close:focus-visible {
+  outline: 2px solid #317330;
+  outline-offset: 3px;
 }
 
 .at-mode-badge {
