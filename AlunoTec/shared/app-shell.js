@@ -161,7 +161,7 @@
           <span><strong>Suporte</strong><small>Precisa de ajuda?</small></span>
         </button>
         <footer class="sidebar-footer">
-          <strong>AlunoTec • <span id="footerYear" data-school-year>2026</span></strong>
+          <strong>AlunoTec • <span id="footerYear" data-school-year>${new Date().getFullYear()}</span></strong>
           <span>Todos os direitos reservados.</span>
           <div class="sidebar-footer-credits" aria-label="Créditos do projeto">
             <span><strong>Criador:</strong> Márcio Bezerra</span>
@@ -188,11 +188,11 @@
         <div class="year-custom-select" id="yearDropdown">
           <button class="custom-select-trigger" id="yearPickerButton" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="yearMenu">
             <span class="custom-select-icon">${icon("calendarSmall")}</span>
-            <span class="custom-select-content"><small>Ano letivo</small><strong id="selectedYear">2026</strong></span>
+            <span class="custom-select-content"><small>Ano letivo</small><strong id="selectedYear">${new Date().getFullYear()}</strong></span>
             ${icon("menu", "custom-select-menu-icon")}
           </button>
           <div class="custom-select-menu" id="yearMenu" role="listbox" hidden></div>
-          <input type="hidden" id="yearSelect" value="2026">
+          <input type="hidden" id="yearSelect" value="${new Date().getFullYear()}">
           ${page === "students" ? '<div class="shell-year-compat" hidden><select id="yearFilter" aria-label="Ano letivo dos alunos"></select></div>' : ""}
         </div>
       </div>
@@ -329,6 +329,8 @@
   const yearInput = document.getElementById("yearSelect");
   const studentYearSelect = document.getElementById("yearFilter");
   const schoolYearKey = "alunotecSchoolYear";
+  const calendarYearKey = "alunotec_last_calendar_year_v1";
+  const validYear = value => /^\d{4}$/.test(String(value || ""));
 
   function normalizeClassYear(item) {
     const declaredYear = String(item?.year || "").trim();
@@ -337,7 +339,9 @@
     const dateYear = String(item?.date || "").slice(0, 4);
     if (/^\d{4}$/.test(dateYear)) return dateYear;
 
-    return String(new Date().getFullYear());
+    let savedYear = "";
+    try { savedYear = localStorage.getItem(schoolYearKey) || ""; } catch {}
+    return validYear(savedYear) ? String(savedYear) : String(new Date().getFullYear());
   }
 
   function getSavedClasses() {
@@ -345,31 +349,65 @@
       const saved = JSON.parse(
         localStorage.getItem("alunotec_turmas_v2") || "{}",
       );
-      return [
+      const classes = [
         ...(Array.isArray(saved?.base) ? saved.base : []),
         ...(Array.isArray(saved?.electives) ? saved.electives : []),
-      ];
+      ].filter(item => item && typeof item === "object");
+      let changed = false;
+      classes.forEach(item => {
+        if (validYear(item.year)) return;
+        // Fixa o ano dos cadastros antigos uma vez, sem alterar seus alunos ou datas.
+        item.year = normalizeClassYear(item); changed = true;
+      });
+      if (changed) {
+        try { localStorage.setItem("alunotec_turmas_v2", JSON.stringify(saved)); } catch {}
+      }
+      return classes;
     } catch {
       return [];
     }
   }
 
   function yearsFromSavedClasses() {
+    const current = new Date().getFullYear();
     const years = new Set(getSavedClasses().map(normalizeClassYear));
-    if (!years.size) years.add(String(new Date().getFullYear()));
+    // A janela avança a cada ano. Anos com dados permanecem disponíveis fora dela.
+    for (let year = current - 1; year <= current + 5; year++) years.add(String(year));
+    try {
+      const saved = localStorage.getItem(schoolYearKey);
+      if (validYear(saved)) years.add(String(saved));
+      const calls = JSON.parse(localStorage.getItem("alunotec_frequencia_v1") || "{}");
+      Object.values(calls || {}).forEach(call => {
+        const year = validYear(call?.year) ? String(call.year) : String(call?.date || "").slice(0, 4);
+        if (validYear(year)) years.add(year);
+      });
+    } catch {}
     return [...years].sort((a, b) => Number(b) - Number(a));
   }
 
+  function initialSchoolYear() {
+    const current = String(new Date().getFullYear());
+    let saved = "", previousCalendarYear = "";
+    try {
+      saved = localStorage.getItem(schoolYearKey) || "";
+      previousCalendarYear = localStorage.getItem(calendarYearKey) || "";
+      localStorage.setItem(calendarYearKey, current);
+    } catch {}
+    if ((!validYear(previousCalendarYear) || Number(previousCalendarYear) < Number(current)) &&
+        (!validYear(saved) || Number(saved) < Number(current))) return current;
+    return validYear(saved) ? saved : current;
+  }
+
   function setYears(_values, preferredYear, notify = false) {
-    // A lista do topbar sempre vem das turmas salvas, nunca de filtros locais ou chamadas antigas.
+    // Um ano novo pode ser escolhido antes do cadastro de suas turmas.
     const years = yearsFromSavedClasses();
     const options = years.length ? years : [String(new Date().getFullYear())];
     let savedYear = "";
     try {
       savedYear = localStorage.getItem(schoolYearKey) || "";
     } catch {}
-    let selected = String(preferredYear || savedYear || options[0]);
-    if (!options.includes(selected)) selected = options[0];
+    let selected = String(preferredYear || savedYear || new Date().getFullYear());
+    if (!options.includes(selected)) selected = String(new Date().getFullYear());
 
     yearMenu.replaceChildren();
     options.forEach((year) => {
@@ -438,11 +476,9 @@
     closeYearMenu();
   });
 
-  let initialYear = "";
-  try {
-    initialYear = localStorage.getItem(schoolYearKey) || "";
-  } catch {}
-  setYears(yearsFromSavedClasses(), initialYear);
+  // Normaliza cadastros legados antes de atualizar a seleção na virada do ano.
+  getSavedClasses();
+  setYears(yearsFromSavedClasses(), initialSchoolYear());
 
   window.addEventListener("storage", (event) => {
     if (event.key === schoolYearKey) {
@@ -450,7 +486,7 @@
       return;
     }
 
-    if (event.key === "alunotec_turmas_v2") {
+    if (["alunotec_turmas_v2", "alunotec_frequencia_v1"].includes(event.key)) {
       const availableYears = yearsFromSavedClasses();
       const currentYear = yearInput.value;
       setYears(
@@ -809,9 +845,10 @@
     setYears,
     getYears: yearsFromSavedClasses,
     getClassYear(classId, fallback = "") {
-      const item = getSavedClasses().find(
+      const matches = getSavedClasses().filter(
         (entry) => String(entry?.id) === String(classId),
       );
+      const item = matches.find(entry => normalizeClassYear(entry) === String(fallback)) || matches[0];
       return item ? normalizeClassYear(item) : String(fallback || "");
     },
     getYear: () => yearInput.value,

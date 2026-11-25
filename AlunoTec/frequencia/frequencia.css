@@ -783,6 +783,12 @@ td {
 .calendar-day:hover {
   background: #eaf4eb;
 }
+.calendar-day:disabled,
+.calendar-controls button:disabled,
+.calendar-footer button:disabled {
+  opacity: .4;
+  cursor: default;
+}
 .calendar-day.registered:not(.today) {
   background: #205d2c;
   color: #fff;
@@ -1208,5 +1214,160 @@ td {
   }
   .dialog-actions .button {
     flex: 1 1 140px;
+  }
+}
+
+/* Cartões de escolha da turma, com o mesmo fluxo para Base Comum e Eletivas. */
+.attendance-class-browser {
+  padding: 22px 0 4px;
+}
+.attendance-class-browser > h3 {
+  margin: 0 0 5px;
+  color: #304b37;
+  font-size: 17px;
+  line-height: 1.4;
+}
+.attendance-class-browser > p {
+  margin: 0 0 19px;
+  color: #7b877f;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.attendance-class-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+  gap: 14px;
+}
+.attendance-class-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+  min-height: 92px;
+  padding: 17px;
+  border: 1px solid #e0e7e1;
+  border-radius: 14px;
+  background: #fff;
+  color: #36523e;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .18s, background .18s, transform .18s;
+}
+.attendance-class-card:hover {
+  border-color: #a2c1a5;
+  background: #f8fcf7;
+  transform: translateY(-1px);
+}
+.attendance-class-card:focus-visible,
+.attendance-back-button:focus-visible {
+  outline: 3px solid #78aa81;
+  outline-offset: 3px;
+}
+.attendance-card-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 43px;
+  width: 43px;
+  height: 43px;
+  border-radius: 12px;
+  color: #4a8056;
+  background: #edf6ee;
+}
+.attendance-card-icon svg {
+  width: 24px;
+  height: 24px;
+}
+.attendance-card-copy {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 5px;
+}
+.attendance-card-copy strong {
+  color: #304b37;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.attendance-card-copy small {
+  color: #7c887f;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.attendance-card-arrow {
+  flex: 0 0 17px;
+  width: 17px;
+  height: 17px;
+  color: #56815b;
+}
+.attendance-classes-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 28px 16px;
+  border: 1px solid #e0e7e1;
+  border-radius: 14px;
+  color: #7c887f;
+  text-align: center;
+  font-size: 13px;
+}
+.attendance-selected-class {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 22px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #edf1ed;
+}
+.attendance-selected-class h3 {
+  margin: 0 0 3px;
+  color: #304b37;
+  font-size: 17px;
+}
+.attendance-selected-class p {
+  margin: 0;
+  color: #7c887f;
+  font-size: 11px;
+}
+.attendance-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 39px;
+  padding: 8px 12px;
+  border: 1px solid #dce6dc;
+  border-radius: 10px;
+  background: #fff;
+  color: #3b6746;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.attendance-back-button svg {
+  width: 17px;
+  height: 17px;
+}
+.attendance-call-panel .toolbar {
+  grid-template-columns: minmax(190px, 1fr) minmax(140px, .8fr) auto auto;
+}
+.attendance-native-class[hidden],
+.attendance-class-browser[hidden],
+.attendance-call-panel[hidden] {
+  display: none !important;
+}
+@media (max-width: 1180px) {
+  .attendance-call-panel .toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .attendance-call-panel .toolbar .button {
+    width: 100%;
+  }
+}
+@media (max-width: 600px) {
+  .attendance-call-panel .toolbar {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

@@ -799,7 +799,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .filter((year) => /^\d{4}$/.test(year));
 
         const uniqueYears =
-            [...new Set(classYears.length ? classYears : [CURRENT_YEAR])]
+            [...new Set([...(window.AlunoTecShell?.getYears?.() || []), ...classYears, CURRENT_YEAR])]
                 .sort(
                     (a, b) =>
                         Number(b) - Number(a)

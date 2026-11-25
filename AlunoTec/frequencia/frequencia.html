@@ -16,6 +16,7 @@
     <title>Frequência | AlunoTec</title>
     <link rel="icon" type="image/png" href="../assets/icons/icone.png" />
     <link rel="stylesheet" href="frequencia.css" />
+    <link rel="stylesheet" href="../shared/class-groups.css" />
 
     <link rel="stylesheet" href="../shared/responsive-shell.css" />
     <link rel="stylesheet" href="../shared/profile.css" />
@@ -227,11 +228,23 @@
               >
             </div>
             <div class="attendance-class-types" role="group" aria-label="Tipo de turma">
-              <button type="button" class="attendance-class-type is-active" data-class-type="base" aria-pressed="true" aria-controls="classSelect">Base Comum <span id="baseClassCount">0</span></button>
-              <button type="button" class="attendance-class-type" data-class-type="electives" aria-pressed="false" aria-controls="classSelect">Eletivas <span id="electiveClassCount">0</span></button>
+              <button type="button" class="attendance-class-type is-active" data-class-type="base" aria-pressed="true" aria-controls="attendanceClassBrowser">Base Comum <span id="baseClassCount">0</span></button>
+              <button type="button" class="attendance-class-type" data-class-type="electives" aria-pressed="false" aria-controls="attendanceClassBrowser">Eletivas <span id="electiveClassCount">0</span></button>
             </div>
+            <section id="attendanceClassBrowser" class="attendance-class-browser" aria-labelledby="attendanceClassesTitle">
+              <h3 id="attendanceClassesTitle">Turmas da Base Comum</h3>
+              <p>Selecione uma turma para registrar a frequência.</p>
+              <div id="attendanceClassCards" class="attendance-class-grid"></div>
+            </section>
+            <div id="attendanceCallPanel" class="attendance-call-panel" hidden>
+              <div class="attendance-selected-class">
+                <button id="attendanceBackToClasses" class="attendance-back-button" type="button">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg>Voltar às turmas
+                </button>
+                <div><h3 id="attendanceSelectedClassTitle"></h3><p id="attendanceSelectedClassSubtitle"></p></div>
+              </div>
             <div class="toolbar">
-              <label class="field"
+              <label class="field attendance-native-class" hidden
                 ><span>Turma</span
                 ><select id="classSelect">
                   <option value="">Selecione uma turma</option>
@@ -305,6 +318,7 @@
                 <i class="dot absent"></i>Ausente
                 <i class="dot justified"></i>Justificado</span
               >
+            </div>
             </div>
           </section>
         </div>

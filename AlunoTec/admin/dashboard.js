@@ -735,9 +735,8 @@ document.addEventListener("DOMContentLoaded", () => {
     ).filter((call) => {
       if (!call) return false;
       const callYear =
-        classYears.get(String(call.classId ?? "")) ||
-        call.year ||
-        call.date?.slice?.(0, 4);
+        call.year || call.date?.slice?.(0, 4) ||
+        classYears.get(String(call.classId ?? ""));
       return String(callYear || "") === year;
     });
     const now = new Date();

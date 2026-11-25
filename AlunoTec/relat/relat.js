@@ -73,7 +73,7 @@
     Object.entries(rawCalls && typeof rawCalls === "object" ? rawCalls : {}).forEach(([key, call]) => {
       if (!call || typeof call !== "object" || !validDate(call.date)) { ignored++; return; }
       const systemId = String(call.classId ?? `historica:${call.className || key}`);
-      const storedYear = /^\d{4}$/.test(String(call.year || "")) ? String(call.year) : "";
+      const storedYear = /^\d{4}$/.test(String(call.year || "")) ? String(call.year) : call.date.slice(0, 4);
       const systemClass = classes.find(item => item.id === systemId && item.year === storedYear) || classById.get(systemId);
       const year = storedYear || String(systemClass?.year || call.date.slice(0, 4));
       if (studentAPI?.createIndex && !indexes.has(year)) {
@@ -299,28 +299,41 @@
     return zip(files);
   }
 
-  /* PDF A4 paisagem, com cabeçalhos repetidos e paginação.
+  /* PDF A4 retrato, com timbre e cabeçalhos repetidos em cada página.
      Helvetica/WinAnsi cobre os caracteres usados em nomes e textos em português. */
   function latinBytes(text) {
     const special = { "€": 128, "‚": 130, "ƒ": 131, "„": 132, "…": 133, "†": 134, "‡": 135, "ˆ": 136, "‰": 137, "Š": 138, "‹": 139, "Œ": 140, "Ž": 142, "‘": 145, "’": 146, "“": 147, "”": 148, "•": 149, "–": 150, "—": 151, "˜": 152, "™": 153, "š": 154, "›": 155, "œ": 156, "ž": 158, "Ÿ": 159 };
     return Uint8Array.from([...String(text)].map(char => special[char] ?? (char.codePointAt(0) <= 255 ? char.codePointAt(0) : 63)));
   }
-  function pdf(table, meta) {
+  function letterheadTitle(view = "overview", mode = "default") {
+    const modes = { period: "Frequência por período", monthly: "Evolução mensal",
+      comparison: "Comparativo entre turmas", absences: "Alunos com maior ausência",
+      closing: "Fechamento mensal" };
+    const views = { overview: "Visão geral", room: "Realidade de sala", system: "Realidade do sistema",
+      student: "Relatório individual", weekly: "Resumo semanal", electives: "Acompanhamento das eletivas" };
+    return modes[mode] || views[view] || "Relatório";
+  }
+  function pdf(table, meta, paper) {
     const escape = value => String(value ?? "").replace(/[\r\n\t]/g, " ")
       .replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
-    const measure = (value, size) => [...String(value)].reduce((sum, char) => sum +
-      (/[ilI.,:;'!| ]/.test(char) ? .3 : /[MW@%]/.test(char) ? 1.05 : /[mw]/.test(char) ? .94 :
-        /[A-ZÁÀÂÃÉÊÍÓÔÕÚÇ]/.test(char) ? .85 : .65) * size, 0);
-    function wrap(value, width, size) {
+    const fontWidths = [
+      [278, 278, 355, 556, 556, 889, 667, 191, 333, 333, 389, 584, 278, 333, 278, 278, 556, 556, 556, 556, 556, 556, 556, 556, 556, 556, 278, 278, 584, 584, 584, 556, 1015, 667, 667, 722, 722, 667, 611, 778, 722, 278, 500, 667, 556, 833, 722, 778, 667, 778, 722, 667, 611, 722, 667, 944, 667, 667, 611, 278, 278, 278, 469, 556, 333, 556, 556, 500, 556, 556, 278, 556, 556, 222, 222, 500, 222, 833, 556, 556, 556, 556, 333, 500, 278, 556, 500, 722, 500, 500, 500, 334, 260, 334, 584],
+      [278, 333, 474, 556, 556, 889, 722, 238, 333, 333, 389, 584, 278, 333, 278, 278, 556, 556, 556, 556, 556, 556, 556, 556, 556, 556, 333, 333, 584, 584, 584, 611, 975, 722, 722, 722, 722, 667, 611, 778, 722, 278, 556, 722, 611, 833, 722, 778, 667, 778, 722, 667, 611, 722, 667, 944, 667, 667, 611, 333, 278, 333, 584, 556, 333, 556, 611, 556, 611, 556, 333, 611, 611, 278, 278, 556, 278, 889, 611, 611, 611, 611, 389, 556, 333, 611, 556, 778, 556, 556, 500, 389, 280, 389, 584]
+    ];
+    const measure = (value, size, bold = false) => [...String(value)].reduce((sum, char) => {
+      const base = char.normalize("NFD").replace(/[\u0300-\u036f]/g, "").charCodeAt(0);
+      return sum + (fontWidths[Number(bold)][base - 32] || (char === "—" ? 1000 : 600));
+    }, 0) * size / 1000;
+    function wrap(value, width, size, bold = false) {
       const words = String(value ?? "—").replace(/\s+/g, " ").trim().split(" ");
       const lines = [];
       let line = "";
       words.forEach(word => {
         const proposed = line ? `${line} ${word}` : word;
-        if (measure(proposed, size) <= width) { line = proposed; return; }
+        if (measure(proposed, size, bold) <= width) { line = proposed; return; }
         if (line) { lines.push(line); line = ""; }
         for (const char of word) {
-          if (line && measure(line + char, size) > width) { lines.push(line); line = ""; }
+          if (line && measure(line + char, size, bold) > width) { lines.push(line); line = ""; }
           line += char;
         }
       });
@@ -331,30 +344,41 @@
       /data|mês|dias com falta|alunos cadastrados/i.test(header) ? 1.5 :
         /turno|situação|justificad|frequência/i.test(header) ? 1.4 : 1);
     const weightTotal = weights.reduce((sum, value) => sum + value, 0);
-    const widths = weights.map(value => 774 * value / weightTotal);
-    const positions = [34];
+    const pageWidth = 595.28, pageHeight = 841.89, margin = 34;
+    const contentWidth = pageWidth - margin * 2, bodyBottom = 94;
+    const minimums = table.headers.map(value => Math.max(...String(value).split(/\s+/).map(word => measure(word, 8, true))) + 12);
+    const remaining = contentWidth - minimums.reduce((sum, width) => sum + width, 0);
+    const widths = weights.map((value, index) => remaining > 0 ? minimums[index] + remaining * value / weightTotal : contentWidth * value / weightTotal);
+    const positions = [margin];
     widths.slice(0, -1).forEach(width => positions.push(positions.at(-1) + width));
-    const headings = table.headers.map((heading, index) => wrap(heading, widths[index] - 12, 8));
+    const headings = table.headers.map((heading, index) => wrap(heading, widths[index] - 12, 8, true));
     const headerHeight = Math.max(...headings.map(lines => lines.length)) * 10 + 12;
     const pages = [];
     function text(page, value, x, y, size = 8, bold = false, color = "0.12 0.22 0.15") {
       page.commands.push(`${color} rg BT /${bold ? "F2" : "F1"} ${size} Tf ${x.toFixed(2)} ${y.toFixed(2)} Td (${escape(value)}) Tj ET`);
     }
     function startPage() {
-      const page = { commands: [], y: 557 };
+      const page = { commands: [], y: 710 };
+      if (paper) page.commands.push(`q ${pageWidth} 0 0 ${pageHeight} 0 0 cm /Paper Do Q`);
+      const title = meta.reportTitle || table.title;
+      let titleSize = 15;
+      while (titleSize > 10 && (wrap(title, 90, titleSize, true).length > 3 ||
+          String(title).split(/\s+/).some(word => measure(word, titleSize, true) > 90))) titleSize -= .5;
+      wrap(title, 90, titleSize, true).forEach((line, index) =>
+        text(page, line, 320, 792 - index * (titleSize + 2), titleSize, true, "0.02 0.25 0.16"));
       const block = (value, size, bold = false, color) => {
-        wrap(value, 774, size).forEach(line => {
-          text(page, line, 34, page.y, size, bold, color); page.y -= size + 4;
+        wrap(value, contentWidth, size, bold).forEach(line => {
+          text(page, line, margin, page.y, size, bold, color); page.y -= size + 4;
         });
         page.y -= 5;
       };
       block(meta.school || "AlunoTec", 11, true, "0.09 0.38 0.17");
-      block(table.title, 16, true);
+      block(table.title, 14, true);
       block(meta.filters, 8);
       block(meta.summary, 8);
       page.bodyTop = page.y - headerHeight;
-      if (page.bodyTop < 120) throw new Error("Os títulos ou filtros são extensos demais para o cabeçalho do PDF.");
-      page.commands.push(`0.91 0.96 0.91 rg 34 ${page.bodyTop.toFixed(2)} 774 ${headerHeight} re f`);
+      if (page.bodyTop < bodyBottom + 30) throw new Error("Os títulos ou filtros são extensos demais para o cabeçalho do PDF.");
+      page.commands.push(`0.91 0.96 0.91 rg ${margin} ${page.bodyTop.toFixed(2)} ${contentWidth} ${headerHeight} re f`);
       headings.forEach((lines, column) => lines.forEach((line, index) =>
         text(page, line, positions[column] + 6, page.y - 12 - index * 10, 8, true)));
       page.y = page.bodyTop;
@@ -366,14 +390,15 @@
       const cells = table.headers.map((_, index) => wrap(row[index], widths[index] - 12, 8));
       const lineCount = Math.max(...cells.map(lines => lines.length));
       const rowHeight = lineCount * 11 + 12;
-      if (page.y - rowHeight < 76 && rowHeight <= page.bodyTop - 76) page = startPage();
+      if (page.y - rowHeight < bodyBottom && rowHeight <= page.bodyTop - bodyBottom) page = startPage();
       let offset = 0;
       while (offset < lineCount) {
-        if (page.y - 23 < 76) page = startPage();
-        const capacity = Math.max(1, Math.floor((page.y - 76 - 12) / 11));
+        if (page.y - 23 < bodyBottom) page = startPage();
+        const capacity = Math.max(1, Math.floor((page.y - bodyBottom - 12) / 11));
         const length = Math.min(capacity, lineCount - offset);
         const height = length * 11 + 12;
-        if (rowIndex % 2 === 0) page.commands.push(`0.97 0.98 0.97 rg 34 ${(page.y - height).toFixed(2)} 774 ${height} re f`);
+        // Linhas transparentes preservam a marca d'água do timbre.
+        page.commands.push(`0.86 0.91 0.88 RG .35 w ${margin} ${(page.y - height).toFixed(2)} m ${pageWidth - margin} ${(page.y - height).toFixed(2)} l S`);
         cells.forEach((lines, column) => lines.slice(offset, offset + length).forEach((line, index) =>
           text(page, line, positions[column] + 6, page.y - 14 - index * 11)));
         page.y -= height;
@@ -382,23 +407,33 @@
       }
     });
     if (!table.rows.length) { text(page, "Nenhum registro para os filtros escolhidos.", 40, page.y - 18, 9); page.y -= 30; }
-    const note = wrap(table.note || "", 774, 7);
+    const note = wrap(table.note || "", contentWidth, 7);
     page.y -= 14;
     note.forEach(line => {
-      if (page.y < 76) { page = startPage(); page.y -= 16; }
+      if (page.y < bodyBottom) { page = startPage(); page.y -= 16; }
       text(page, line, 34, page.y, 7, false, "0.35 0.43 0.37"); page.y -= 10;
     });
     const objects = [null, "", "<< /Type /Catalog /Pages 1 0 R >>",
       "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
       "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>"];
+    let paperId = null;
+    if (paper) {
+      const encoded = String(paper.dataUrl || "").match(/^data:image\/jpeg;base64,(.+)$/)?.[1];
+      if (!encoded || !paper.width || !paper.height) throw new Error("O timbre do relatório não está disponível.");
+      const bytes = typeof atob === "function" ? Uint8Array.from(atob(encoded), char => char.charCodeAt(0)) : Uint8Array.from(Buffer.from(encoded, "base64"));
+      paperId = objects.length;
+      objects.push(concat([latinBytes(`<< /Type /XObject /Subtype /Image /Width ${paper.width} /Height ${paper.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${bytes.length} >>\nstream\n`), bytes, latinBytes("\nendstream")]));
+    }
     const pageIds = [];
     pages.forEach((current, index) => {
-      text(current, "Fonte: registros locais do AlunoTec. Frequência = presenças / (presenças + faltas + justificadas).", 34, 43, 7);
-      text(current, `${meta.generated || ""} | Página ${index + 1} de ${pages.length}`, 34, 28, 8);
+      if (index === pages.length - 1) {
+        text(current, "Fonte: registros locais do AlunoTec. Frequência = presenças / (presenças + faltas + justificadas).", margin, 72, 6.8);
+        text(current, `${meta.generated || ""} | Página ${index + 1} de ${pages.length}`, margin, 60, 7);
+      }
       const content = current.commands.join("\n"), streamId = objects.length;
       objects.push(`<< /Length ${latinBytes(content).length} >>\nstream\n${content}\nendstream`);
       const pageId = objects.length;
-      objects.push(`<< /Type /Page /Parent 1 0 R /MediaBox [0 0 842 595] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${streamId} 0 R >>`);
+      objects.push(`<< /Type /Page /Parent 1 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >>${paperId ? ` /XObject << /Paper ${paperId} 0 R >>` : ""} >> /Contents ${streamId} 0 R >>`);
       pageIds.push(pageId);
     });
     objects[1] = `<< /Type /Pages /Count ${pageIds.length} /Kids [${pageIds.map(id => `${id} 0 R`).join(" ")}] >>`;
@@ -406,7 +441,7 @@
     let length = chunks[0].length;
     objects.slice(1).forEach((object, index) => {
       offsets.push(length);
-      const chunk = latinBytes(`${index + 1} 0 obj\n${object}\nendobj\n`);
+      const chunk = concat([latinBytes(`${index + 1} 0 obj\n`), typeof object === "string" ? latinBytes(object) : object, latinBytes("\nendobj\n")]);
       chunks.push(chunk); length += chunk.length;
     });
     const xref = length;
@@ -513,7 +548,7 @@
 
   if (typeof module !== "undefined" && module.exports) {
     module.exports = { prepareData, filterRows, totals, grouped, periodRange, previousRange,
-      classChoices, activeElectives, reportClasses, reportRange, absenceClasses, frequencyEvolution, dateRangeError, calendarMonthDays, reportTable, pdf, xlsx, studentCatalog, individualSelection };
+      classChoices, activeElectives, reportClasses, reportRange, absenceClasses, frequencyEvolution, dateRangeError, calendarMonthDays, reportTable, letterheadTitle, pdf, xlsx, studentCatalog, individualSelection };
     return;
   }
 
@@ -771,7 +806,7 @@
       button.querySelector("span").textContent = integer(classes.filter(item => item.type === type).length);
     });
     $("picker-list-title").textContent = state.classType === "base" ? "Turmas da Base Comum" : "Turmas eletivas";
-    $("picker-grid").innerHTML = visible.map(item => {
+    $("picker-grid").innerHTML = window.AlunoTecUtils.renderClassGroups(visible, item => {
       const info = [item.grade, item.shift, `${integer(item.students)} ${item.students === 1 ? "aluno" : "alunos"}`,
         item.historical ? "Histórico" : ""].filter(Boolean).join(" · ");
       const label = absences ? `${integer(item.absentStudents)} ${item.absentStudents === 1 ? "aluno" : "alunos"} com faltas` :
@@ -784,7 +819,7 @@
         <span class="rp-class-copy"><strong>${escapeHTML(item.name)}</strong><small>${escapeHTML(info)}</small></span>
         ${badge}
         <span class="rp-class-arrow">${iconHTML("chevron")}</span></button>`;
-    }).join("");
+    }, "rp-class-grid");
     $("picker-empty").hidden = visible.length > 0;
     $("picker-empty-title").textContent = state.classType === "base" ?
       "Nenhuma turma da Base Comum neste ano" : "Nenhuma eletiva neste ano";
@@ -1040,7 +1075,7 @@
     const recordClass = state.data.rows.find(row => row.year === f.year && (row.systemId === f.classId || row.originId === f.classId));
     const classLabel = classItem?.name || (recordClass?.systemId === f.classId ? recordClass?.systemName : recordClass?.originName) || "Todas as turmas";
     const scope = isIndividualReport() ? `Turma usada na seleção: ${chosenClass()?.name || "Todas as turmas"} | Histórico: todas as turmas do aluno` : `Turma: ${classLabel}`;
-    return { school: state.institution?.schoolName || "AlunoTec · Central de Relatórios", filters: `Ano letivo ${f.year} | ${br(f.start)} a ${br(f.end)} | Turno: ${f.shift || "Todos"} | ${scope}`, summary: `${summary.calls} chamada(s) | ${summary.students} aluno(s) | Presenças: ${summary.present} | Faltas: ${summary.absent} | Justificadas: ${summary.justified} | Frequência: ${percent(summary.rate)}`, generated: `Gerado em ${new Date().toLocaleString("pt-BR")}` };
+    return { reportTitle: letterheadTitle(state.view, state.mode), school: state.institution?.schoolName || "AlunoTec · Central de Relatórios", filters: `Ano letivo ${f.year} | ${br(f.start)} a ${br(f.end)} | Turno: ${f.shift || "Todos"} | ${scope}`, summary: `${summary.calls} chamada(s) | ${summary.students} aluno(s) | Presenças: ${summary.present} | Faltas: ${summary.absent} | Justificadas: ${summary.justified} | Frequência: ${percent(summary.rate)}`, generated: `Gerado em ${new Date().toLocaleString("pt-BR")}` };
   }
   function download(bytes, type, extension) {
     const link = document.createElement("a"), url = URL.createObjectURL(new Blob([bytes], { type }));
@@ -1062,11 +1097,47 @@
   }
   function buildPrint() {
     if (!state.table) { $("print").replaceChildren(); return; }
-    const meta = metadata(), table = state.table;
-    $("print").innerHTML = `<header><p>${escapeHTML(meta.school)}</p><h1>${escapeHTML(table.title)}</h1><p>${escapeHTML(meta.filters)}</p><p>${escapeHTML(meta.summary)}</p><p>${escapeHTML(meta.generated)}</p></header><table><thead><tr>${table.headers.map(value => `<th>${escapeHTML(value)}</th>`).join("")}</tr></thead><tbody>${table.rows.map(row => `<tr>${row.map(value => `<td>${escapeHTML(value)}</td>`).join("")}</tr>`).join("")}</tbody></table><p>${escapeHTML(table.note)}</p><p>Frequência = presenças ÷ (presenças + faltas + justificadas). Fonte: registros locais do AlunoTec.</p>`;
+    const meta = metadata(), table = state.table, print = $("print");
+    const report = $("view").cloneNode(true);
+    // O conteúdo impresso acompanha a consulta aplicada. Controles de navegação
+    // e exportação ficam somente na tela; gráficos e dados continuam no documento.
+    report.querySelectorAll(".rp-results-heading, #rp-period-query, #rp-weekly-query, #rp-monthly-query, #rp-individual-controls, #rp-chart-query, #rp-methodology, #rp-empty").forEach(element => element.remove());
+    report.querySelectorAll("details").forEach(element => {
+      if (element.hidden || !element.open) element.remove();
+      else element.querySelector("summary")?.remove();
+    });
+    report.querySelectorAll("button, select, input, textarea").forEach(element => element.remove());
+    [report, ...report.querySelectorAll("[id], [tabindex], [aria-labelledby], [aria-describedby]")].forEach(element => {
+      ["id", "tabindex", "aria-labelledby", "aria-describedby"].forEach(attribute => element.removeAttribute(attribute));
+    });
+    report.className = "reports-app rp-print-report";
+    const title = document.createElement("h1");
+    title.className = "rp-print-letterhead-title";
+    title.textContent = meta.reportTitle;
+    if (meta.reportTitle.split(/\s+/).some(word => word.length > 13)) title.classList.add("rp-print-title-small");
+    const artwork = document.createElement("img");
+    artwork.className = "rp-print-paper";
+    artwork.src = window.AlunoTecReportPaper.dataUrl;
+    artwork.alt = "";
+    artwork.setAttribute("aria-hidden", "true");
+    const header = document.createElement("header");
+    header.className = "rp-print-metadata";
+    header.innerHTML = `<strong>${escapeHTML(meta.school)}</strong><h2>${escapeHTML(table.title)}</h2><p>${escapeHTML(meta.filters)}</p><p>${escapeHTML(meta.summary)}</p><small>${escapeHTML(meta.generated)}</small>`;
+    const note = document.createElement("footer");
+    note.className = "rp-print-notes";
+    note.innerHTML = `<p>${escapeHTML(table.note)}</p><p>Frequência = presenças ÷ (presenças + faltas + justificadas). Fonte: registros locais do AlunoTec.</p>`;
+    const layout = document.createElement("table");
+    layout.className = "rp-print-layout";
+    layout.setAttribute("role", "presentation");
+    layout.innerHTML = `<thead aria-hidden="true"><tr><td><div class="rp-print-header-space"></div></td></tr></thead><tbody><tr><td class="rp-print-content"></td></tr></tbody><tfoot aria-hidden="true"><tr><td><div class="rp-print-footer-space"></div></td></tr></tfoot>`;
+    layout.querySelector(".rp-print-content").append(header, report, note);
+    print.replaceChildren(artwork, title, layout);
+    // Fora do shell, para que somente o documento seja visível ao imprimir.
+    document.body.append(print);
+    return artwork;
   }
   $("pdf").addEventListener("click", () => {
-    exportWithFeedback(() => download(pdf(state.table, metadata()), "application/pdf", "pdf"),
+    exportWithFeedback(() => download(pdf(state.table, metadata(), window.AlunoTecReportPaper), "application/pdf", "pdf"),
       "PDF do relatório aplicado gerado.");
   });
   $("excel").addEventListener("click", () => {
@@ -1086,7 +1157,12 @@
     download(xlsx(sheets), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx");
     }, "Excel gerado com resumo, registros e critérios aplicados.");
   });
-  $("print-button").addEventListener("click", () => { buildPrint(); window.print(); });
+  $("print-button").addEventListener("click", async () => {
+    if (!state.table?.rows.length) return;
+    const artwork = buildPrint();
+    await artwork.decode().catch(() => {});
+    window.print();
+  });
   window.addEventListener("beforeprint", () => { if (state.table) buildPrint(); });
 
   /* EVENTOS | O ano vem do cabeçalho. Cada relatório mostra apenas seus próprios controles. */

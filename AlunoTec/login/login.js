@@ -14,6 +14,9 @@
 ========================================================== */
 
 (() => {
+  document.querySelectorAll("[data-current-year]").forEach(element => {
+    element.textContent = String(new Date().getFullYear());
+  });
   /* ==========================================================
      LOGIN PRINCIPAL
      Lê os campos de acesso comum e apresenta estados de envio, sucesso ou erro.

@@ -1649,3 +1649,285 @@ body[data-app-page="reports"]
   }
 }
 
+/* Documento A4: o timbre é uma imagem para continuar visível mesmo quando
+   a opção de imprimir planos de fundo estiver desmarcada no navegador. */
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+
+@media print {
+  html,
+  body {
+    width: auto !important;
+    min-width: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: transparent !important;
+  }
+
+  body > :not(#rp-print) {
+    display: none !important;
+  }
+
+  #rp-print {
+    display: block !important;
+    position: relative;
+    color: #203b2b;
+    font: 9pt/1.45 Arial, Helvetica, sans-serif;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* As faixas reservadas fazem parte da folha. Elementos posicionados fora
+     da área da página eram recortados pelo navegador ao imprimir. */
+  .rp-print-layout {
+    position: relative;
+    z-index: 1;
+    width: 210mm;
+    margin: 0;
+    border: 0;
+    border-spacing: 0;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+
+  .rp-print-layout > thead {
+    display: table-header-group;
+  }
+
+  .rp-print-layout > tfoot {
+    display: table-footer-group;
+  }
+
+  .rp-print-layout > thead > tr > td,
+  .rp-print-layout > tfoot > tr > td {
+    padding: 0;
+    border: 0;
+  }
+
+  .rp-print-header-space {
+    height: 48mm;
+  }
+
+  .rp-print-footer-space {
+    height: 29mm;
+  }
+
+  .rp-print-layout > tbody > tr > td {
+    padding: 0 12mm;
+    border: 0;
+    vertical-align: top;
+  }
+
+  #rp-print [hidden] {
+    display: none !important;
+  }
+
+  .rp-print-paper {
+    display: block;
+    position: fixed;
+    z-index: 0;
+    top: 0;
+    left: 0;
+    width: 210mm;
+    height: 297mm;
+    max-width: none !important;
+    pointer-events: none;
+  }
+
+  .rp-print-letterhead-title {
+    position: fixed;
+    z-index: 2;
+    top: 16.5mm;
+    left: 113mm;
+    width: 32mm;
+    margin: 0;
+    color: #06432b;
+    font: 700 15pt/1.13 Arial, Helvetica, sans-serif;
+    overflow-wrap: normal;
+  }
+
+  .rp-print-title-small {
+    font-size: 10pt;
+  }
+
+  .rp-print-metadata,
+  .rp-print-report,
+  .rp-print-notes {
+    position: relative;
+    z-index: 1;
+  }
+
+  .rp-print-metadata {
+    margin: 0 0 5mm;
+    break-inside: avoid;
+  }
+
+  .rp-print-metadata > strong {
+    color: #176233;
+    font-size: 10pt;
+  }
+
+  .rp-print-metadata h2 {
+    margin: 2mm 0;
+    color: #203b2b;
+    font-size: 14pt;
+  }
+
+  .rp-print-metadata p {
+    margin: 1.5mm 0;
+    font-size: 8pt;
+  }
+
+  .rp-print-metadata small {
+    font-size: 7pt;
+    color: #607268;
+  }
+
+  .rp-print-report.reports-app {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    font: inherit;
+  }
+
+  .rp-print-report .rp-card,
+  .rp-print-report .rp-class-context,
+  .rp-print-report .rp-student-summary,
+  .rp-print-report .rp-metric,
+  .rp-print-report .rp-table,
+  .rp-print-report .rp-table-wrap,
+  .rp-print-report .rp-table tbody tr,
+  .rp-print-report .rp-supplement {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .rp-print-report .rp-class-context,
+  .rp-print-report .rp-student-summary,
+  .rp-print-report .rp-evolution,
+  .rp-print-report .rp-metric,
+  .rp-print-report .rp-situation,
+  .rp-print-report .rp-day {
+    break-inside: avoid;
+  }
+
+  .rp-print-report .rp-class-context {
+    margin: 0 0 4mm;
+    padding: 3mm;
+  }
+
+  .rp-print-report .rp-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2mm;
+    margin-bottom: 4mm;
+  }
+
+  .rp-print-report .rp-student-summary {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 2mm;
+    margin: 4mm 0;
+  }
+
+  .rp-print-report .rp-student-summary > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2mm;
+    padding: 2mm;
+    border: 1px solid #d9e5dc;
+    border-radius: 2mm;
+    font-size: 8pt;
+  }
+
+  .rp-print-report .rp-student-summary strong {
+    display: block;
+    color: #176233;
+    font-size: 16pt;
+  }
+
+  .rp-print-report .rp-metric {
+    padding: 2mm;
+  }
+
+  .rp-print-report .rp-metric strong {
+    font-size: 18pt;
+  }
+
+  .rp-print-report .rp-charts {
+    display: block;
+  }
+
+  .rp-print-report .rp-evolution {
+    margin: 0 0 4mm;
+    padding: 3mm;
+  }
+
+  .rp-print-report .rp-line-chart {
+    min-height: 0;
+  }
+
+  .rp-print-report .rp-line-chart svg {
+    width: 100%;
+    max-height: 58mm;
+  }
+
+  .rp-print-report .rp-table-wrap {
+    max-height: none !important;
+    overflow: visible !important;
+    border: 1px solid #d9e5dc;
+    border-radius: 0;
+  }
+
+  .rp-print-report .rp-table {
+    width: 100%;
+    min-width: 0 !important;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-size: 8pt;
+  }
+
+  .rp-print-report .rp-table th,
+  .rp-print-report .rp-table td {
+    position: static;
+    padding: 2.5mm 1.7mm;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .rp-print-report .rp-table th {
+    font-size: 7pt;
+    background: #e8f2eb !important;
+  }
+
+  .rp-print-report .rp-table thead {
+    display: table-header-group;
+  }
+
+  .rp-print-report .rp-table tr {
+    break-inside: avoid;
+  }
+
+  .rp-print-report .rp-supplement {
+    border: 0;
+    padding: 0;
+  }
+
+  .rp-print-notes {
+    margin-top: 4mm;
+    color: #607268;
+    font-size: 7pt;
+  }
+
+  .rp-print-notes p {
+    margin: 1.5mm 0;
+  }
+}

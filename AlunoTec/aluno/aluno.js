@@ -462,7 +462,7 @@
   function renderClasses(classes) {
     $("#classesTitle").textContent = activeType === "base" ? "Turmas da Base Comum" : "Turmas Eletivas";
     $("#classCountLabel").textContent = plural(classes.length, "turma", "turmas");
-    $("#classCards").innerHTML = classes.length ? classes.map((item) => {
+    $("#classCards").innerHTML = classes.length ? window.AlunoTecUtils.renderClassGroups(classes, (item) => {
       const count = (Array.isArray(item.students) ? item.students : []).filter((student) =>
         normalizeName(student.name)).length;
       const info = [item.grade, item.shift, plural(count, "aluno", "alunos")].filter(Boolean).join(" · ");
@@ -473,7 +473,7 @@
           <small>${escapeHtml(info)}</small></span>
         <svg class="students-class-arrow" aria-hidden="true"><use href="#i-chevron-right"></use></svg>
       </button>`;
-    }).join("") : `<div class="students-browser-empty">
+    }, "students-class-grid") : `<div class="students-browser-empty">
       <svg aria-hidden="true"><use href="#i-users"></use></svg>
       <strong>${activeType === "base" ? "Nenhuma turma da Base Comum" : "Nenhuma eletiva cadastrada"} neste ano.</strong>
       <p>Cadastre as turmas pela aba Turmas para consultar os alunos aqui.</p>

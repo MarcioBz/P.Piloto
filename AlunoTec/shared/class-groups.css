@@ -1,0 +1,23 @@
+/* Separação por série usada nos seletores de Frequência, Alunos e Relatórios. */
+.at-grade-group {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.at-grade-group + .at-grade-group {
+  margin-top: 8px;
+  padding-top: 22px;
+  border-top: 1px solid #1b1b1b;
+}
+
+.at-grade-title {
+  margin: 0 0 13px;
+  color: #344d3c;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.at-grade-cards {
+  margin-top: 0;
+}

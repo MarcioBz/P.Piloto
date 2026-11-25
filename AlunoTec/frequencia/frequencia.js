@@ -112,6 +112,8 @@
   }
   function attendanceSchoolYear(call) {
     if (/^\d{4}$/.test(String(call?.year || ""))) return String(call.year);
+    const dateYear = String(call?.date || "").slice(0, 4);
+    if (/^\d{4}$/.test(dateYear)) return dateYear;
     const classItem = classes.find(
       (item) => String(item.id) === String(call?.classId),
     );
@@ -315,6 +317,24 @@
     return `${localStorage.getItem(KEYS.year)}|${classId}|${date}|${shift || "Todos"}`;
   }
 
+  function isAttendanceDate(value, year = localStorage.getItem(KEYS.year)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value)) || value.slice(0, 4) !== String(year)) return false;
+    const parsed = new Date(`${value}T12:00:00`);
+    return !Number.isNaN(parsed.getTime()) && isoDate(parsed) === value;
+  }
+  function attendanceDateForYear(year) {
+    year = String(year);
+    if (today().slice(0, 4) === year) return today();
+    const recorded = Object.values(calls()).filter(call => attendanceSchoolYear(call) === year &&
+      isAttendanceDate(call?.date, year)).map(call => call.date).sort();
+    return recorded.at(-1) || `${year}-01-01`;
+  }
+  function syncAttendanceDate() {
+    const year = localStorage.getItem(KEYS.year);
+    if (!isAttendanceDate($("attendanceDate").value, year)) $("attendanceDate").value = attendanceDateForYear(year);
+    $("dateDisplay").textContent = dateBR($("attendanceDate").value);
+  }
+
   function getRoster(classItem, date) {
     if (!classItem) return [];
     const students = [];
@@ -369,13 +389,15 @@
   function render() {
     classes = loadClasses();
     const classItem = selectedClass();
-    const date = $("attendanceDate").value || today();
-    const savedCall = classItem
+    renderClassBrowser(classItem);
+    const date = $("attendanceDate").value;
+    const validDate = isAttendanceDate(date);
+    const savedCall = classItem && validDate
       ? calls()[callId(classItem.id, date, $("shiftSelect").value)]
       : null;
     const previousDraft = draft;
 
-    roster = getRoster(classItem, date);
+    roster = validDate ? getRoster(classItem, date) : [];
     draft = {};
     roster.forEach((student) => {
       draft[student.id] = previousDraft[student.id]
@@ -387,7 +409,7 @@
 
     if (!classItem || !roster.length) {
       $("studentsTable").innerHTML =
-        `<tr><td colspan="7" class="empty-cell">${classItem ? "Não há alunos ativos nesta turma para a data selecionada." : "Selecione uma turma para iniciar a chamada."}</td></tr>`;
+        `<tr><td colspan="7" class="empty-cell">${!classItem ? "Selecione uma turma para iniciar a chamada." : !validDate ? `Selecione uma data válida do ano letivo ${esc(localStorage.getItem(KEYS.year))}.` : "Não há alunos ativos nesta turma para a data selecionada."}</td></tr>`;
       $("tableSummary").textContent = classItem
         ? "0 alunos encontrados."
         : "Nenhum aluno carregado.";
@@ -712,6 +734,7 @@
     numberOfDays,
     attachment,
   ) {
+    if (!isAttendanceDate(startDate)) return 0;
     classes = loadClasses();
     const selected = selectedClass();
     if (!selected) return 0;
@@ -815,7 +838,30 @@
     if (options.some((c) => c.id === previous))
       $("classSelect").value = previous;
     $("classSelect").disabled = !options.length;
-    refreshCustomSelect($("classSelect"));
+    syncAttendanceDate();
+  }
+
+  function renderClassBrowser(classItem) {
+    const year = localStorage.getItem(KEYS.year);
+    $("attendanceClassBrowser").hidden = Boolean(classItem);
+    $("attendanceCallPanel").hidden = !classItem;
+    if (classItem) {
+      $("attendanceSelectedClassTitle").textContent = classItem.name || "Turma sem nome";
+      $("attendanceSelectedClassSubtitle").textContent = [classItem.grade, classItem.shift, `Ano letivo ${year}`].filter(Boolean).join(" · ");
+      return;
+    }
+    const options = availableClasses(year);
+    $("attendanceClassesTitle").textContent = classType === "base" ? "Turmas da Base Comum" : "Turmas eletivas";
+    $("attendanceClassCards").innerHTML = options.length ? window.AlunoTecUtils.renderClassGroups(options, item => {
+      const count = getRoster(item, $("attendanceDate").value || attendanceDateForYear(year)).length;
+      const description = [item.grade, item.shift, `${count} ${count === 1 ? "aluno" : "alunos"}`].filter(Boolean).join(" · ");
+      return `<button class="attendance-class-card" type="button" data-attendance-class="${esc(item.id)}"
+        aria-label="Abrir ${esc(item.name || "turma")}, ${count} ${count === 1 ? "aluno" : "alunos"}">
+        <span class="attendance-card-icon"><svg aria-hidden="true"><use href="#${item.type === "electives" ? "i-capelo" : "i-users"}"></use></svg></span>
+        <span class="attendance-card-copy"><strong>${esc(item.name || "Turma sem nome")}</strong><small>${esc(description)}</small></span>
+        <svg class="attendance-card-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+      </button>`;
+    }, "attendance-class-grid") : `<p class="attendance-classes-empty">${classType === "base" ? "Nenhuma turma da Base Comum" : "Nenhuma eletiva"} disponível neste ano letivo.</p>`;
   }
 
   function drawCalendar() {
@@ -830,6 +876,11 @@
     const previousDays = new Date(year, month, 0).getDate();
     const selectedDate = $("attendanceDate").value;
     const todayDate = today();
+    const selectedYear = String(localStorage.getItem(KEYS.year));
+    $("calendarPrev").disabled = year <= Number(selectedYear) && month === 0;
+    $("calendarNext").disabled = year >= Number(selectedYear) && month === 11;
+    $("calendarToday").disabled = todayDate.slice(0, 4) !== selectedYear;
+    $("calendarToday").title = todayDate.slice(0, 4) === selectedYear ? "Selecionar hoje" : "Hoje está fora do ano letivo selecionado";
     const dateStatuses = registeredDates();
     const weekdays = ["S", "T", "Q", "Q", "S", "S", "D"];
     let html = weekdays
@@ -866,7 +917,7 @@
       ]
         .filter(Boolean)
         .join(" ");
-      html += `<button type="button" class="${dayClasses}" data-date="${date}" aria-label="${dateBR(date)}">${day}</button>`;
+      html += `<button type="button" class="${dayClasses}" data-date="${date}" aria-label="${dateBR(date)}"${date.slice(0, 4) !== selectedYear ? " disabled" : ""}>${day}</button>`;
     }
     $("calendarGrid").innerHTML = html;
   }
@@ -878,6 +929,7 @@
   function saveStudentEdit(studentId) {
     const classItem = selectedClass();
     if (!classItem) return;
+    if (!isAttendanceDate($("attendanceDate").value)) return toast("Escolha uma data válida do ano letivo selecionado.");
     const key = callId(
       classItem.id,
       $("attendanceDate").value,
@@ -915,6 +967,7 @@
   function saveCall() {
     const classItem = selectedClass();
     if (!classItem) return toast("Selecione uma turma.");
+    if (!isAttendanceDate($("attendanceDate").value)) return toast("Escolha uma data válida do ano letivo selecionado.");
     if (!roster.length) return toast("Não há alunos para registrar.");
     if (roster.some((student) => !draft[student.id]?.status))
       return toast("Marque a frequência de todos os alunos antes de salvar.");
@@ -1204,13 +1257,24 @@
       const year = String(event.detail?.year || "");
       if (!year) return;
       localStorage.setItem(KEYS.year, year);
-      resetForFilterChange();
       populateYears();
+      resetForFilterChange();
       refreshAlerts();
       render();
     });
-    setupCustomSelect($("classSelect"));
     setupCustomSelect($("shiftSelect"));
+    $("attendanceClassCards").addEventListener("click", event => {
+      const button = event.target.closest("[data-attendance-class]");
+      if (!button || !availableClasses(localStorage.getItem(KEYS.year)).some(item => item.id === button.dataset.attendanceClass)) return;
+      $("classSelect").value = button.dataset.attendanceClass;
+      resetForFilterChange();
+      $("datePickerButton").focus();
+    });
+    $("attendanceBackToClasses").addEventListener("click", () => {
+      $("classSelect").value = "";
+      resetForFilterChange();
+      $("attendanceClassCards").querySelector("button")?.focus();
+    });
     document.querySelectorAll("[data-class-type]").forEach(button => {
       button.addEventListener("click", () => {
         if (!["base", "electives"].includes(button.dataset.classType) || button.dataset.classType === classType) return;
@@ -1238,28 +1302,31 @@
     $("datePickerButton").addEventListener("click", () => {
       const current = $("attendanceDate").value
         ? new Date(`${$("attendanceDate").value}T12:00:00`)
-        : new Date();
+        : new Date(`${attendanceDateForYear(localStorage.getItem(KEYS.year))}T12:00:00`);
       calendarMonth = new Date(current.getFullYear(), current.getMonth(), 1);
       drawCalendar();
       $("calendarDialog").showModal();
     });
     $("calendarGrid").addEventListener("click", (event) => {
       const button = event.target.closest("[data-date]");
-      if (!button) return;
+      if (!button || button.disabled || !isAttendanceDate(button.dataset.date)) return;
       $("attendanceDate").value = button.dataset.date;
       $("dateDisplay").textContent = dateBR(button.dataset.date);
       $("calendarDialog").close();
       resetForFilterChange();
     });
     $("calendarPrev").addEventListener("click", () => {
+      if (calendarMonth.getMonth() === 0) return;
       calendarMonth.setMonth(calendarMonth.getMonth() - 1);
       drawCalendar();
     });
     $("calendarNext").addEventListener("click", () => {
+      if (calendarMonth.getMonth() === 11) return;
       calendarMonth.setMonth(calendarMonth.getMonth() + 1);
       drawCalendar();
     });
     $("calendarToday").addEventListener("click", () => {
+      if (!isAttendanceDate(today())) return;
       $("attendanceDate").value = today();
       $("dateDisplay").textContent = dateBR(today());
       $("calendarDialog").close();

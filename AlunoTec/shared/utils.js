@@ -85,6 +85,31 @@
     return [...students].sort((a, b) => compare(text(name(a)), text(name(b))) ||
       compare(text(a.id || a.studentId || a.key), text(b.id || b.studentId || b.key)));
   }
+  function groupClassesByGrade(classes) {
+    const groups = new Map();
+    classes.forEach(item => {
+      const raw = text(item.grade).replace(/\s+/g, " ").trim();
+      const value = norm(raw);
+      const number = value.match(/^\s*(\d{1,2})\s*(?:[ºª°o])?\s*(?:ano|serie)?(?:\b|$)/)?.[1];
+      const middle = /medio/.test(value) || (/serie/.test(value) && Number(number) <= 3);
+      const unknown = !value || /^[—–-]+$/.test(value);
+      const key = unknown ? "unknown" : number ? `${middle ? "medio" : "ano"}-${Number(number)}` : value;
+      if (!groups.has(key)) groups.set(key, { key,
+        label: unknown ? "Sem série definida" : number ? `${Number(number)}º ano${middle ? " · Ensino Médio" : ""}` : raw,
+        order: unknown ? 200 : number ? Number(number) + (middle ? 20 : 0) : 100, items: [] });
+      groups.get(key).items.push(item);
+    });
+    return [...groups.values()].sort((a, b) => a.order - b.order || compare(a.label, b.label))
+      .map(group => ({ ...group, items: [...group.items].sort((a, b) => compare(text(a.name), text(b.name)) || compare(text(a.id), text(b.id))) }));
+  }
+  function renderClassGroups(classes, renderCard, gridClass) {
+    const groups = groupClassesByGrade(classes);
+    if (groups.length < 2) return (groups[0]?.items || []).map(renderCard).join("");
+    return groups.map(group => `<section class="at-grade-group" aria-label="${escapeHTML(group.label)}">
+      <h4 class="at-grade-title">${escapeHTML(group.label)}</h4>
+      <div class="${escapeHTML(gridClass)} at-grade-cards">${group.items.map(renderCard).join("")}</div>
+    </section>`).join("");
+  }
   function flatten(raw) {
     if (Array.isArray(raw)) return raw.filter(item => item && typeof item === "object");
     if (!raw || typeof raw !== "object") return [];
@@ -291,7 +316,8 @@
   }
   const api = Object.freeze({ compare, sorted, createIndex, info, label, detailsText,
     transferred, electiveCopy, dateKey });
-  root.AlunoTecUtils = Object.freeze({ ...(root.AlunoTecUtils || {}), escapeHTML, decodeStudentCSV, parseStudentCSV });
+  root.AlunoTecUtils = Object.freeze({ ...(root.AlunoTecUtils || {}), escapeHTML, decodeStudentCSV, parseStudentCSV,
+    groupClassesByGrade, renderClassGroups });
   root.AlunoTecStudents = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   if (typeof document !== "undefined" && !document.getElementById("at-student-links-css")) {
