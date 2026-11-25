@@ -614,8 +614,6 @@
       $("status").textContent = "O filtro de turma foi ajustado para esta visão do relatório.";
     }
     fillClassOptions();
-    root.querySelectorAll("[data-view]").forEach(button => { const active = button.dataset.view === view; button.classList.toggle("is-active", active); button.setAttribute("aria-selected", String(active)); button.tabIndex = active ? 0 : -1; });
-    $("view").setAttribute("aria-labelledby", `rp-tab-${view}`);
     closeSelects(); render();
     if (scroll) $("view").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
   }
@@ -735,6 +733,12 @@
   }
   function render() {
     if (!state.applied) return;
+    const selectedReport = state.mode === "default" ? state.view : state.mode;
+    root.querySelectorAll("[data-report]").forEach(button => {
+      const active = button.dataset.report === selectedReport;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
     state.rows = currentRows();
     renderMetrics(state.rows); renderLine(state.rows); renderTable(state.rows);
     if (!$("filter-feedback").classList.contains("is-dirty")) $("filter-feedback").textContent = `Aplicado: ${br(state.applied.start)} a ${br(state.applied.end)} · ano letivo ${state.applied.year}.`;
@@ -802,15 +806,6 @@
   $("class").addEventListener("change", markDirty);
   [$("start"), $("end")].forEach(input => input.addEventListener("input", () => { $("end").setCustomValidity(""); $("period").value = "custom"; refreshSelect($("period")); markDirty(); }));
   $("student").addEventListener("change", () => { state.studentId = $("student").value; render(); });
-  root.querySelectorAll("[data-view]").forEach(button => button.addEventListener("click", () => setView(button.dataset.view)));
-  root.querySelector(".rp-tabs").addEventListener("keydown", event => {
-    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
-    const tabs = [...root.querySelectorAll("[data-view]")], index = tabs.indexOf(document.activeElement);
-    if (index < 0) return;
-    event.preventDefault();
-    const next = event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : (index + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
-    tabs[next].focus(); setView(tabs[next].dataset.view);
-  });
   root.querySelectorAll("[data-report]").forEach(button => button.addEventListener("click", () => {
     const action = button.dataset.report;
     if (action === "closing" || action === "monthly") {

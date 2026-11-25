@@ -31,15 +31,6 @@
     </div>
 
     <div id="rp-dashboard" class="reports-app">
-      <nav class="rp-tabs" role="tablist" aria-label="Tipos de relatório">
-      <button type="button" class="rp-tab is-active" role="tab" id="rp-tab-overview" data-view="overview" aria-selected="true" aria-controls="rp-view" tabindex="0"><span class="rp-icon" data-rp-icon="grid" aria-hidden="true"></span><span>Visão Geral</span></button>
-<button type="button" class="rp-tab" role="tab" id="rp-tab-room" data-view="room" aria-selected="false" aria-controls="rp-view" tabindex="-1"><span class="rp-icon" data-rp-icon="users" aria-hidden="true"></span><span>Realidade de Sala</span></button>
-<button type="button" class="rp-tab" role="tab" id="rp-tab-system" data-view="system" aria-selected="false" aria-controls="rp-view" tabindex="-1"><span class="rp-icon" data-rp-icon="layers" aria-hidden="true"></span><span>Realidade do Sistema</span></button>
-<button type="button" class="rp-tab" role="tab" id="rp-tab-student" data-view="student" aria-selected="false" aria-controls="rp-view" tabindex="-1"><span class="rp-icon" data-rp-icon="user" aria-hidden="true"></span><span>Por Aluno</span></button>
-<button type="button" class="rp-tab" role="tab" id="rp-tab-weekly" data-view="weekly" aria-selected="false" aria-controls="rp-view" tabindex="-1"><span class="rp-icon" data-rp-icon="calendar" aria-hidden="true"></span><span>Resumo Semanal</span></button>
-<button type="button" class="rp-tab" role="tab" id="rp-tab-electives" data-view="electives" aria-selected="false" aria-controls="rp-view" tabindex="-1"><span class="rp-icon" data-rp-icon="cap" aria-hidden="true"></span><span>Eletivas</span></button>
-      </nav>
-
       <!-- FILTROS | As datas são inclusivas. Só chamadas salvas entram nos cálculos. -->
       <form id="rp-filters" class="rp-filter-card">
         <div class="rp-field"><label for="rp-year">Ano letivo</label><select id="rp-year" data-rp-select></select></div>
@@ -79,16 +70,74 @@
       </div>
 
       <div class="rp-bottom">
-        <section class="rp-card rp-catalog"><h2><span class="rp-icon" data-rp-icon="file" aria-hidden="true"></span> Relatórios Disponíveis</h2><div class="rp-report-links"><button type="button" class="rp-report-link" data-report="room"><span class="rp-icon" data-rp-icon="users" aria-hidden="true"></span><span>Relatório por<br>Turma de Sala</span></button>
-<button type="button" class="rp-report-link" data-report="system"><span class="rp-icon" data-rp-icon="layers" aria-hidden="true"></span><span>Relatório por<br>Turma do Sistema</span></button>
-<button type="button" class="rp-report-link" data-report="student"><span class="rp-icon" data-rp-icon="user" aria-hidden="true"></span><span>Relatório Individual<br>do Aluno</span></button>
-<button type="button" class="rp-report-link" data-report="weekly"><span class="rp-icon" data-rp-icon="calendar" aria-hidden="true"></span><span>Resumo Semanal<br>das Turmas</span></button>
-<button type="button" class="rp-report-link" data-report="period"><span class="rp-icon" data-rp-icon="chart" aria-hidden="true"></span><span>Frequência<br>por Período</span></button>
-<button type="button" class="rp-report-link" data-report="electives"><span class="rp-icon" data-rp-icon="book" aria-hidden="true"></span><span>Acompanhamento<br>das Eletivas</span></button>
-<button type="button" class="rp-report-link" data-report="comparison"><span class="rp-icon" data-rp-icon="swap" aria-hidden="true"></span><span>Comparativo<br>entre Turmas</span></button>
-<button type="button" class="rp-report-link" data-report="absences"><span class="rp-icon" data-rp-icon="alert" aria-hidden="true"></span><span>Alunos com<br>Maior Ausência</span></button>
-<button type="button" class="rp-report-link" data-report="monthly"><span class="rp-icon" data-rp-icon="trend" aria-hidden="true"></span><span>Evolução Mensal<br>da Frequência</span></button>
-<button type="button" class="rp-report-link" data-report="closing"><span class="rp-icon" data-rp-icon="clipboard" aria-hidden="true"></span><span>Fechamento Mensal<br>da Escola</span></button></div></section>
+        <section class="rp-card rp-catalog" aria-labelledby="rp-catalog-title">
+          <div class="rp-catalog-header">
+            <div class="rp-catalog-heading">
+              <span class="rp-catalog-symbol rp-icon" data-rp-icon="file" aria-hidden="true"></span>
+              <div>
+                <h2 id="rp-catalog-title">Relatórios disponíveis</h2>
+                <p>Escolha o que você deseja acompanhar.</p>
+              </div>
+            </div>
+            <button id="rp-report-overview" class="rp-overview-button is-active" type="button" data-report="overview" aria-pressed="true" aria-controls="rp-view">
+              <span class="rp-icon" data-rp-icon="grid" aria-hidden="true"></span>
+              Visão geral
+            </button>
+          </div>
+
+          <div class="rp-report-links" role="group" aria-label="Selecionar relatório">
+            <button id="rp-report-room" class="rp-report-link" type="button" data-report="room" aria-label="Relatório por Turma de Sala" aria-pressed="false" aria-controls="rp-view">
+              <span class="rp-report-symbol rp-icon" data-rp-icon="users" aria-hidden="true"></span>
+              <span class="rp-report-copy"><strong>Turma de sala</strong><small>Frequência pela turma de origem.</small></span>
+              <span class="rp-report-check rp-icon" data-rp-icon="check" aria-hidden="true"></span>
+            </button>
+            <button id="rp-report-system" class="rp-report-link" type="button" data-report="system" aria-label="Relatório por Turma do Sistema" aria-pressed="false" aria-controls="rp-view">
+              <span class="rp-report-symbol rp-icon" data-rp-icon="layers" aria-hidden="true"></span>
+              <span class="rp-report-copy"><strong>Turma do sistema</strong><small>Chamadas da turma em que o aluno estava.</small></span>
+              <span class="rp-report-check rp-icon" data-rp-icon="check" aria-hidden="true"></span>
+            </button>
+            <button id="rp-report-student" class="rp-report-link" type="button" data-report="student" aria-label="Relatório Individual do Aluno" aria-pressed="false" aria-controls="rp-view">
+              <span class="rp-report-symbol rp-icon" data-rp-icon="user" aria-hidden="true"></span>
+              <span class="rp-report-copy"><strong>Relatório individual</strong><small>Histórico e frequência de cada aluno.</small></span>
+              <span class="rp-report-check rp-icon" data-rp-icon="check" aria-hidden="true"></span>
+            </button>
+            <button id="rp-report-weekly" class="rp-report-link" type="button" data-report="weekly" aria-label="Resumo Semanal das Turmas" aria-pressed="false" aria-controls="rp-view">
+              <span class="rp-report-symbol rp-icon" data-rp-icon="calendar" aria-hidden="true"></span>
+              <span class="rp-report-copy"><strong>Resumo semanal</strong><small>Uma visão de cada turma por semana.</small></span>
+              <span class="rp-report-check rp-icon" data-rp-icon="check" aria-hidden="true"></span>
+            </button>
+            <button id="rp-report-period" class="rp-report-link" type="button" data-report="period" aria-label="Frequência por Período" aria-pressed="false" aria-controls="rp-view">
+              <span class="rp-report-symbol rp-icon" data-rp-icon="chart" aria-hidden="true"></span>
+              <span class="rp-report-copy"><strong>Frequência por período</strong><small>Presenças e faltas nas datas escolhidas.</small></span>
+              <span class="rp-report-check rp-icon" data-rp-icon="check" aria-hidden="true"></span>
+            </button>
+            <button id="rp-report-electives" class="rp-report-link" type="button" data-report="electives" aria-label="Acompanhamento das Eletivas" aria-pressed="false" aria-controls="rp-view">
+              <span class="rp-report-symbol rp-icon" data-rp-icon="book" aria-hidden="true"></span>
+              <span class="rp-report-copy"><strong>Acompanhamento das eletivas</strong><small>Alunos vinculados e chamadas das eletivas.</small></span>
+              <span class="rp-report-check rp-icon" data-rp-icon="check" aria-hidden="true"></span>
+            </button>
+            <button id="rp-report-comparison" class="rp-report-link" type="button" data-report="comparison" aria-label="Comparativo entre Turmas" aria-pressed="false" aria-controls="rp-view">
+              <span class="rp-report-symbol rp-icon" data-rp-icon="swap" aria-hidden="true"></span>
+              <span class="rp-report-copy"><strong>Comparativo entre turmas</strong><small>Compare os percentuais de frequência.</small></span>
+              <span class="rp-report-check rp-icon" data-rp-icon="check" aria-hidden="true"></span>
+            </button>
+            <button id="rp-report-absences" class="rp-report-link" type="button" data-report="absences" aria-label="Alunos com Maior Ausência" aria-pressed="false" aria-controls="rp-view">
+              <span class="rp-report-symbol rp-icon" data-rp-icon="alert" aria-hidden="true"></span>
+              <span class="rp-report-copy"><strong>Alunos com maior ausência</strong><small>Confira faltas e dias de ausência.</small></span>
+              <span class="rp-report-check rp-icon" data-rp-icon="check" aria-hidden="true"></span>
+            </button>
+            <button id="rp-report-monthly" class="rp-report-link" type="button" data-report="monthly" aria-label="Evolução Mensal da Frequência" aria-pressed="false" aria-controls="rp-view">
+              <span class="rp-report-symbol rp-icon" data-rp-icon="trend" aria-hidden="true"></span>
+              <span class="rp-report-copy"><strong>Evolução mensal</strong><small>Acompanhe a frequência ao longo do ano.</small></span>
+              <span class="rp-report-check rp-icon" data-rp-icon="check" aria-hidden="true"></span>
+            </button>
+            <button id="rp-report-closing" class="rp-report-link" type="button" data-report="closing" aria-label="Fechamento Mensal da Escola" aria-pressed="false" aria-controls="rp-view">
+              <span class="rp-report-symbol rp-icon" data-rp-icon="clipboard" aria-hidden="true"></span>
+              <span class="rp-report-copy"><strong>Fechamento mensal</strong><small>Consolide os resultados do mês por turma.</small></span>
+              <span class="rp-report-check rp-icon" data-rp-icon="check" aria-hidden="true"></span>
+            </button>
+          </div>
+        </section>
         <section class="rp-card rp-export"><h2><span class="rp-icon" data-rp-icon="file" aria-hidden="true"></span> Exportar / Imprimir</h2>
           <p id="rp-export-description" class="rp-muted" aria-live="polite"></p>
           <button id="rp-pdf" type="button" class="rp-button rp-primary"><span class="rp-icon" data-rp-icon="download" aria-hidden="true"></span> Baixar PDF</button>
@@ -98,8 +147,8 @@
         </section>
       </div>
 
-      <!-- RESULTADOS | O conteúdo desta seção acompanha a aba ativa. -->
-      <section id="rp-view" class="rp-card rp-results" role="tabpanel" aria-labelledby="rp-tab-overview" tabindex="0">
+      <!-- RESULTADOS | O conteúdo acompanha o relatório selecionado no catálogo. -->
+      <section id="rp-view" class="rp-card rp-results" role="region" aria-labelledby="rp-result-title" tabindex="0">
         <div class="rp-results-heading"><div><p id="rp-result-eyebrow" class="rp-eyebrow">VISÃO GERAL</p><h2 id="rp-result-title">Resumo por turma</h2><p id="rp-result-description" class="rp-muted"></p></div><span id="rp-result-count" class="rp-count"></span></div>
         <div id="rp-student-field" class="rp-field rp-student-field" hidden><label for="rp-student">Aluno</label><select id="rp-student" data-rp-select><option value="">Selecione um aluno</option></select></div>
         <div id="rp-student-summary" class="rp-student-summary" hidden></div>
