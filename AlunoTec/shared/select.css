@@ -1,0 +1,21 @@
+.at-select { position:relative;min-width:0;width:100%;font-weight:450; }
+.at-select.is-open { z-index:40; }
+.at-select select[hidden] { display:none!important; }
+.at-select-button { display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;min-height:44px;padding:11px 14px;border:1px solid #d9e5d7;border-radius:12px;background:#fff;color:#355340;font:inherit;font-size:13px;line-height:1.4;text-align:left;cursor:pointer;box-shadow:0 2px 4px rgb(32 70 39 / 3%); }
+.at-select-button::after { content:"";width:7px;height:7px;flex:0 0 7px;border-right:1.8px solid #56835d;border-bottom:1.8px solid #56835d;transform:translateY(-2px) rotate(45deg);transition:transform .18s ease; }
+.at-select.is-open .at-select-button { border-color:#7fab86;box-shadow:0 0 0 3px #eef6eb; }
+.at-select.is-open .at-select-button::after { transform:translateY(2px) rotate(225deg); }
+.at-select-button:focus-visible { outline:3px solid #c8dfc4;outline-offset:2px; }
+.at-select-value { display:flex;align-items:center;gap:8px;min-width:0; }
+.at-select[data-value="active"] .at-select-value::before,.at-select[data-value="inactive"] .at-select-value::before { content:"";width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:#41834b; }
+.at-select[data-value="inactive"] .at-select-value::before { background:#b47856; }
+.at-select-menu { position:absolute;left:0;right:0;top:calc(100% + 8px);z-index:50;min-width:100%;box-sizing:border-box;padding:6px;border:1px solid #e0eadc;border-radius:13px;background:#fff;box-shadow:0 14px 32px rgb(33 71 39 / 15%);max-height:230px;overflow:auto; }
+.at-select-menu[hidden] { display:none!important; }
+.at-select-option { display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:10px 11px;border:0;border-radius:9px;background:transparent;color:#46604b;font:inherit;font-size:13px;font-weight:450;line-height:1.4;text-align:left;cursor:pointer; }
+.at-select-option:hover,.at-select-option:focus-visible { background:#f1f7ed;outline:none; }
+.at-select-option[aria-selected="true"] { color:#276c38;background:#eaf5e5;font-weight:650; }
+.at-option-check { flex:0 0 auto;color:#3d8148;font-size:15px;font-weight:750; }
+.at-select-option:disabled,.at-select-button:disabled { opacity:.45;cursor:default; }
+.teacher-toolbar>label:has(.at-select) { min-width:155px; }
+.teacher-form-grid label .at-select-button { font-weight:450; }
+@media(max-width:600px) { .teacher-toolbar>label:has(.at-select) { min-width:0; } }

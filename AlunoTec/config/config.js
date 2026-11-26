@@ -67,6 +67,11 @@
      Exporta e restaura as chaves locais usadas pelo sistema, com validação antes de substituir os dados.
   ========================================================== */
   document.getElementById("exportBackup").addEventListener("click", async () => {
+    const localSession = window.AlunoTecAccess?.session();
+    if (localSession?.mode !== "local" || localSession.role !== "LOCAL") {
+      backupStatus.textContent = "A cópia dos cadastros locais está disponível apenas na entrada local de edição.";
+      return;
+    }
     const button = document.getElementById("exportBackup");
     button.disabled = true;
     try {

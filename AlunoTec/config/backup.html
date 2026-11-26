@@ -1,0 +1,124 @@
+<!doctype html>
+<!-- =====================================================
+     ALUNOTEC | MAPA DE EDIÇÃO — CONFIGURAÇÕES
+     Estrutura: formulário de ano letivo e ações de cópia/backup.
+     Visual compartilhado: ../shared/management.css.
+     Comportamento: config.js preenche o ano e executa as ações; os IDs
+     do formulário/status são a ligação entre HTML e JavaScript.
+===================================================== -->
+
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#073a54" />
+    <title>AlunoTec | Configurações</title>
+    <link rel="icon" type="image/png" href="../assets/icons/icone.png" />
+    <link rel="stylesheet" href="../shared/management.css" />
+
+    <link rel="stylesheet" href="../shared/responsive-shell.css" />
+    <link rel="stylesheet" href="../shared/profile.css" />
+    <link rel="stylesheet" href="../shared/banner.css" />
+    <script src="../shared/access.js" defer></script>
+    <script src="../shared/app-shell.js" defer></script>
+    <script src="../shared/banner.js" defer></script>
+    <script src="../shared/profile.js" defer></script>
+    <script src="../shared/teachers-store.js" defer></script>
+    <script src="backup.js" defer></script>
+    <script src="config.js" defer></script>
+    <script src="config-local.js" defer></script>
+      <link rel="stylesheet" href="../shared/app-extra.css">
+  </head>
+  <body data-app-page="settings">
+    <!-- =====================================================
+     NAVEGAÇÃO COMPARTILHADA
+     O menu e o topbar são montados por ../shared/app-shell.js.
+===================================================== -->
+    <!-- =====================================================
+         CONTEÚDO DA PÁGINA
+         Título e cartões de configuração ligados ao arquivo config.js.
+    ===================================================== -->
+    <main class="management-main">
+      <div class="management-heading">
+        <p>Administração</p>
+        <h1>Configurações</h1>
+        <div class="lead">
+          Defina o ano letivo ativo e exporte uma cópia local dos dados do
+          AlunoTec.
+        </div>
+      </div>
+      <!-- =====================================================
+           ANO LETIVO ATIVO
+           O formulário e os IDs de status são preenchidos por config.js.
+      ===================================================== -->
+      <section class="management-card" aria-labelledby="yearTitle">
+        <h2 id="yearTitle">Ano letivo ativo</h2>
+        <p>Os próximos anos ficam disponíveis automaticamente. Escolher outro ano preserva o histórico dos anteriores; cadastre as turmas e matrículas correspondentes ao novo período.</p>
+        <form id="yearForm">
+          <label class="management-field" for="schoolYear"
+            >Ano letivo
+            <select id="schoolYear" name="schoolYear" required></select>
+          </label>
+          <div class="management-actions">
+            <button class="management-button" type="submit">
+              Salvar ano letivo
+            </button>
+          </div>
+          <p
+            class="management-status"
+            id="yearStatus"
+            role="status"
+            aria-live="polite"
+          ></p>
+        </form>
+      </section>
+      <!-- =====================================================
+           CÓPIA DE SEGURANÇA
+           O botão exporta os dados locais; o status confirma a ação.
+      ===================================================== -->
+      <section class="management-card" aria-labelledby="backupTitle">
+        <h2 id="backupTitle">Cópia de segurança</h2>
+        <p class="management-note">
+          Baixe os dados escolares salvos neste navegador em um arquivo JSON. A
+          cópia inclui turmas, frequências, remanejamentos, notificações,
+          alertas, anexos, professores (incluindo seus códigos locais) e o ano letivo. Ela não inclui tokens de acesso. Guarde o arquivo em local reservado à administração.
+        </p>
+        <div class="management-actions">
+          <button
+            class="management-button secondary"
+            id="exportBackup"
+            type="button"
+          >
+            Baixar cópia de segurança
+          </button>
+        </div>
+        <p
+          class="management-status"
+          id="backupStatus"
+          role="status"
+          aria-live="polite"
+        ></p>
+      </section>
+      <section class="management-card" aria-labelledby="restoreTitle">
+        <h2 id="restoreTitle">Restaurar cópia de segurança</h2>
+        <p class="management-note">Escolha o JSON exportado pelo AlunoTec. Você poderá desfazer a restauração e recuperar os dados anteriores.</p>
+        <label class="management-field" for="restoreFile">Arquivo de cópia JSON</label>
+        <input class="at-restore-input" id="restoreFile" type="file" accept=".json,application/json">
+        <p id="restoreSummary" class="at-restore-summary" hidden></p>
+        <div class="management-actions">
+          <button id="restoreBackup" type="button" class="management-button" disabled>Restaurar cópia</button>
+          <button id="undoRestore" type="button" class="management-button secondary" disabled>Desfazer última restauração</button>
+        </div>
+        <p class="management-status" id="restoreStatus" role="status" aria-live="polite"></p>
+      </section>
+    </main>
+    <dialog id="restoreConfirm" class="at-app-dialog">
+      <h2>Restaurar os dados desta cópia?</h2>
+      <p>Os cadastros deste navegador serão substituídos pelos dados do arquivo escolhido. A versão atual ficará guardada para desfazer a restauração.</p>
+      <div class="management-actions">
+        <button id="cancelRestore" class="management-button secondary" type="button">Cancelar</button>
+        <button id="confirmRestore" class="management-button" type="button">Confirmar restauração</button>
+      </div>
+    </dialog>
+  </body>
+</html>

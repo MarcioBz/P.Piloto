@@ -50,10 +50,11 @@
       group: "ADMINISTRAÇÃO",
     },
     {
-      id: "settings",
-      label: "Configurações",
+      id: "teachers",
+      label: "Professores",
       href: "config/config.html",
-      icon: "settings",
+      icon: "teacher",
+      group: "ADMINISTRAÇÃO",
     },
   ];
 
@@ -63,6 +64,8 @@
       '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',
     users:
       '<path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+    teacher:
+      '<rect x="3" y="3" width="18" height="13" rx="2"/><path d="M2 16h20M8 16l-3 5M16 16l3 5M7 7h7M7 10h4"/><rect x="14" y="12" width="4" height="2" rx=".5"/>',
     book: '<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 4.5v17M8 6h8M8 10h8"/>',
     chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
     capelo: '<path d="m2 9 10-5 10 5-10 5zM6 11v5c3 3 9 3 12 0v-5M22 9v7"/>',
@@ -121,13 +124,17 @@
     const links = [];
     let currentGroup = "";
     pages.forEach((item) => {
+      if (page === "teacher") {
+        if (item.id !== "electives") return;
+        item = { ...item, href: "professores/area.html", label: "Minhas eletivas", group: "PROFESSORES" };
+      } else if (item.id === "teachers" && ["CONVIDADO", "PROFESSOR"].includes(window.AlunoTecAccess?.session()?.role)) return;
       if (item.group && item.group !== currentGroup) {
         if (currentGroup)
           links.push('<div class="nav-separator" aria-hidden="true"></div>');
         links.push(`<p class="nav-title">${item.group}</p>`);
         currentGroup = item.group;
       }
-      const active = item.id === page;
+      const active = item.id === page || page === "teacher";
       links.push(
         `<a class="nav-link${active ? " active" : ""}" href="../${item.href}"${active ? ' aria-current="page"' : ""}>${icon(item.icon)}<span>${item.label}</span></a>`,
       );
@@ -139,7 +146,7 @@
            Mantém o logotipo e o controle de saída do menu móvel.
       ===================================================== -->
       <div class="sidebar-brand">
-        <a href="../admin/dashboard.html" class="sidebar-logo-link" aria-label="Ir para o início do AlunoTec">
+        <a href="${page === "teacher" ? "../professores/area.html" : "../admin/dashboard.html"}" class="sidebar-logo-link" aria-label="Ir para o início do AlunoTec">
           <img src="../assets/images/logo-alunotec1.png" alt="AlunoTec">
         </a>
         <button class="sidebar-close" id="sidebarClose" type="button" aria-label="Fechar menu"></button>
@@ -222,6 +229,7 @@
               <div><strong>Márcio Bezerra</strong><small>Super Administrador</small></div>
             </div>
             <div class="dropdown-divider"></div>
+            ${page !== "teacher" ? `<a class="at-backup-menu-link" href="../config/backup.html">${icon("settings")}<span>Dados e cópia de segurança</span></a>` : ""}
             <button id="switchAccount" type="button">${icon("switch")}<span>Trocar de conta</span></button>
             <div class="dropdown-divider"></div>
             <button class="logout" id="logoutButton" type="button">${icon("logout")}<span>Sair</span></button>
@@ -345,6 +353,7 @@
   }
 
   function getSavedClasses() {
+    if (page === "teacher") return [];
     try {
       const saved = JSON.parse(
         localStorage.getItem("alunotec_turmas_v2") || "{}",
@@ -376,12 +385,13 @@
     try {
       const saved = localStorage.getItem(schoolYearKey);
       if (validYear(saved)) years.add(String(saved));
-      const calls = JSON.parse(localStorage.getItem("alunotec_frequencia_v1") || "{}");
+      const calls = page === "teacher" ? {} : JSON.parse(localStorage.getItem("alunotec_frequencia_v1") || "{}");
       Object.values(calls || {}).forEach(call => {
         const year = validYear(call?.year) ? String(call.year) : String(call?.date || "").slice(0, 4);
         if (validYear(year)) years.add(year);
       });
     } catch {}
+    years.delete("2025");
     return [...years].sort((a, b) => Number(b) - Number(a));
   }
 
@@ -599,6 +609,7 @@
     let noticesDialog = null;
 
     function readNoticeArray(key) {
+      if (page === "teacher") return [];
       try {
         const data = JSON.parse(localStorage.getItem(key) || "[]");
         return Array.isArray(data) ? data : [];
@@ -698,6 +709,7 @@
     }
 
     function saveNoticeChanges(updates) {
+      if (page === "teacher") return false;
       const before = new Map(Object.keys(updates).map(key => [key, localStorage.getItem(key)]));
       try {
         Object.entries(updates).forEach(([key, value]) => localStorage.setItem(key, JSON.stringify(value)));
@@ -828,10 +840,16 @@
     if (window.innerWidth > 1000) closeSidebar();
   });
 
-  document.getElementById("switchAccount").addEventListener("click", () => {
+  document.getElementById("switchAccount").addEventListener("click", async () => {
+    if (page === "teacher" && window.AlunoTecTeacherService?.enabled) {
+      try { await window.AlunoTecTeacherService.logout(); } catch { return; }
+    }
     window.location.href = "../index.html";
   });
-  document.getElementById("logoutButton").addEventListener("click", () => {
+  document.getElementById("logoutButton").addEventListener("click", async () => {
+    if (window.AlunoTecTeacherService?.enabled) {
+      try { await window.AlunoTecTeacherService.logout(); } catch { return; }
+    }
     try {
       sessionStorage.removeItem("alunotecSession");
       localStorage.removeItem("alunotec_supabase_session_v1");

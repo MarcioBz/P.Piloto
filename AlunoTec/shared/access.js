@@ -59,14 +59,14 @@
     if (!dialog) {
       dialog = document.createElement("dialog");
       dialog.id = "at-help-dialog"; dialog.className = "at-app-dialog";
-      dialog.innerHTML = `<button class="at-dialog-close" type="button" aria-label="Fechar ajuda">×</button>
+      dialog.innerHTML = document.body.dataset.appPage === "teacher" ? `<button class="at-dialog-close" type="button" aria-label="Fechar ajuda">×</button><h2>Área do professor</h2><p>Use o código informado pela secretaria. As turmas disponíveis dependem das atribuições do seu ano e semestre.</p><p>Para corrigir o cadastro, recuperar o código ou solicitar mudanças de turma, procure a secretaria da escola.</p>` : `<button class="at-dialog-close" type="button" aria-label="Fechar ajuda">×</button>
         <h2>Como usar o AlunoTec</h2>
         <p>Os dados do modo local ficam neste navegador. Faça cópias de segurança regularmente.</p>
         <ol><li>Cadastre as turmas e os alunos em <a href="${new URL("turmas/index.html", baseURL)}">Turmas</a>.</li>
         <li>Vincule os alunos às eletivas e confira a origem e os remanejamentos.</li>
         <li>Registre a chamada em <a href="${new URL("frequencia/frequencia.html", baseURL)}">Frequência</a>.</li>
         <li>Consulte e exporte os resultados em <a href="${new URL("relat/relat.html", baseURL)}">Relatórios</a>.</li>
-        <li>Exporte ou restaure os dados em <a href="${new URL("config/config.html", baseURL)}">Configurações</a>.</li></ol>
+        <li>Exporte ou restaure os dados pelo menu do perfil, em <a href="${new URL("config/backup.html", baseURL)}">Dados e cópia de segurança</a>.</li></ol>
         <p>O acesso por contas e a sincronização entre dispositivos precisam de um servidor configurado.</p>`;
       dialog.querySelector("button").addEventListener("click", () => dialog.close());
       dialog.addEventListener("click", event => {
@@ -93,6 +93,12 @@
       if (notice) notice.hidden = false;
     }
     if (document.body.dataset.appPage) {
+      if (document.body.dataset.appPage === "teacher") {
+        const badge = document.createElement("p"); badge.className = "at-mode-badge";
+        badge.textContent = "Área do professor · acesso pelo serviço da escola";
+        document.querySelector(".sidebar-bottom")?.prepend(badge);
+        return;
+      }
       if (!externalAuth || session()?.mode === "local") {
         document.querySelectorAll(".profile-text small, .dropdown-profile small").forEach(label => {
           label.textContent = canEdit() ? "Perfil local" : "Visualização local";

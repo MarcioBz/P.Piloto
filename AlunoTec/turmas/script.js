@@ -800,6 +800,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const uniqueYears =
             [...new Set([...(window.AlunoTecShell?.getYears?.() || []), ...classYears, CURRENT_YEAR])]
+                .filter((year) => String(year) !== "2025")
                 .sort(
                     (a, b) =>
                         Number(b) - Number(a)

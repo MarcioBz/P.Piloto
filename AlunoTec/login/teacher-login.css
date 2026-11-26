@@ -1,0 +1,10 @@
+.teacher-login-access { margin:18px 0;border:1px solid #dbe6d8;border-radius:13px;background:#f8fbf6;padding:13px 15px;color:#34573b; }
+.teacher-login-access summary { cursor:pointer;font-size:13px;font-weight:650; }
+#teacherLoginForm { margin-top:14px; }
+#teacherLoginForm label { display:block;margin-bottom:8px;font-size:12px;font-weight:600; }
+.teacher-login-row { display:flex;gap:9px; }
+.teacher-login-row input { min-width:0;width:100px;flex:1;padding:11px 12px;background:#fff;border:1px solid #cfdccf;border-radius:9px;letter-spacing:5px;font-size:18px; }
+.teacher-login-row button { padding:11px 13px;border:0;border-radius:9px;background:#2b7437;color:#fff;font:inherit;font-size:12px;cursor:pointer; }
+.teacher-login-row button:disabled,.teacher-login-row input:disabled { opacity:.55;cursor:default; }
+#teacherLoginNotice { font-size:11px;line-height:1.6;color:#7b897d;margin:10px 0 0; }
+#teacherLoginError { font-size:12px;line-height:1.6;color:#ae4444;margin:10px 0 0; }

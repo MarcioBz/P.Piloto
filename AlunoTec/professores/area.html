@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Minhas eletivas | AlunoTec</title><link rel="icon" href="../assets/icons/icone.png">
+  <link rel="stylesheet" href="../shared/management.css"><link rel="stylesheet" href="../shared/responsive-shell.css">
+  <link rel="stylesheet" href="../shared/banner.css"><link rel="stylesheet" href="../shared/app-extra.css">
+  <link rel="stylesheet" href="area.css">
+  <script src="../shared/access.js" defer></script><script src="../shared/teacher-service-config.js" defer></script>
+  <script src="../shared/teacher-service.js" defer></script><script src="../shared/app-shell.js" defer></script>
+  <script src="../shared/banner.js" defer></script><script src="area.js" defer></script>
+</head><body data-app-page="teacher"><main class="management-main">
+  <div class="management-heading"><h1>Minhas eletivas</h1><div class="lead">Consulte as turmas autorizadas para o semestre selecionado.</div></div>
+  <section class="management-card" id="teacherPortalGuard"><h2 id="portalGuardTitle">Verificando acesso</h2><p id="portalGuardText">Aguarde a confirmação da sessão.</p><a href="../index.html" class="management-button secondary">Voltar à entrada</a></section>
+  <section class="management-card" id="teacherPortal" hidden><div class="portal-heading"><div><h2 id="portalName"></h2><p id="portalSubject"></p></div><label>Semestre<select id="portalSemester"><option value="1">1º semestre</option><option value="2">2º semestre</option></select></label></div><p id="portalYear"></p><div id="portalClasses" class="portal-classes"></div><p id="portalFeedback" role="status"></p></section>
+  <section class="management-card" id="portalRoster" hidden><div class="portal-heading"><h2 id="portalClassTitle"></h2><button type="button" class="management-button secondary" id="closePortalRoster">Fechar lista</button></div><p id="portalClassInfo"></p><ol id="portalStudentList"></ol></section>
+</main></body></html>

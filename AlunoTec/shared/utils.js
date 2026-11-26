@@ -104,8 +104,9 @@
   }
   function renderClassGroups(classes, renderCard, gridClass) {
     const groups = groupClassesByGrade(classes);
-    if (groups.length < 2) return (groups[0]?.items || []).map(renderCard).join("");
-    return groups.map(group => `<section class="at-grade-group" aria-label="${escapeHTML(group.label)}">
+    if (!groups.length) return "";
+    if (groups.length === 1 && groups[0].key === "unknown") return groups[0].items.map(renderCard).join("");
+    return groups.map(group => `<section class="at-grade-group" data-grade="${escapeHTML(group.key)}" aria-label="${escapeHTML(group.label)}">
       <h4 class="at-grade-title">${escapeHTML(group.label)}</h4>
       <div class="${escapeHTML(gridClass)} at-grade-cards">${group.items.map(renderCard).join("")}</div>
     </section>`).join("");

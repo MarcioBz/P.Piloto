@@ -22,6 +22,14 @@
       subtitle: "Ajuste o ano letivo e cuide dos dados",
       quote: "Organização para começar cada ano com clareza.",
     },
+    teachers: {
+      subtitle: "Cadastre, gerencie e organize os professores da instituição",
+      quote: "Uma gestão docente mais organizada e eficiente.",
+    },
+    teacher: {
+      subtitle: "Acompanhe suas turmas e atribuições",
+      quote: "Participação e organização para ensinar melhor.",
+    },
     electives: {
       title: "Eletivas",
       subtitle: "Organize as disciplinas eletivas",
@@ -41,6 +49,8 @@
     electives: "capelo",
     institution: "building",
     settings: "settings",
+    teachers: "teacher",
+    teacher: "capelo",
   };
 
   /* Inclui o ícone de cada aba antes do texto do banner. */

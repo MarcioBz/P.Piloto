@@ -4,7 +4,7 @@
   const keys = Object.freeze([
     "alunotec_turmas_v2", "alunotec_turmas_activity_v1", "alunotec_alunos_remanejamentos_v1",
     "alunotecSchoolYear", "alunotec.profile.v1", "alunotec_frequencia_v1",
-    "alunotec_frequencia_alertas_v1", "alunotec_frequencia_alertas_ocultos_v1", "alunotec_institution_v1",
+    "alunotec_frequencia_alertas_v1", "alunotec_frequencia_alertas_ocultos_v1", "alunotec_institution_v1", "alunotec_professores_v1",
   ]);
   const root = typeof window === "undefined" ? globalThis : window;
   const object = value => value !== null && typeof value === "object" && !Array.isArray(value);
@@ -21,7 +21,11 @@
       } else {
         let parsed;
         try { parsed = JSON.parse(raw); } catch { throw new Error(`Os dados de ${key} não são JSON válido.`); }
-        if (key === "alunotec_turmas_v2") {
+        if (key === "alunotec_professores_v1") {
+          const teachers = root.AlunoTecTeachers || (typeof module !== "undefined" && module.exports ? require("../shared/teachers-store.js") : null);
+          if (!teachers) throw new Error("O validador do cadastro de professores não foi carregado.");
+          teachers.validate(parsed);
+        } else if (key === "alunotec_turmas_v2") {
           if (!object(parsed) || !Array.isArray(parsed.base) || !Array.isArray(parsed.electives))
             throw new Error("A cópia não contém uma estrutura válida de turmas.");
           for (const item of [...parsed.base, ...parsed.electives]) {
@@ -106,8 +110,8 @@
       tx.onerror = () => { db.close(); reject(tx.error); };
     });
   }
-  function replaceData(data) {
-    keys.forEach(key => localStorage.removeItem(key));
+  function replaceData(data, preserveMissingTeachers = false) {
+    keys.forEach(key => { if (!(preserveMissingTeachers && key === "alunotec_professores_v1" && !(key in data))) localStorage.removeItem(key); });
     keys.forEach(key => { if (key in data) localStorage.setItem(key, data[key]); });
   }
   async function restoreBackup(value) {
@@ -117,7 +121,7 @@
     await undoData(before);
     try {
       await putAttachments(valid.attachments);
-      replaceData(valid.localStorage);
+      replaceData(valid.localStorage, true);
       localStorage.setItem("alunotec_turmas_pending_sync_v1", JSON.stringify({
         savedAt: new Date().toISOString(), data: JSON.parse(valid.localStorage.alunotec_turmas_v2 || '{"base":[],"electives":[]}'),
       }));

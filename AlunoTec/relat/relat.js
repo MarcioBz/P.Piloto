@@ -604,7 +604,7 @@
   const state = { view: "overview", mode: "default", studentId: "", applied: null,
     data: null, table: null, rows: [], pickerOpen: false, classType: "base", stage: "catalog", rosterClassId: "",
     chartDraft: { start: "", end: "" } };
-  const customSelects = new Map();
+  const customSelects = window.AlunoTecSelect.registry;
 
   function read(key, fallback) {
     try {
@@ -625,70 +625,9 @@
   }
 
   /* Seletores com lista verde, seta animada, Escape e navegação por teclado. */
-  function closeSelects(except = null) {
-    customSelects.forEach(custom => {
-      if (custom === except) return;
-      custom.wrapper.classList.remove("is-open"); custom.menu.hidden = true;
-      custom.button.setAttribute("aria-expanded", "false");
-    });
-  }
-  function enhanceSelect(select) {
-    if (customSelects.has(select)) return;
-    const wrapper = document.createElement("div"); wrapper.className = "rp-select";
-    select.before(wrapper); wrapper.append(select);
-    const button = document.createElement("button"); button.type = "button"; button.className = "rp-select-button";
-    button.id = `${select.id}-button`; button.setAttribute("role", "combobox"); button.setAttribute("aria-haspopup", "listbox"); button.setAttribute("aria-expanded", "false");
-    const label = document.querySelector(`label[for="${select.id}"]`);
-    if (label) { label.id ||= `${select.id}-label`; button.setAttribute("aria-labelledby", `${label.id} ${button.id}-value`); label.htmlFor = button.id; }
-    const value = document.createElement("span"); value.id = `${button.id}-value`; button.append(value);
-    const menu = document.createElement("div"); menu.className = "rp-select-menu"; menu.id = `${select.id}-menu`; menu.setAttribute("role", "listbox"); menu.hidden = true;
-    menu.setAttribute("aria-label", label?.textContent || "Opções"); button.setAttribute("aria-controls", menu.id);
-    wrapper.append(button, menu);
-    const custom = { select, wrapper, button, value, menu };
-    customSelects.set(select, custom);
-    function open() { closeSelects(custom); menu.hidden = false; wrapper.classList.add("is-open"); button.setAttribute("aria-expanded", "true"); }
-    button.addEventListener("click", () => { if (menu.hidden) open(); else closeSelects(); });
-    button.addEventListener("keydown", event => {
-      if (["ArrowDown", "ArrowUp"].includes(event.key)) {
-        event.preventDefault(); open();
-        const options = [...menu.querySelectorAll("button:not(:disabled)")];
-        (options.find(option => option.getAttribute("aria-selected") === "true") || (event.key === "ArrowUp" ? options.at(-1) : options[0]))?.focus();
-      }
-    });
-    menu.addEventListener("click", event => {
-      const option = event.target.closest("[data-option-index]");
-      if (!option || option.disabled) return;
-      select.selectedIndex = Number(option.dataset.optionIndex);
-      closeSelects(); refreshSelect(select); button.focus();
-      select.dispatchEvent(new Event("change", { bubbles: true }));
-    });
-    menu.addEventListener("keydown", event => {
-      const options = [...menu.querySelectorAll("button:not(:disabled)")], current = options.indexOf(document.activeElement);
-      let next;
-      if (event.key === "ArrowDown") next = (current + 1) % options.length;
-      if (event.key === "ArrowUp") next = (current + options.length - 1) % options.length;
-      if (event.key === "Home") next = 0;
-      if (event.key === "End") next = options.length - 1;
-      if (next != null && options.length) { event.preventDefault(); options[next].focus(); }
-      if (event.key === "Escape") { event.preventDefault(); closeSelects(); button.focus(); }
-    });
-    wrapper.addEventListener("focusout", event => { if (!wrapper.contains(event.relatedTarget)) { wrapper.classList.remove("is-open"); menu.hidden = true; button.setAttribute("aria-expanded", "false"); } });
-    select.addEventListener("change", () => refreshSelect(select));
-    refreshSelect(select);
-  }
-  function refreshSelect(select) {
-    const custom = customSelects.get(select);
-    if (!custom) return;
-    custom.value.textContent = select.options[select.selectedIndex]?.textContent || "Selecione";
-    custom.button.disabled = select.disabled;
-    custom.menu.replaceChildren(...[...select.options].map((option, index) => {
-      const button = document.createElement("button"); button.type = "button"; button.className = "rp-select-option";
-      button.dataset.optionIndex = String(index); button.setAttribute("role", "option"); button.setAttribute("aria-selected", String(option.selected)); button.disabled = option.disabled;
-      const text = document.createElement("span"); text.textContent = option.textContent; button.append(text);
-      if (option.selected) { const check = document.createElement("span"); check.className = "rp-option-check"; check.textContent = "✓"; check.setAttribute("aria-hidden", "true"); button.append(check); }
-      return button;
-    }));
-  }
+  function closeSelects(except = null) { window.AlunoTecSelect.close(except); }
+  function enhanceSelect(select) { return window.AlunoTecSelect.enhance(select, { prefix: "rp" }); }
+  function refreshSelect(select) { window.AlunoTecSelect.refresh(select); }
   function setOptions(select, options, preferred) {
     select.replaceChildren(...options.map(([value, label]) => new Option(label, value)));
     if (options.some(([value]) => value === String(preferred))) select.value = String(preferred);

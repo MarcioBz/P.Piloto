@@ -5,17 +5,28 @@
 }
 
 .at-grade-group + .at-grade-group {
-  margin-top: 8px;
-  padding-top: 22px;
-  border-top: 1px solid #1b1b1b;
+  margin-top: 14px;
+  padding-top: 0;
 }
 
 .at-grade-title {
-  margin: 0 0 13px;
-  color: #344d3c;
-  font-size: 13px;
-  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0 15px;
+  padding: 8px 15px;
+  border: 1px solid #d9e9d3;
+  border-radius: 10px;
+  background: #edf6e8;
+  color: #306c3d;
+  font-size: 15px;
+  font-weight: 750;
   line-height: 1.5;
+}
+
+.at-grade-group[data-grade="unknown"] .at-grade-title {
+  background: #f4f7f1;
+  border-color: #e4eade;
+  color: #6a7c6c;
 }
 
 .at-grade-cards {

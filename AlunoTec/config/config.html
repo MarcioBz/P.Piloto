@@ -1,123 +1,90 @@
 <!doctype html>
-<!-- =====================================================
-     ALUNOTEC | MAPA DE EDIÇÃO — CONFIGURAÇÕES
-     Estrutura: formulário de ano letivo e ações de cópia/backup.
-     Visual compartilhado: ../shared/management.css.
-     Comportamento: config.js preenche o ano e executa as ações; os IDs
-     do formulário/status são a ligação entre HTML e JavaScript.
-===================================================== -->
-
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#073a54" />
-    <title>AlunoTec | Configurações</title>
-    <link rel="icon" type="image/png" href="../assets/icons/icone.png" />
-    <link rel="stylesheet" href="../shared/management.css" />
-
-    <link rel="stylesheet" href="../shared/responsive-shell.css" />
-    <link rel="stylesheet" href="../shared/profile.css" />
-    <link rel="stylesheet" href="../shared/banner.css" />
-    <script src="../shared/access.js" defer></script>
-    <script src="../shared/app-shell.js" defer></script>
-    <script src="../shared/banner.js" defer></script>
-    <script src="../shared/profile.js" defer></script>
-    <script src="backup.js" defer></script>
-    <script src="config.js" defer></script>
-    <script src="config-local.js" defer></script>
-      <link rel="stylesheet" href="../shared/app-extra.css">
-  </head>
-  <body data-app-page="settings">
-    <!-- =====================================================
-     NAVEGAÇÃO COMPARTILHADA
-     O menu e o topbar são montados por ../shared/app-shell.js.
-===================================================== -->
-    <!-- =====================================================
-         CONTEÚDO DA PÁGINA
-         Título e cartões de configuração ligados ao arquivo config.js.
-    ===================================================== -->
-    <main class="management-main">
-      <div class="management-heading">
-        <p>Administração</p>
-        <h1>Configurações</h1>
-        <div class="lead">
-          Defina o ano letivo ativo e exporte uma cópia local dos dados do
-          AlunoTec.
-        </div>
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Professores | AlunoTec</title>
+  <link rel="icon" type="image/png" href="../assets/icons/icone.png">
+  <link rel="stylesheet" href="../shared/management.css"><link rel="stylesheet" href="../shared/responsive-shell.css">
+  <link rel="stylesheet" href="../shared/profile.css"><link rel="stylesheet" href="../shared/banner.css">
+  <link rel="stylesheet" href="../shared/app-extra.css"><link rel="stylesheet" href="teachers.css">
+  <script src="../shared/access.js" defer></script><script src="../shared/app-shell.js" defer></script>
+  <script src="../shared/banner.js" defer></script><script src="../shared/profile.js" defer></script>
+  <script src="../shared/utils.js" defer></script><script src="../shared/teachers-store.js" defer></script>
+  <script src="../shared/teacher-service-config.js" defer></script><script src="../shared/teacher-service.js" defer></script>
+  <script src="../shared/select.js" defer></script>
+  <script src="teachers.js" defer></script>
+  <link rel="stylesheet" href="../shared/select.css">
+</head>
+<body data-app-page="teachers">
+<main class="management-main teachers-page">
+  <div class="management-heading"><h1>Professores</h1><div class="lead">Vincule disciplinas, turmas de eletivas e organize as atribuições de cada professor.</div></div>
+  <section id="teacherGuard" class="management-card teacher-guard" aria-live="polite"><h2 id="teacherGuardTitle">Verificando o acesso</h2><p id="teacherGuardText">Aguarde a leitura do cadastro.</p><a class="management-button secondary" href="../index.html">Ir para a entrada</a></section>
+  <div id="teacherContent" hidden>
+    <section class="teacher-metrics" aria-label="Resumo dos professores">
+      <article class="teacher-metric blue"><span class="teacher-metric-icon" data-teacher-icon="teacher"></span><div><strong id="teacherCount">0</strong><span>Professores cadastrados</span></div></article>
+      <article class="teacher-metric green"><span class="teacher-metric-icon" data-teacher-icon="cap"></span><div><strong id="teacherActive">0</strong><span>Professores ativos</span></div></article>
+      <article class="teacher-metric amber"><span class="teacher-metric-icon" data-teacher-icon="inactive"></span><div><strong id="teacherInactive">0</strong><span>Professores inativos</span></div></article>
+      <article class="teacher-metric purple"><span class="teacher-metric-icon" data-teacher-icon="layers"></span><div><strong id="teacherSubjects">0</strong><span>Disciplinas cadastradas</span></div></article>
+    </section>
+    <p id="teacherMode" class="teacher-mode"></p>
+    <section class="management-card teacher-list" aria-labelledby="teacherListTitle">
+      <div class="teacher-toolbar">
+        <h2 id="teacherListTitle"><span data-teacher-icon="teacher" aria-hidden="true"></span>Lista de professores</h2>
+        <label class="teacher-search"><span class="teacher-sr">Buscar professor, disciplina ou código</span><span data-teacher-icon="search" aria-hidden="true"></span><input id="teacherSearch" type="search" placeholder="Buscar professor..." autocomplete="off"></label>
+        <label><span class="teacher-sr">Filtrar por status</span><select id="teacherStatusFilter" aria-label="Filtrar por status"><option value="all">Todos os status</option><option value="active">Ativos</option><option value="inactive">Inativos</option></select></label>
+        <label><span class="teacher-sr">Filtrar por semestre</span><select id="teacherTermFilter" aria-label="Filtrar por semestre"><option value="all">Todos os semestres</option><option value="1">1º semestre</option><option value="2">2º semestre</option></select></label>
+        <button type="button" class="management-button" id="newTeacher"><span data-teacher-icon="plus" aria-hidden="true"></span>Novo Professor</button>
       </div>
-      <!-- =====================================================
-           ANO LETIVO ATIVO
-           O formulário e os IDs de status são preenchidos por config.js.
-      ===================================================== -->
-      <section class="management-card" aria-labelledby="yearTitle">
-        <h2 id="yearTitle">Ano letivo ativo</h2>
-        <p>Os próximos anos ficam disponíveis automaticamente. Escolher outro ano preserva o histórico dos anteriores; cadastre as turmas e matrículas correspondentes ao novo período.</p>
-        <form id="yearForm">
-          <label class="management-field" for="schoolYear"
-            >Ano letivo
-            <select id="schoolYear" name="schoolYear" required></select>
-          </label>
-          <div class="management-actions">
-            <button class="management-button" type="submit">
-              Salvar ano letivo
-            </button>
-          </div>
-          <p
-            class="management-status"
-            id="yearStatus"
-            role="status"
-            aria-live="polite"
-          ></p>
-        </form>
-      </section>
-      <!-- =====================================================
-           CÓPIA DE SEGURANÇA
-           O botão exporta os dados locais; o status confirma a ação.
-      ===================================================== -->
-      <section class="management-card" aria-labelledby="backupTitle">
-        <h2 id="backupTitle">Cópia de segurança</h2>
-        <p class="management-note">
-          Baixe os dados escolares salvos neste navegador em um arquivo JSON. A
-          cópia inclui turmas, frequências, remanejamentos, notificações,
-          alertas, anexos e o ano letivo. Ela não inclui tokens de acesso.
-        </p>
-        <div class="management-actions">
-          <button
-            class="management-button secondary"
-            id="exportBackup"
-            type="button"
-          >
-            Baixar cópia de segurança
+      <p class="teacher-year-context" id="teacherYearContext"></p>
+      <div class="teacher-table-wrap"><table class="teacher-table"><thead><tr><th scope="col">Professor</th><th scope="col">Disciplina / Matéria</th><th scope="col">Código de acesso</th><th scope="col">Semestre</th><th scope="col">Turmas (Eletivas)</th><th scope="col">Status</th><th scope="col">Ações</th></tr></thead><tbody id="teacherRows"></tbody></table></div>
+      <div id="teacherEmpty" class="teacher-empty" hidden><span data-teacher-icon="teacher" aria-hidden="true"></span><h3 id="teacherEmptyTitle">Nenhum professor cadastrado</h3><p id="teacherEmptyText">Use Novo Professor para começar.</p></div>
+      <footer class="teacher-list-footer"><p id="teacherListCount"></p><div class="teacher-pages" aria-label="Paginação"><button id="teacherPrev" type="button" aria-label="Página anterior">‹</button><span id="teacherPage" aria-live="polite"></span><button id="teacherNext" type="button" aria-label="Próxima página">›</button></div></footer>
+      <p id="teacherFeedback" class="teacher-feedback" role="status" aria-live="polite"></p>
+    </section>
+  </div>
+</main>
+<dialog id="teacherDialog" class="teacher-dialog" aria-labelledby="teacherDialogTitle">
+  <header class="teacher-dialog-heading"><h2 id="teacherDialogTitle"><span data-teacher-icon="teacher" aria-hidden="true"></span><span id="teacherDialogTitleText">Cadastrar Professor</span></h2><button type="button" class="teacher-dialog-close" aria-label="Fechar cadastro de professor" data-close-teacher="teacherDialog">×</button></header>
+  <form id="teacherForm">
+    <div class="teacher-form-grid">
+      <label>Nome completo <span aria-hidden="true">*</span><input id="teacherName" name="name" type="text" maxlength="160" autocomplete="name" required></label>
+      <label>Disciplina / Matéria <span aria-hidden="true">*</span><input id="teacherSubject" name="subject" type="text" maxlength="160" placeholder="Digite a disciplina" required></label>
+      <label>Código de acesso<input id="teacherCode" class="teacher-code-input" type="text" readonly aria-describedby="teacherCodeHelp"><small id="teacherCodeHelp">Código exclusivo e permanente de 5 dígitos.</small></label>
+      <label>Status <select id="teacherStatus"><option value="active">Ativo</option><option value="inactive">Inativo</option></select></label>
+      <label>Semestre de atribuição <select id="teacherTerm"><option value="1">1º semestre</option><option value="2">2º semestre</option></select></label>
+      <div class="teacher-assignment-year"><small>Ano letivo</small><strong id="teacherFormYear"></strong></div>
+      <fieldset class="teacher-electives-field">
+        <legend id="teacherClassLegend">Turmas de Eletivas (Vínculo)</legend>
+        <div class="teacher-class-select" id="teacherClassSelect">
+          <button type="button" class="teacher-class-toggle" id="teacherClassToggle" aria-haspopup="dialog" aria-expanded="false" aria-controls="teacherClassPanel" aria-labelledby="teacherClassLegend teacherClassSummary" aria-describedby="teacherClassHelp">
+            <span id="teacherClassSummary">Selecione as eletivas</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
           </button>
+          <div id="teacherClassTags" class="teacher-class-tags" aria-label="Eletivas selecionadas" hidden></div>
         </div>
-        <p
-          class="management-status"
-          id="backupStatus"
-          role="status"
-          aria-live="polite"
-        ></p>
-      </section>
-      <section class="management-card" aria-labelledby="restoreTitle">
-        <h2 id="restoreTitle">Restaurar cópia de segurança</h2>
-        <p class="management-note">Escolha o JSON exportado pelo AlunoTec. Você poderá desfazer a restauração e recuperar os dados anteriores.</p>
-        <label class="management-field" for="restoreFile">Arquivo de cópia JSON</label>
-        <input class="at-restore-input" id="restoreFile" type="file" accept=".json,application/json">
-        <p id="restoreSummary" class="at-restore-summary" hidden></p>
-        <div class="management-actions">
-          <button id="restoreBackup" type="button" class="management-button" disabled>Restaurar cópia</button>
-          <button id="undoRestore" type="button" class="management-button secondary" disabled>Desfazer última restauração</button>
-        </div>
-        <p class="management-status" id="restoreStatus" role="status" aria-live="polite"></p>
-      </section>
-    </main>
-    <dialog id="restoreConfirm" class="at-app-dialog">
-      <h2>Restaurar os dados desta cópia?</h2>
-      <p>Os cadastros deste navegador serão substituídos pelos dados do arquivo escolhido. A versão atual ficará guardada para desfazer a restauração.</p>
-      <div class="management-actions">
-        <button id="cancelRestore" class="management-button secondary" type="button">Cancelar</button>
-        <button id="confirmRestore" class="management-button" type="button">Confirmar restauração</button>
-      </div>
-    </dialog>
-  </body>
-</html>
+        <p class="teacher-form-hint" id="teacherClassHelp">As turmas vêm do cadastro de Eletivas. As escolhas do outro semestre são preservadas.</p>
+      </fieldset>
+    </div>
+    <p class="teacher-form-info" id="teacherFormInfo"></p>
+    <p id="teacherFormError" class="teacher-error" role="alert" hidden></p>
+    <div class="teacher-dialog-actions"><button type="button" class="management-button secondary" data-close-teacher="teacherDialog">Cancelar</button><button type="submit" class="management-button" id="saveTeacher"><span data-teacher-icon="save" aria-hidden="true"></span>Salvar Professor</button></div>
+  </form>
+</dialog>
+<dialog id="teacherClassPanel" class="teacher-dialog teacher-class-panel" aria-labelledby="teacherClassPanelTitle" aria-describedby="teacherClassPanelHint">
+  <header class="teacher-dialog-heading">
+    <h2 id="teacherClassPanelTitle"><span data-teacher-icon="cap" aria-hidden="true"></span>Selecionar eletivas</h2>
+    <button type="button" class="teacher-dialog-close" id="teacherClassClose" aria-label="Fechar seleção de eletivas">×</button>
+  </header>
+  <div class="teacher-class-panel-body">
+    <p class="teacher-class-context" id="teacherClassContext"></p>
+    <p class="teacher-class-panel-hint" id="teacherClassPanelHint">Clique no nome ou na linha da eletiva para selecionar. Você pode escolher mais de uma.</p>
+    <div class="teacher-class-options" id="teacherClassOptions" role="group" aria-label="Eletivas disponíveis"></div>
+  </div>
+  <footer class="teacher-class-panel-footer">
+    <span id="teacherClassCount" role="status"></span>
+    <button type="button" class="management-button teacher-class-done" id="teacherClassDone">Concluir seleção</button>
+  </footer>
+</dialog>
+<dialog id="teacherView" class="teacher-dialog teacher-view" aria-labelledby="teacherViewTitle"><header class="teacher-dialog-heading"><h2 id="teacherViewTitle">Cadastro do professor</h2><button type="button" class="teacher-dialog-close" aria-label="Fechar consulta de professor" data-close-teacher="teacherView">×</button></header><div class="teacher-view-content" id="teacherViewContent"></div><div class="teacher-dialog-actions"><button type="button" class="management-button secondary" data-close-teacher="teacherView">Fechar</button></div></dialog>
+<dialog id="teacherConfirm" class="teacher-dialog teacher-confirm" aria-labelledby="teacherConfirmTitle"><header class="teacher-dialog-heading"><h2 id="teacherConfirmTitle"></h2><button type="button" class="teacher-dialog-close" aria-label="Fechar confirmação" data-close-teacher="teacherConfirm">×</button></header><div class="teacher-confirm-content"><p id="teacherConfirmText"></p><p id="teacherConfirmError" class="teacher-error" role="alert" hidden></p></div><div class="teacher-dialog-actions"><button type="button" class="management-button secondary" id="cancelTeacherConfirm" data-close-teacher="teacherConfirm">Cancelar</button><button type="button" class="management-button" id="confirmTeacherAction">Confirmar</button></div></dialog>
+</body></html>

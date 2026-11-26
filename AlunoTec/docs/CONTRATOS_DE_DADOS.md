@@ -15,6 +15,7 @@ As chaves abaixo são interfaces internas entre páginas. Não reutilize uma cha
 | `alunotec_frequencia_alertas_v1`         | Alertas calculados de frequência        | Frequência                                   |
 | `alunotec_frequencia_alertas_ocultos_v1` | Alertas dispensados                     | Frequência                                   |
 | `alunotec_institution_v1`                | Identificação local da instituição      | Instituição, Cópia de segurança              |
+| `alunotec_professores_v1`               | Professores, códigos locais e atribuições por ano/semestre | Professores, Cópia de segurança |
 
 `localStorage` é compartilhado entre páginas da mesma origem; alterações podem afetar outras áreas que usam a mesma chave. `sessionStorage` tem ciclo de vida diferente e não deve ser trocado sem revisar login e logout. Dados no navegador não substituem validação de autorização no servidor.
 
@@ -33,3 +34,9 @@ O JSON tem `application: "AlunoTec"`, `formatVersion: 2`, `exportedAt`, `localSt
 Os anexos locais estão no IndexedDB `alunotec-anexos-frequencia`, store `atestados`. O estado anterior à última restauração fica no IndexedDB `alunotec-backup-recovery`, store `copies`. Apenas uma versão anterior é mantida; desfazer troca a versão atual e a anterior. As sessões não entram no backup.
 
 A restauração atualiza a fila `alunotec_turmas_pending_sync_v1` para não reenviar uma versão antiga das turmas. A integração remota existente está desconfigurada e cobre somente turmas; não é a sincronização completa do aplicativo.
+
+## Professores
+
+`alunotec_professores_v1` usa `version: 1`, `revision`, `teachers` e `revokedCodes`. `assignments[ano][semestre]` guarda somente IDs do cadastro canônico de eletivas, sem outra lista de turmas ou alunos. Os códigos têm cinco dígitos como texto, permanecem entre semestres e são reservados após exclusão. Cópias antigas sem esta chave preservam os professores já existentes.
+
+O código local não autentica usuários. O adaptador HTTP e o contrato de autorização estão em `shared/teacher-service.js` e `docs/AUTENTICACAO-PROFESSORES.md`; a configuração vem desativada. A área do professor não usa o armazenamento escolar local para obter seus alunos nem as notificações da administração.

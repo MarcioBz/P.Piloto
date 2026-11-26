@@ -18,7 +18,11 @@
 
     <link rel="stylesheet" href="login/login.css" />
     <script src="shared/access.js" defer></script>
+    <script src="shared/teacher-service-config.js" defer></script>
+    <script src="shared/teacher-service.js" defer></script>
     <script src="login/login.js" defer></script>
+    <script src="login/teacher-login.js" defer></script>
+    <link rel="stylesheet" href="login/teacher-login.css">
       <link rel="stylesheet" href="shared/app-extra.css">
   </head>
 
@@ -329,6 +333,15 @@
                DIVISOR DE FORMAS DE ACESSO
                Separa o login principal das opções institucional e convidado.
           ===================================================== -->
+
+          <details class="teacher-login-access">
+            <summary>Acesso do professor</summary>
+            <form id="teacherLoginForm">
+              <label for="teacherLoginCode">Código individual de 5 dígitos</label>
+              <div class="teacher-login-row"><input id="teacherLoginCode" type="password" inputmode="numeric" pattern="[0-9]{5}" minlength="5" maxlength="5" autocomplete="off" required placeholder="•••••"><button type="submit" id="teacherLoginSubmit">Entrar como professor</button></div>
+              <p id="teacherLoginNotice"></p><p id="teacherLoginError" role="alert" hidden></p>
+            </form>
+          </details>
 
           <div class="at-local-access">
             <p id="localAccessNotice" hidden>Use o sistema neste dispositivo. As contas online dependem da configuração do servidor.</p>
