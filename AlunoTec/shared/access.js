@@ -29,6 +29,7 @@
 
   const mutations = [
     "#newButton", "a[data-mutation]", "#addStudentButton", "#importStudentsButton", "#studentImportInput",
+    "#newEnrollmentButton", "#enrollmentForm input", "#enrollmentForm select", "#continueEnrollmentButton",
     "[data-action='edit']", "[data-action='delete']", "[data-action='transfer']",
     "[data-student-action]", "[data-student-status] button", ".status-button", "[data-row-action]",
     "#markAllButton", "#saveButton", "#saveJustificationButton", "#restoreBackup", "#undoRestore",
@@ -44,7 +45,7 @@
   }
   document.addEventListener("submit", event => {
     if (canEdit()) return;
-    if (event.target.matches("#baseForm,#electiveForm,#studentForm,#transferForm,#institutionForm")) {
+    if (event.target.matches("#baseForm,#electiveForm,#studentForm,#transferForm,#institutionForm,#enrollmentForm")) {
       event.preventDefault(); event.stopImmediatePropagation();
     }
   }, true);

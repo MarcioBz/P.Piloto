@@ -43,6 +43,13 @@
       group: "PROFESSORES",
     },
     {
+      id: "enrollment",
+      label: "Matrícula",
+      href: "matricula/matricula.html",
+      icon: "calendar",
+      group: "ADMINISTRAÇÃO",
+    },
+    {
       id: "institution",
       label: "Instituição",
       href: "inst/inst.html",

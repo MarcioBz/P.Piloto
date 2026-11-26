@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#183f1c" />
+    <title>Matrícula | AlunoTec</title>
+    <link rel="icon" type="image/png" href="../assets/icons/icone.png" />
+    <link rel="stylesheet" href="../shared/responsive-shell.css" />
+    <link rel="stylesheet" href="../shared/profile.css" />
+    <link rel="stylesheet" href="../shared/app-extra.css" />
+    <link rel="stylesheet" href="matricula.css" />
+    <script src="../shared/access.js" defer></script>
+    <script src="../shared/app-shell.js" defer></script>
+    <script src="../shared/profile.js" defer></script>
+    <script src="../shared/utils.js" defer></script>
+    <script src="matricula.js" defer></script>
+  </head>
+  <body data-app-page="enrollment">
+    <main class="main">
+      <div class="content enrollment-page">
+        <section class="enrollment-hero" aria-labelledby="enrollmentTitle">
+          <div class="enrollment-hero-copy">
+            <span class="enrollment-hero-icon"><svg aria-hidden="true"><use href="#at-icon-calendar"></use></svg></span>
+            <div>
+              <p class="enrollment-eyebrow">GESTÃO ESCOLAR</p>
+              <h1 id="enrollmentTitle">Matrícula</h1>
+              <p>Cadastre alunos nas turmas e acompanhe os vínculos do ano letivo.</p>
+            </div>
+          </div>
+          <button class="enrollment-primary" id="newEnrollmentButton" type="button">
+            <svg aria-hidden="true"><use href="#at-icon-users"></use></svg>
+            Nova matrícula
+          </button>
+        </section>
+
+        <section class="enrollment-summary" aria-label="Resumo das matrículas">
+          <article class="enrollment-metric">
+            <span class="enrollment-metric-icon"><svg aria-hidden="true"><use href="#at-icon-users"></use></svg></span>
+            <span><small>Alunos matriculados</small><strong id="enrollmentTotal">0</strong></span>
+          </article>
+          <article class="enrollment-metric">
+            <span class="enrollment-metric-icon"><svg aria-hidden="true"><use href="#at-icon-check"></use></svg></span>
+            <span><small>Ativos</small><strong id="enrollmentActive">0</strong></span>
+          </article>
+          <article class="enrollment-metric">
+            <span class="enrollment-metric-icon is-red"><svg aria-hidden="true"><use href="#at-icon-x"></use></svg></span>
+            <span><small>Inativos</small><strong id="enrollmentInactive">0</strong></span>
+          </article>
+          <article class="enrollment-metric">
+            <span class="enrollment-metric-icon is-blue"><svg aria-hidden="true"><use href="#at-icon-switch"></use></svg></span>
+            <span><small>Remanejados</small><strong id="enrollmentMoved">0</strong></span>
+          </article>
+        </section>
+
+        <section class="enrollment-panel" aria-labelledby="enrollmentListTitle">
+          <header class="enrollment-panel-heading">
+            <div>
+              <h2 id="enrollmentListTitle">Alunos matriculados</h2>
+              <p>Consulte a turma atual, a turma de origem, a eletiva e a realidade do aluno.</p>
+            </div>
+            <span class="enrollment-count" id="enrollmentCount" role="status" aria-live="polite">0 alunos</span>
+          </header>
+
+          <div class="enrollment-filters">
+            <label class="enrollment-search">
+              <svg aria-hidden="true"><use href="#at-icon-users"></use></svg>
+              <input id="enrollmentSearch" type="search" autocomplete="off" placeholder="Pesquisar por nome do aluno..." aria-label="Pesquisar por nome do aluno" />
+            </label>
+            <label class="enrollment-filter">
+              <span>Turma atual</span>
+              <select id="enrollmentClassFilter" aria-label="Filtrar por turma atual">
+                <option value="">Todas as turmas</option>
+              </select>
+            </label>
+            <label class="enrollment-filter">
+              <span>Situação</span>
+              <select id="enrollmentStatusFilter" aria-label="Filtrar por situação">
+                <option value="">Todas</option>
+                <option value="Ativo">Ativos</option>
+                <option value="Inativo">Inativos</option>
+                <option value="Remanejado">Remanejados</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="enrollment-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Nº</th>
+                  <th scope="col">ALUNO</th>
+                  <th scope="col">TURMA ATUAL</th>
+                  <th scope="col">TURMA DE ORIGEM</th>
+                  <th scope="col">ELETIVA</th>
+                  <th scope="col">REALIDADE</th>
+                  <th scope="col">SITUAÇÃO</th>
+                  <th scope="col">AÇÕES</th>
+                </tr>
+              </thead>
+              <tbody id="enrollmentRows"></tbody>
+            </table>
+            <div class="enrollment-empty" id="enrollmentEmpty" hidden>
+              <span class="enrollment-empty-icon"><svg aria-hidden="true"><use href="#at-icon-users"></use></svg></span>
+              <strong id="enrollmentEmptyTitle">Nenhum aluno encontrado</strong>
+              <p id="enrollmentEmptyDescription">Cadastre uma matrícula ou ajuste os filtros para consultar os alunos.</p>
+              <a href="../turmas/index.html?nova=1&amp;aba=base" id="enrollmentEmptyLink">Abrir cadastro de turma</a>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <dialog class="enrollment-dialog" id="enrollmentDialog" aria-labelledby="enrollmentDialogTitle">
+      <form class="enrollment-dialog-card" id="enrollmentForm">
+        <button class="enrollment-dialog-close" id="closeEnrollmentDialog" type="button" aria-label="Fechar">×</button>
+        <span class="enrollment-dialog-icon"><svg aria-hidden="true"><use href="#at-icon-users"></use></svg></span>
+        <h2 id="enrollmentDialogTitle">Nova matrícula</h2>
+        <p class="enrollment-dialog-intro">Informe os dados básicos. O cadastro será salvo pela tela da turma selecionada.</p>
+        <label class="enrollment-form-field">
+          <span>Nome completo do aluno</span>
+          <input id="newStudentName" name="name" type="text" maxlength="160" autocomplete="name" required />
+        </label>
+        <label class="enrollment-form-field">
+          <span>WhatsApp do responsável <small>(opcional)</small></span>
+          <input id="newStudentWhatsapp" name="whatsapp" type="tel" maxlength="24" autocomplete="tel" />
+        </label>
+        <label class="enrollment-form-field">
+          <span>Turma da Base Comum</span>
+          <select id="newStudentClass" name="classId" required></select>
+        </label>
+        <p class="enrollment-form-note" id="enrollmentFormNote" role="status" aria-live="polite"></p>
+        <div class="enrollment-dialog-actions">
+          <button class="enrollment-secondary" id="cancelEnrollmentButton" type="button">Cancelar</button>
+          <button class="enrollment-primary" id="continueEnrollmentButton" type="submit">Continuar cadastro</button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>

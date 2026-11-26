@@ -2393,10 +2393,10 @@ document.addEventListener("DOMContentLoaded", () => {
                             </td>
 
                             <td>
-                                <span class="at-student-label">
-                                    <span class="at-student-label-name">${escapeHTML(student.name || "Aluno sem nome")}</span>
-                                    ${links?.remapped ? '<span class="at-student-label-details"><span class="at-student-remapped">Remanejado</span></span>' : ""}
-                                </span>
+                                ${window.AlunoTecStudents?.label(student, {
+                                    classId: item.id,
+                                    year: String(item.year || item.date?.slice(0, 4) || CURRENT_YEAR)
+                                }) || `<span class="at-student-label"><span class="at-student-label-name">${escapeHTML(student.name || "Aluno sem nome")}</span></span>`}
                             </td>
 
                             <td>
@@ -3682,6 +3682,26 @@ document.addEventListener("DOMContentLoaded", () => {
     changeTab(startParams.get("aba") === "electives" || startParams.get("tipo") === "electives" ? "electives" : "base");
     if (startParams.get("turma") && ["base", "electives"].includes(startParams.get("tipo"))) {
         showClassInCurrentTab(startParams.get("tipo"), startParams.get("turma"));
+        if (startParams.get("matricula") === "1") {
+            let draft = null;
+            try {
+                draft = JSON.parse(sessionStorage.getItem("alunotec_matricula_draft_v1") || "null");
+            } catch {}
+            const opened = getOpenedClass();
+            const openedYear = String(opened?.year || opened?.date?.slice?.(0, 4) || CURRENT_YEAR);
+            if (draft && opened && String(draft.classId) === String(opened.id) &&
+                String(draft.year) === openedYear && window.AlunoTecAccess?.canEdit()) {
+                openStudentModal();
+                studentName.value = String(draft.name || "");
+                studentWhatsapp.value = String(draft.whatsapp || "");
+            }
+            try {
+                sessionStorage.removeItem("alunotec_matricula_draft_v1");
+            } catch {}
+            const cleanUrl = new URL(location.href);
+            cleanUrl.searchParams.delete("matricula");
+            history.replaceState({ turmas: true }, "", cleanUrl.href);
+        }
     } else if (startParams.get("nova") === "1" && window.AlunoTecAccess?.canEdit()) {
         openCreateModal(startParams.get("aba") === "electives" ? "electives" : "base");
     }

@@ -1,0 +1,587 @@
+body[data-app-page="enrollment"] .enrollment-page {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 16px clamp(16px, 2.1vw, 32px) 40px;
+}
+
+.enrollment-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 162px;
+  margin-bottom: 16px;
+  padding: 26px 30px;
+  border-radius: 18px;
+  color: #fff;
+  background: linear-gradient(105deg, #214f28 0%, #32772f 62%, #4a8b4b 100%);
+  box-shadow: 0 10px 26px rgba(37, 91, 34, 0.12);
+}
+
+.enrollment-hero-copy {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+}
+
+.enrollment-hero-icon {
+  display: grid;
+  flex: 0 0 58px;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.enrollment-hero-icon svg {
+  width: 29px;
+  height: 29px;
+}
+
+.enrollment-eyebrow {
+  margin: 0 0 5px;
+  color: #d8edda;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.9px;
+}
+
+.enrollment-hero h1 {
+  margin: 0;
+  font-size: clamp(28px, 3vw, 38px);
+  line-height: 1.12;
+}
+
+.enrollment-hero-copy > div > p:last-child {
+  margin: 7px 0 0;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.enrollment-primary,
+.enrollment-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 0 17px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  font-size: 13px;
+  font-weight: 700;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.enrollment-primary {
+  flex: 0 0 auto;
+  color: #fff;
+  background: #236d35;
+  box-shadow: 0 5px 14px rgba(12, 43, 21, 0.2);
+}
+
+.enrollment-hero .enrollment-primary {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: #fff;
+  color: #25632e;
+  box-shadow: none;
+}
+
+.enrollment-primary:hover,
+.enrollment-secondary:hover {
+  transform: translateY(-1px);
+}
+
+.enrollment-primary svg,
+.enrollment-secondary svg {
+  width: 17px;
+  height: 17px;
+}
+
+.enrollment-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.enrollment-metric {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  min-height: 94px;
+  padding: 16px 18px;
+  border: 1px solid #dce8dc;
+  border-left: 4px solid #32772f;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 5px 16px rgba(27, 58, 36, 0.045);
+}
+
+.enrollment-metric-icon {
+  display: grid;
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border-radius: 12px;
+  background: #e8f4e8;
+  color: #26763d;
+}
+
+.enrollment-metric-icon.is-red {
+  background: #ffe9eb;
+  color: #ed5559;
+}
+
+.enrollment-metric-icon.is-blue {
+  background: #e7f2ff;
+  color: #2383e6;
+}
+
+.enrollment-metric-icon svg {
+  width: 23px;
+  height: 23px;
+}
+
+.enrollment-metric small,
+.enrollment-metric strong {
+  display: block;
+}
+
+.enrollment-metric small {
+  margin-bottom: 3px;
+  color: #647466;
+  font-size: 11px;
+}
+
+.enrollment-metric strong {
+  color: #173c22;
+  font-size: 25px;
+  line-height: 1.1;
+}
+
+.enrollment-panel {
+  overflow: hidden;
+  border: 1px solid #dce8dc;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 6px 22px rgba(27, 58, 36, 0.055);
+}
+
+.enrollment-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 21px 24px 17px;
+}
+
+.enrollment-panel-heading h2 {
+  margin: 0;
+  color: #173c22;
+  font-size: 19px;
+}
+
+.enrollment-panel-heading p {
+  margin: 5px 0 0;
+  color: #75857b;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.enrollment-count {
+  flex: 0 0 auto;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: #eef6ee;
+  color: #2f7137;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.enrollment-filters {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(160px, 220px) minmax(140px, 190px);
+  align-items: end;
+  gap: 12px;
+  padding: 0 24px 18px;
+}
+
+.enrollment-search,
+.enrollment-filter {
+  min-width: 0;
+}
+
+.enrollment-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 13px;
+  border: 1px solid #d9e5d9;
+  border-radius: 10px;
+  color: #34753b;
+}
+
+.enrollment-search:focus-within,
+.enrollment-filter select:focus,
+.enrollment-form-field input:focus,
+.enrollment-form-field select:focus {
+  outline: 2px solid rgba(50, 119, 47, 0.2);
+  border-color: #5f9c5d;
+}
+
+.enrollment-search svg {
+  flex: 0 0 17px;
+  width: 17px;
+  height: 17px;
+}
+
+.enrollment-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: #24392b;
+  background: transparent;
+  font-size: 13px;
+}
+
+.enrollment-search input::placeholder {
+  color: #98a49b;
+}
+
+.enrollment-filter {
+  display: grid;
+  gap: 6px;
+}
+
+.enrollment-filter > span {
+  color: #6d7c71;
+  font-size: 11px;
+}
+
+.enrollment-filter select,
+.enrollment-form-field input,
+.enrollment-form-field select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #d9e5d9;
+  border-radius: 10px;
+  background: #fff;
+  color: #263a2d;
+  font-size: 13px;
+}
+
+.enrollment-table-wrap {
+  position: relative;
+  min-height: 190px;
+  overflow: auto;
+  border-top: 1px solid #e6ece6;
+}
+
+.enrollment-table-wrap table {
+  width: 100%;
+  min-width: 1000px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.enrollment-table-wrap th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 13px 12px;
+  background: #f4f8f4;
+  color: #687a6e;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.25px;
+  white-space: nowrap;
+}
+
+.enrollment-table-wrap td {
+  padding: 13px 12px;
+  border-top: 1px solid #e9eee9;
+  color: #475a4c;
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+.enrollment-table-wrap td:nth-child(2) {
+  color: #24392b;
+  font-weight: 700;
+}
+
+.enrollment-tag,
+.enrollment-status {
+  display: inline-flex;
+  align-items: center;
+  max-width: 220px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #eff6ee;
+  color: #34733c;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.enrollment-tag {
+  margin: 2px 3px 2px 0;
+  white-space: normal;
+}
+
+.enrollment-tag.is-muted {
+  background: #f2f4f2;
+  color: #76827a;
+  font-weight: 500;
+}
+
+.enrollment-status::before {
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: #2f8b4c;
+  content: "";
+}
+
+.enrollment-status.is-inactive {
+  background: #fff0f0;
+  color: #bc4649;
+}
+
+.enrollment-status.is-inactive::before {
+  background: #e4545a;
+}
+
+.enrollment-open-class {
+  color: #2e7537;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}
+
+.enrollment-open-class:hover {
+  color: #1e5528;
+}
+
+.enrollment-empty {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 34px 20px;
+  color: #728177;
+  text-align: center;
+}
+
+.enrollment-empty[hidden] {
+  display: none;
+}
+
+.enrollment-empty-icon,
+.enrollment-dialog-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 14px;
+  background: #e8f4e8;
+  color: #2a7a3a;
+}
+
+.enrollment-empty-icon svg,
+.enrollment-dialog-icon svg {
+  width: 23px;
+  height: 23px;
+}
+
+.enrollment-empty strong {
+  color: #344c39;
+  font-size: 14px;
+}
+
+.enrollment-empty p {
+  max-width: 430px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.enrollment-empty a {
+  margin-top: 5px;
+  color: #2d7537;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.enrollment-dialog {
+  width: min(480px, calc(100vw - 28px));
+  max-width: none;
+  max-height: calc(100vh - 28px);
+  padding: 0;
+  overflow: auto;
+  border: 1px solid #dce8dc;
+  border-radius: 18px;
+  background: transparent;
+  box-shadow: 0 24px 80px rgba(11, 35, 19, 0.24);
+}
+
+.enrollment-dialog::backdrop {
+  background: rgba(20, 44, 27, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.enrollment-dialog-card {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  padding: 28px;
+  background: #fff;
+}
+
+.enrollment-dialog-close {
+  position: absolute;
+  top: 14px;
+  right: 15px;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 50%;
+  background: #eef5ee;
+  color: #356d3b;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.enrollment-dialog-card h2 {
+  margin: 0;
+  color: #1e4528;
+  font-size: 23px;
+}
+
+.enrollment-dialog-intro {
+  margin: -8px 0 1px;
+  color: #718177;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.enrollment-form-field {
+  display: grid;
+  gap: 6px;
+  color: #4c6251;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.enrollment-form-field small {
+  color: #849087;
+  font-weight: 400;
+}
+
+.enrollment-form-note {
+  min-height: 16px;
+  margin: -4px 0 0;
+  color: #a5523a;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.enrollment-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 2px;
+}
+
+.enrollment-secondary {
+  border-color: #dce7dc;
+  background: #fff;
+  color: #49604d;
+}
+
+@media (max-width: 1200px) {
+  .enrollment-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 780px) {
+  body[data-app-page="enrollment"] .enrollment-page {
+    padding-top: 12px;
+  }
+
+  .enrollment-hero {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 22px;
+  }
+
+  .enrollment-hero .enrollment-primary {
+    width: 100%;
+  }
+
+  .enrollment-filters {
+    grid-template-columns: minmax(0, 1fr) minmax(130px, 1fr);
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .enrollment-search {
+    grid-column: 1 / -1;
+  }
+
+  .enrollment-panel-heading {
+    align-items: flex-start;
+    padding: 18px 16px 15px;
+  }
+}
+
+@media (max-width: 560px) {
+  body[data-app-page="enrollment"] .enrollment-page {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .enrollment-summary,
+  .enrollment-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .enrollment-search {
+    grid-column: auto;
+  }
+
+  .enrollment-panel-heading {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .enrollment-dialog-card {
+    padding: 25px 18px 18px;
+  }
+
+  .enrollment-dialog-actions {
+    flex-direction: column-reverse;
+  }
+
+  .enrollment-dialog-actions button {
+    width: 100%;
+  }
+}

@@ -222,11 +222,18 @@
           </article>
         </section>
 
+        <div class="students-back-row" id="studentsBackBar" hidden>
+          <button class="students-back-button" id="backToClasses" type="button">
+            <svg aria-hidden="true"><use href="#i-arrow-left"></use></svg>
+            Voltar para turmas
+          </button>
+        </div>
+
         <!-- =====================================================
              LISTA E FILTROS
              Pesquisa por nome, ano letivo, tipos de turma, cartões e listas controlados por aluno.js.
         ===================================================== -->
-        <section class="student-panel students-browser" aria-labelledby="studentsBrowserTitle">
+        <section class="student-panel students-browser" id="studentsBrowser" aria-labelledby="studentsBrowserTitle">
           <div class="panel-heading">
             <div class="panel-title">
               <svg aria-hidden="true"><use href="#i-users"></use></svg>
@@ -237,17 +244,19 @@
             </div>
           </div>
 
-          <div class="students-search-controls">
-            <label class="search-field">
-              <svg aria-hidden="true"><use href="#i-search"></use></svg>
-              <input id="searchInput" type="search" autocomplete="off"
-                aria-label="Pesquisar pelo nome do aluno"
-                placeholder="Digite o nome do aluno..." />
-            </label>
-            <label class="field">
-              <small>Ano letivo</small>
-              <select id="listYearFilter" aria-label="Ano letivo da lista"></select>
-            </label>
+          <div class="students-navigation-row">
+            <div class="students-search-controls">
+              <label class="search-field">
+                <svg aria-hidden="true"><use href="#i-search"></use></svg>
+                <input id="searchInput" type="search" autocomplete="off"
+                  aria-label="Pesquisar pelo nome do aluno"
+                  placeholder="Digite o nome do aluno..." />
+              </label>
+              <label class="field">
+                <small>Ano letivo</small>
+                <select id="listYearFilter" aria-label="Ano letivo da lista"></select>
+              </label>
+            </div>
           </div>
 
           <div class="students-type-tabs" role="tablist" aria-label="Tipo de turma">
@@ -262,9 +271,10 @@
               Eletivas <span id="electiveClassCount">0</span>
             </button>
           </div>
+        </section>
 
-          <div id="studentsTypePanel" role="tabpanel" aria-labelledby="baseStudentsTab">
-            <section id="classBrowserPanel" aria-labelledby="classesTitle">
+        <div class="students-type-results" id="studentsTypePanel" role="tabpanel" aria-labelledby="baseStudentsTab">
+            <section class="student-panel students-class-list-panel" id="classBrowserPanel" aria-labelledby="classesTitle">
               <div class="students-section-heading">
                 <div>
                   <h3 id="classesTitle">Turmas da Base Comum</h3>
@@ -275,12 +285,8 @@
               <div class="students-class-grid" id="classCards"></div>
             </section>
 
-            <section id="studentResults" aria-labelledby="studentResultsTitle" hidden>
+            <section class="student-panel students-results-panel" id="studentResults" aria-labelledby="studentResultsTitle" hidden>
               <div class="students-results-top">
-                <button class="students-back-button" id="backToClasses" type="button">
-                  <svg aria-hidden="true"><use href="#i-arrow-left"></use></svg>
-                  Voltar às turmas
-                </button>
                 <label class="students-status-field">
                   <span>Filtrar por situação</span>
                   <select id="statusFilter" aria-label="Filtrar alunos por situação">
@@ -320,8 +326,7 @@
               </div>
               <p class="storage-note" id="storageNote"></p>
             </section>
-          </div>
-        </section>
+        </div>
       </section>
     </main>
 

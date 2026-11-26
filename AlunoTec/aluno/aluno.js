@@ -491,7 +491,6 @@
     lastRenderedYear = year;
     const classes = allClasses(year);
     const students = getStudentGroups(year);
-    updateSummary(students);
     $("#baseClassCount").textContent = classes.filter((item) => item.type === "base").length;
     $("#electiveClassCount").textContent = classes.filter((item) => item.type === "elective").length;
     $$("[data-student-type]").forEach((button) => {
@@ -507,8 +506,13 @@
       .sort((a, b) => collator.compare(a.name, b.name));
     let openedClass = scopedClasses.find((item) => String(item.id) === openedClassId);
     if (!openedClass) openedClassId = "";
+    const summaryStudents = openedClass ?
+      selectRows(students, { type: activeType, classId: openedClass.id }) : students;
+    updateSummary(summaryStudents);
     const term = $("#searchInput").value.trim();
     const showResults = Boolean(openedClass || term);
+    $("#studentsBrowser").classList.toggle("has-opened-class", Boolean(openedClass));
+    $("#studentsBackBar").hidden = !openedClass;
     $("#classBrowserPanel").hidden = showResults;
     $("#studentResults").hidden = !showResults;
     renderClasses(scopedClasses);
