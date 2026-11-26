@@ -950,7 +950,7 @@ body[data-app-page="reports"]
   --stat-background: #fff4f4;
 }
 
-/* Dias com falta */
+/* Dias letivos realizados */
 #rp-student-summary > div:nth-child(4) {
   --stat-color: #a57619;
   --stat-background: #fff9ec;
@@ -988,6 +988,15 @@ body[data-app-page="reports"]
     font-size: 24px;
   }
 }
+
+.rp-comparison-controls { margin: 16px 0 24px; padding: 20px; border: 1px solid #e3ebe1; border-radius: 16px; background: #f7faf5; }
+.rp-comparison-controls[hidden], #rp-comparison-field[hidden] { display: none !important; }
+.rp-chart-query.is-comparison { grid-template-columns: minmax(200px, 1.2fr) repeat(2, minmax(160px, 1fr)) auto; margin: 0; padding: 0; border: 0; background: transparent; }
+.rp-chart-query.is-comparison .rp-range-actions { flex-wrap: nowrap; }
+.rp-chart-query.is-comparison .rp-select-button { min-height: 52px; }
+.rp-chart-query.is-comparison .rp-chart-year { display: none; }
+@media (max-width: 1050px) { .rp-chart-query.is-comparison { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .rp-chart-query.is-comparison { grid-template-columns: minmax(0, 1fr); } }
 
 /* Organização dos resultados, mantendo os estilos desta versão do projeto. */
 .rp-results-heading {

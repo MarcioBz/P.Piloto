@@ -1,0 +1,67 @@
+/* Um único visual para os calendários de todo o projeto. */
+.at-date-button {
+  display: flex; align-items: center; justify-content: flex-start; gap: 12px;
+  width: 100%; min-width: 0; min-height: 52px; padding: 12px 17px;
+  border: 1px solid #d9e1da; border-radius: 15px; background: #fff;
+  box-shadow: 0 2px 4px rgb(25 58 35 / 4%); color: #344e40;
+  font: inherit; font-size: 15px; text-align: left; cursor: pointer;
+}
+.at-date-button svg { width: 22px; height: 22px; flex: 0 0 22px; color: #337c46; }
+.at-date-button:hover { border-color: #8eb197; background: #fcfefc; }
+.at-date-button:focus-visible { outline: 3px solid #bcd9c3; outline-offset: 2px; }
+.at-calendar-dialog {
+  box-sizing: border-box; width: min(480px, calc(100vw - 32px)); max-width: none;
+  max-height: calc(100dvh - 32px); margin: auto; padding: 30px 32px 26px;
+  border: 0; border-radius: 28px; background: #fff; color: #263f32;
+  box-shadow: 0 24px 90px rgb(17 46 30 / 22%); overflow: auto;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+.at-calendar-dialog::backdrop { background: rgb(29 52 37 / 40%); backdrop-filter: blur(5px); }
+.at-calendar-dialog h2 { margin: 3px 45px 28px 0; font-size: 26px; line-height: 1.25; font-weight: 750; color: #173b2b; }
+.at-calendar-dialog button { font-family: inherit; cursor: pointer; }
+.at-calendar-close {
+  position: absolute; top: 19px; right: 20px; width: 38px; height: 38px;
+  display: grid; place-items: center; padding: 10px; border: 0; border-radius: 50%;
+  color: #738078; background: #f3f7f3;
+}
+.at-calendar-close svg { width: 18px; height: 18px; }
+.at-calendar-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 21px; }
+.at-calendar-controls strong { color: #3c5144; text-align: center; font-size: 18px; font-weight: 700; }
+.at-calendar-controls button, .at-calendar-footer button { display: grid; place-items: center; border: 0; border-radius: 12px; background: #f3f8f2; color: #317241; font-size: 14px; font-weight: 650; }
+.at-calendar-controls button { width: 42px; height: 42px; padding: 12px; }
+.at-calendar-controls button svg { width: 18px; height: 18px; }
+.at-calendar-controls [data-at-month="-1"] svg { transform: rotate(180deg); }
+.at-calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px 4px; }
+.at-calendar-weekday { padding: 4px 0 9px; color: #8a958c; font-size: 11px; font-weight: 700; text-align: center; }
+.at-calendar-day {
+  position: relative; display: grid; place-items: center; width: 100%; aspect-ratio: 1;
+  max-height: 48px; padding: 0; border: 2px solid transparent; border-radius: 50%;
+  background: transparent; color: #485c4f; font-size: 17px; font-weight: 400;
+}
+.at-calendar-day:hover { background: #f0f7f0; }
+.at-calendar-day.is-outside { color: #b7c0b9; }
+.at-calendar-day.is-selected { border-color: #599967; background: #e9f5e9; color: #264f33; }
+.at-calendar-day.is-today { background: #188ad7; color: #fff; font-weight: 700; }
+.at-calendar-day.is-today.is-selected { border-color: #0a65a2; }
+.at-calendar-day.has-call::after { position: absolute; content: ""; bottom: 3px; width: 4px; height: 4px; border-radius: 50%; background: #235f34; }
+.at-calendar-day.is-partial::after { background: #e8b940; }
+.at-calendar-day.is-today.has-call::after { background: #fff; }
+.at-calendar-dialog button:disabled { opacity: .35; cursor: default; }
+.at-calendar-dialog button:focus-visible { outline: 3px solid #a6ceb0; outline-offset: 2px; }
+.at-calendar-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 24px; color: #819087; font-size: 12px; }
+.at-calendar-legend span { display: flex; align-items: center; gap: 8px; }
+.at-calendar-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; }
+.at-calendar-key-call { background: #235f34; }
+.at-calendar-key-partial { background: #e8b940; }
+.at-calendar-key-today { background: #188ad7; }
+.at-calendar-footer { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-top: 23px; }
+.at-calendar-footer button { padding: 11px 15px; min-height: 42px; }
+.at-calendar-grid.is-months { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.at-calendar-grid.is-months .at-calendar-day { aspect-ratio: auto; min-height: 54px; max-height: none; border-radius: 13px; padding: 8px 3px; font-size: 14px; }
+@media (max-width: 520px) {
+  .at-calendar-dialog { padding: 24px 20px; border-radius: 24px; }
+  .at-calendar-dialog h2 { font-size: 24px; }
+  .at-calendar-controls strong { font-size: 16px; }
+  .at-calendar-day { font-size: 15px; }
+}
+@media print { .at-calendar-dialog, .at-date-button { display: none !important; } }

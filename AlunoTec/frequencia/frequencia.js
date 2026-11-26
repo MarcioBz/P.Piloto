@@ -27,7 +27,6 @@
     draft = {},
     toastTimer,
     attachmentUrl = null;
-  let calendarMonth = new Date();
   const editingRows = new Set();
   const dirtyRows = new Set();
   const collator = new Intl.Collator("pt-BR", {
@@ -877,64 +876,6 @@
     }, "attendance-class-grid") : `<p class="attendance-classes-empty">${classType === "base" ? "Nenhuma turma da Base Comum" : "Nenhuma eletiva"} disponível neste ano letivo.</p>`;
   }
 
-  function drawCalendar() {
-    const year = calendarMonth.getFullYear();
-    const month = calendarMonth.getMonth();
-    $("calendarMonth").textContent = new Intl.DateTimeFormat("pt-BR", {
-      month: "long",
-      year: "numeric",
-    }).format(calendarMonth);
-    const offset = (new Date(year, month, 1).getDay() + 6) % 7;
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const previousDays = new Date(year, month, 0).getDate();
-    const selectedDate = $("attendanceDate").value;
-    const todayDate = today();
-    const selectedYear = String(localStorage.getItem(KEYS.year));
-    $("calendarPrev").disabled = year <= Number(selectedYear) && month === 0;
-    $("calendarNext").disabled = year >= Number(selectedYear) && month === 11;
-    $("calendarToday").disabled = todayDate.slice(0, 4) !== selectedYear;
-    $("calendarToday").title = todayDate.slice(0, 4) === selectedYear ? "Selecionar hoje" : "Hoje está fora do ano letivo selecionado";
-    const dateStatuses = registeredDates();
-    const weekdays = ["S", "T", "Q", "Q", "S", "S", "D"];
-    let html = weekdays
-      .map((day) => `<span class="calendar-weekday">${day}</span>`)
-      .join("");
-
-    for (let i = 0; i < 42; i++) {
-      let day,
-        date,
-        outside = false;
-      if (i < offset) {
-        day = previousDays - offset + i + 1;
-        date = isoDate(new Date(year, month - 1, day));
-        outside = true;
-      } else if (i >= offset + daysInMonth) {
-        day = i - offset - daysInMonth + 1;
-        date = isoDate(new Date(year, month + 1, day));
-        outside = true;
-      } else {
-        day = i - offset + 1;
-        date = isoDate(new Date(year, month, day));
-      }
-
-      const dayClasses = [
-        "calendar-day",
-        outside ? "outside" : "",
-        dateStatuses.get(date) === "complete"
-          ? "registered"
-          : dateStatuses.get(date) === "partial"
-            ? "partial"
-            : "",
-        date === todayDate ? "today" : "",
-        date === selectedDate ? "selected" : "",
-      ]
-        .filter(Boolean)
-        .join(" ");
-      html += `<button type="button" class="${dayClasses}" data-date="${date}" aria-label="${dateBR(date)}"${date.slice(0, 4) !== selectedYear ? " disabled" : ""}>${day}</button>`;
-    }
-    $("calendarGrid").innerHTML = html;
-  }
-
   /* ==========================================================
      EDIÇÃO E GRAVAÇÃO
      Salva alterações por estudante e persiste a chamada do dia selecionado.
@@ -1312,44 +1253,22 @@
     $("classSelect").addEventListener("change", resetForFilterChange);
     $("shiftSelect").addEventListener("change", resetForFilterChange);
 
+    $("datePickerButton").setAttribute("aria-haspopup", "dialog");
+    $("datePickerButton").setAttribute("aria-controls", "at-calendar-dialog");
     $("datePickerButton").addEventListener("click", () => {
-      const current = $("attendanceDate").value
-        ? new Date(`${$("attendanceDate").value}T12:00:00`)
-        : new Date(`${attendanceDateForYear(localStorage.getItem(KEYS.year))}T12:00:00`);
-      calendarMonth = new Date(current.getFullYear(), current.getMonth(), 1);
-      drawCalendar();
-      $("calendarDialog").showModal();
-    });
-    $("calendarGrid").addEventListener("click", (event) => {
-      const button = event.target.closest("[data-date]");
-      if (!button || button.disabled || !isAttendanceDate(button.dataset.date)) return;
-      $("attendanceDate").value = button.dataset.date;
-      $("dateDisplay").textContent = dateBR(button.dataset.date);
-      $("calendarDialog").close();
-      resetForFilterChange();
-    });
-    $("calendarPrev").addEventListener("click", () => {
-      if (calendarMonth.getMonth() === 0) return;
-      calendarMonth.setMonth(calendarMonth.getMonth() - 1);
-      drawCalendar();
-    });
-    $("calendarNext").addEventListener("click", () => {
-      if (calendarMonth.getMonth() === 11) return;
-      calendarMonth.setMonth(calendarMonth.getMonth() + 1);
-      drawCalendar();
-    });
-    $("calendarToday").addEventListener("click", () => {
-      if (!isAttendanceDate(today())) return;
-      $("attendanceDate").value = today();
-      $("dateDisplay").textContent = dateBR(today());
-      $("calendarDialog").close();
-      resetForFilterChange();
-    });
-    $("calendarClear").addEventListener("click", () => {
-      $("attendanceDate").value = "";
-      $("dateDisplay").textContent = "Selecione a data";
-      $("calendarDialog").close();
-      resetForFilterChange();
+      const year = String(localStorage.getItem(KEYS.year));
+      window.AlunoTecCalendar.open({
+        title: "Data da chamada", trigger: $("datePickerButton"),
+        value: $("attendanceDate").value,
+        min: `${year}-01-01`, max: `${year}-12-31`,
+        marks: registeredDates(), callLabel: "Preenchida", partialLabel: "Pendente",
+        onSelect(value) {
+          if (value && !isAttendanceDate(value)) return;
+          $("attendanceDate").value = value;
+          $("dateDisplay").textContent = value ? dateBR(value) : "Selecione a data";
+          resetForFilterChange();
+        }
+      });
     });
 
     $("studentsTable").addEventListener("click", (event) => {

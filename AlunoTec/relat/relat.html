@@ -21,9 +21,11 @@
   <script src="../shared/profile.js" defer></script>
   <script src="../shared/utils.js" defer></script>
   <script src="timbre.js" defer></script>
+  <script src="../shared/calendar.js" defer></script>
   <script src="relat.js" defer></script>
     <link rel="stylesheet" href="../shared/app-extra.css">
-  </head>
+    <link rel="stylesheet" href="../shared/calendar.css">
+</head>
 <body data-app-page="reports">
   <main class="management-main reports-main">
     <!-- shared/banner.js transforma este título no banner já configurado. -->
@@ -55,12 +57,12 @@
               <div class="rp-report-links" role="group" aria-label="Turmas e alunos">
                 <button id="rp-report-room" class="rp-report-link" type="button" data-report="room" aria-label="Realidade de sala" aria-pressed="false" aria-controls="rp-view">
               <span class="rp-report-symbol rp-icon" data-rp-icon="users" aria-hidden="true"></span>
-              <span class="rp-report-copy"><strong>Realidade de sala</strong><small>Frequência pela turma de origem.</small></span>
+              <span class="rp-report-copy"><strong>Realidade de sala</strong><small>Frequência na sala em que o aluno participa.</small></span>
               <span class="rp-report-check rp-icon" data-rp-icon="check" aria-hidden="true"></span>
             </button>
                 <button id="rp-report-system" class="rp-report-link" type="button" data-report="system" aria-label="Realidade do sistema" aria-pressed="false" aria-controls="rp-view">
               <span class="rp-report-symbol rp-icon" data-rp-icon="layers" aria-hidden="true"></span>
-              <span class="rp-report-copy"><strong>Realidade do sistema</strong><small>Chamadas da turma em que o aluno estava.</small></span>
+              <span class="rp-report-copy"><strong>Realidade do sistema</strong><small>Frequência pela turma de origem no sistema.</small></span>
               <span class="rp-report-check rp-icon" data-rp-icon="check" aria-hidden="true"></span>
             </button>
                 <button id="rp-report-student" class="rp-report-link" type="button" data-report="student" aria-label="Relatório Individual do Aluno" aria-pressed="false" aria-controls="rp-view">
@@ -162,6 +164,7 @@
           <button id="rp-change-class" type="button" class="rp-button rp-pale">Trocar turma</button>
         </div>
         <div id="rp-class-evolution" class="rp-class-evolution" hidden></div>
+        <div id="rp-comparison-controls" class="rp-comparison-controls" hidden></div>
         <form id="rp-period-query" class="rp-query-controls" hidden>
           <div class="rp-field"><label for="rp-start">Data inicial</label><input id="rp-start" type="date" required></div>
           <div class="rp-field"><label for="rp-end">Data final</label><input id="rp-end" type="date" required></div>
@@ -195,20 +198,27 @@
           <h2 id="rp-evolution-title"><span class="rp-icon" data-rp-icon="chart" aria-hidden="true"></span> Evolução da frequência</h2>
           <p id="rp-chart-period" class="rp-muted"></p>
           <form id="rp-chart-query" class="rp-chart-query" hidden>
+            <div id="rp-comparison-field" class="rp-field" hidden>
+              <label for="rp-comparison-reality">Organizar por</label>
+              <select id="rp-comparison-reality" data-rp-select>
+                <option value="room">Realidade de sala</option>
+                <option value="system">Realidade do sistema</option>
+              </select>
+            </div>
             <div class="rp-field">
               <label for="rp-chart-start-button">Data inicial</label>
-              <button id="rp-chart-start-button" class="rp-date-button" type="button" data-chart-date="start" aria-haspopup="dialog" aria-expanded="false" aria-controls="rp-calendar-dialog" aria-describedby="rp-chart-range-error">
+              <button id="rp-chart-start-button" class="rp-date-button at-date-button" type="button" data-chart-date="start" aria-haspopup="dialog" aria-expanded="false" aria-controls="at-calendar-dialog" aria-describedby="rp-chart-range-error">
                 <span class="rp-icon" data-rp-icon="calendar" aria-hidden="true"></span><span id="rp-chart-start-label"></span>
               </button>
             </div>
             <div class="rp-field">
               <label for="rp-chart-end-button">Data final</label>
-              <button id="rp-chart-end-button" class="rp-date-button" type="button" data-chart-date="end" aria-haspopup="dialog" aria-expanded="false" aria-controls="rp-calendar-dialog" aria-describedby="rp-chart-range-error">
+              <button id="rp-chart-end-button" class="rp-date-button at-date-button" type="button" data-chart-date="end" aria-haspopup="dialog" aria-expanded="false" aria-controls="at-calendar-dialog" aria-describedby="rp-chart-range-error">
                 <span class="rp-icon" data-rp-icon="calendar" aria-hidden="true"></span><span id="rp-chart-end-label"></span>
               </button>
             </div>
             <div class="rp-range-actions">
-              <button class="rp-button rp-primary" type="submit">Aplicar período</button>
+              <button id="rp-range-apply" class="rp-button rp-primary" type="submit">Aplicar período</button>
               <button id="rp-chart-year" class="rp-chart-year" type="button">Ano completo</button>
             </div>
             <p id="rp-date-range-hint" class="rp-chart-range-hint">O período vale para o gráfico, a tabela e as exportações.</p>
@@ -245,18 +255,6 @@
           
         </aside>
       </div>
-      <dialog id="rp-calendar-dialog" class="rp-calendar-dialog" aria-labelledby="rp-calendar-title">
-        <button id="rp-calendar-close" class="rp-calendar-close" type="button" aria-label="Fechar calendário"><span class="rp-icon" data-rp-icon="close" aria-hidden="true"></span></button>
-        <h2 id="rp-calendar-title">Data inicial</h2>
-        <div class="rp-calendar-controls">
-          <button id="rp-calendar-prev" type="button" aria-label="Mês anterior"><span class="rp-icon" data-rp-icon="chevron" aria-hidden="true"></span></button>
-          <strong id="rp-calendar-month" aria-live="polite"></strong>
-          <button id="rp-calendar-next" type="button" aria-label="Próximo mês"><span class="rp-icon" data-rp-icon="chevron" aria-hidden="true"></span></button>
-        </div>
-        <div id="rp-calendar-grid" class="rp-calendar-grid" role="group" aria-labelledby="rp-calendar-month"></div>
-        <div class="rp-calendar-legend"><span><i class="rp-calendar-key-call"></i>Com chamada</span><span><i class="rp-calendar-key-today"></i>Hoje</span></div>
-        <div class="rp-calendar-footer"><button id="rp-calendar-today" type="button">Hoje</button><button id="rp-calendar-clear" type="button">Limpar</button></div>
-      </dialog>
     </div>
     <section id="rp-print" class="rp-print" aria-label="Versão de impressão"></section>
   </main>

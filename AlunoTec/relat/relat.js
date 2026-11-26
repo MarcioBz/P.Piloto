@@ -2,7 +2,7 @@
    1. Leitura e cálculos puros. 2. Exportação PDF/XLSX sem bibliotecas externas.
    3. Seleção de relatórios/turmas, gráficos e tabelas da interface.
    As chaves de Turmas/Frequência são apenas lidas; este módulo não altera chamadas.
-   "Sala" agrupa pela origem salva; "Sistema" agrupa pela turma da chamada. */
+   "Sistema" agrupa pela origem salva; "Sala" agrupa pela turma da chamada. */
 (() => {
   "use strict";
   const KEYS = {
@@ -119,15 +119,19 @@
   function filterRows(data, filters, view = "overview") {
     return data.rows.filter(row => row.year === filters.year && row.date >= filters.start && row.date <= filters.end &&
       matchesShift(row, filters.shift) &&
-      (!filters.classId || (view === "room" ? row.originId : row.systemId) === filters.classId) &&
+      (!filters.classId || (view === "system" ? row.originId : row.systemId) === filters.classId) &&
       (view !== "electives" || row.type === "electives") &&
-      (view !== "room" || row.type === "base"));
+      (view !== "system" || row.type === "base"));
   }
   function totals(rows) {
     const result = { present: 0, absent: 0, justified: 0, records: rows.length, students: new Set(rows.map(r => r.personId || r.studentId)).size, calls: new Set(rows.map(r => r.callId)).size };
     rows.forEach(row => { result[row.status === "presente" ? "present" : row.status === "ausente" ? "absent" : "justified"]++; });
     result.rate = result.records ? result.present / result.records * 100 : null;
     return result;
+  }
+  function completedSchoolDays(rows, referenceDate = today()) {
+    return new Set(rows.filter(row => validDate(row.date) && row.date <= referenceDate)
+      .map(row => row.date)).size;
   }
   function grouped(rows, keyFn, labelFn) {
     const groups = new Map();
@@ -144,14 +148,14 @@
   }
 
   function classChoices(data, year, shift = "", view = "overview") {
-    const allowed = type => view === "room" ? type === "base" : view === "electives" ? type === "electives" : true;
+    const allowed = type => view === "system" ? type === "base" : view === "electives" ? type === "electives" : true;
     const choices = new Map(data.classes.filter(item => item.year === year && allowed(item.type) &&
       (!shift || !item.shift || normalize(item.shift) === "todos" || normalize(item.shift) === normalize(shift)))
       .map(item => [item.id, item.name]));
     data.rows.filter(row => row.year === year && allowed(row.type) && matchesShift(row, shift))
       .forEach(row => {
-        const id = view === "room" ? row.originId : row.systemId;
-        if (!choices.has(id)) choices.set(id, view === "room" ? row.originName : row.systemName);
+        const id = view === "system" ? row.originId : row.systemId;
+        if (!choices.has(id)) choices.set(id, view === "system" ? row.originName : row.systemName);
       });
     return [...choices.entries()].sort((a, b) => compare(a[1], b[1]));
   }
@@ -168,14 +172,14 @@
     return classChoices(data, year, "", view).map(([id, name]) => {
       const registered = data.classes.find(item => item.id === id && item.year === year);
       const history = data.rows.filter(row => row.year === year &&
-        (view === "room" ? row.originId === id && row.type === "base" : row.systemId === id));
-      const roster = view === "room" ? baseRoster.filter(({ student, classId }) =>
+        (view === "system" ? row.originId === id && row.type === "base" : row.systemId === id));
+      const roster = view === "system" ? baseRoster.filter(({ student, classId }) =>
         String(student.originBaseClassId || student.originClassId || classId) === id) :
         (registered?.students || []).map((student, index) => ({ student, index, classId: id }));
       const students = new Set(roster.filter(({ student }) => String(student.name || "").trim())
         .map(({ student, index, classId }) => String(student.originStudentId || student.sourceStudentId ||
           student.id || `${classId}:${index}`)));
-      return { id, name, type: view === "room" ? "base" : registered?.type || history[0]?.type || "base",
+      return { id, name, type: view === "system" ? "base" : registered?.type || history[0]?.type || "base",
         grade: String(registered?.grade || ""), shift: String(registered?.shift || ""),
         students: registered ? students.size : new Set(history.map(row => row.personId || row.studentId)).size,
         historical: !registered };
@@ -474,7 +478,7 @@
     }
     if (view === "student") {
       const name = studentName;
-      return { title: name ? `Relatório individual · ${name}` : "Relatório individual do aluno", headers: ["Data", "Turma de origem", "Turma da chamada", "Turno", "Situação"], rows: [...rows].sort((a, b) => b.date.localeCompare(a.date) || compare(a.systemName, b.systemName)).map(row => [br(row.date), row.originName, row.systemName, row.shift, { presente: "Presente", ausente: "Falta", justificado: "Justificada" }[row.status]]), rateIndex: -1, note: "O histórico mostra os dados salvos em cada chamada. Remanejamentos atuais não reescrevem a turma das chamadas anteriores." };
+      return { title: name ? `Relatório individual · ${name}` : "Relatório individual do aluno", headers: ["Data", "Turma de origem", "Turma da chamada", "Turno", "Situação"], rows: [...rows].sort((a, b) => b.date.localeCompare(a.date) || compare(a.systemName, b.systemName)).map(row => [br(row.date), row.originName, row.systemName, row.shift, { presente: "Presente", ausente: "Falta", justificado: "Justificada" }[row.status]]), rateIndex: -1, note: "O histórico mostra os dados salvos em cada chamada. Remanejamentos atuais não reescrevem a turma das chamadas anteriores. Dias letivos realizados contam datas distintas com chamada do aluno no período selecionado, até hoje, independentemente da situação registrada. Chamadas da base e das eletivas no mesmo dia contam uma vez." };
     }
     if (view === "electives") {
       const groups = new Map(grouped(rows, row => row.systemId, row => row.systemName).map(item => [item.key, item]));
@@ -496,19 +500,20 @@
       const label = item => monthly ? new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(dateObject(`${item.key}-01`)) : br(item.key);
       return { ...result, title: monthly ? "Evolução mensal da frequência" : "Frequência por período", headers: [monthly ? "Mês" : "Data", ...headers.slice(1)], rows: groups.map(item => [label(item), item.calls, item.students, item.present, item.absent, item.justified, percent(item.rate)]), note: "Cada linha considera somente chamadas dentro das datas aplicadas. Dias sem chamada não são tratados como falta." };
     }
-    const room = view === "room";
-    const groups = grouped(rows, row => room ? row.originId : row.systemId, row => room ? row.originName : row.systemName);
+    const system = view === "system";
+    const groups = grouped(rows, row => system ? row.originId : row.systemId, row => system ? row.originName : row.systemName);
     groups.sort(mode === "comparison" ? (a, b) => (b.rate ?? -1) - (a.rate ?? -1) || compare(a.name, b.name) : (a, b) => compare(a.name, b.name));
     result.rows = groups.map(item => [item.name, item.calls, item.students, item.present, item.absent, item.justified, percent(item.rate)]);
-    if (room) {
-      result.title = "Realidade de sala";
+    if (system) {
+      result.title = "Realidade do sistema";
       result.headers = ["Turma de origem", ...headers.slice(1)];
-      result.note = "Agrupado pela turma de origem registrada na chamada. Um aluno remanejado permanece associado à sua origem nesta visão. Quando o campo histórico falta, é usado o cadastro/histórico disponível.";
-    } else if (view === "system") {
-      result.title = mode === "comparison" ? "Comparativo entre turmas" : "Realidade do sistema";
+      result.note = "Realidade do sistema: agrupado pela turma de origem do aluno, registrada no sistema. Mesmo remanejado para frequentar outra sala, o aluno continua vinculado à origem nesta visão. Quando o campo histórico falta, é usado o cadastro/histórico disponível.";
+    } else if (view === "room") {
+      result.title = "Realidade de sala";
       result.headers = ["Turma da chamada", ...headers.slice(1)];
-      result.note = "Agrupado pela turma onde a chamada foi salva, incluindo alunos remanejados. Os registros não são redistribuídos usando a matrícula atual.";
+      result.note = "Realidade de sala: agrupado pela turma onde a chamada foi registrada, incluindo os alunos que passaram a frequentar a sala após um remanejamento. O histórico preserva a sala de cada chamada.";
     } else if (mode === "closing") result.title = "Fechamento mensal da escola";
+    if (mode === "comparison") result.title = "Comparativo entre turmas";
     return result;
   }
 
@@ -559,7 +564,7 @@
   }
 
   if (typeof module !== "undefined" && module.exports) {
-    module.exports = { prepareData, filterRows, totals, grouped, periodRange, previousRange,
+    module.exports = { prepareData, filterRows, totals, completedSchoolDays, grouped, periodRange, previousRange,
       classChoices, activeElectives, reportClasses, reportRange, absenceClasses, frequencyEvolution, dateRangeError, calendarMonthDays, reportTable, letterheadTitle, reportTitleLayout, pdf, xlsx, studentCatalog, individualSelection };
     return;
   }
@@ -598,7 +603,7 @@
   const viewLabels = { overview: "Visão geral", room: "Realidade de sala", system: "Realidade do sistema", student: "Relatório individual", weekly: "Resumo semanal", electives: "Eletivas" };
   const state = { view: "overview", mode: "default", studentId: "", applied: null,
     data: null, table: null, rows: [], pickerOpen: false, classType: "base", stage: "catalog", rosterClassId: "",
-    chartDraft: { start: "", end: "" }, calendar: null };
+    chartDraft: { start: "", end: "" } };
   const customSelects = new Map();
 
   function read(key, fallback) {
@@ -706,7 +711,7 @@
     return state.mode === "default" && ["room", "system"].includes(state.view);
   }
   function hasDateRange() {
-    return isClassChart() || isIndividualReport();
+    return isClassChart() || isIndividualReport() || state.mode === "comparison";
   }
   function selectedClassId() {
     return isIndividualReport() ? state.rosterClassId : state.applied.classId;
@@ -735,7 +740,10 @@
     $("closing-month").value = f.start.slice(0, 7);
     $("closing-month").setCustomValidity("");
     state.chartDraft = { start: f.start, end: f.end };
+    $("comparison-reality").value = state.view === "system" ? "system" : "room";
+    refreshSelect($("comparison-reality"));
     updateChartDates();
+    window.AlunoTecCalendar.refresh();
   }
 
   /* CALENDÁRIO | Datas pendentes só alteram a consulta ao aplicar o período. */
@@ -748,57 +756,19 @@
     $("chart-range-error").textContent = error;
     $("chart-range-error").hidden = !error;
   }
-  function closeCalendar() {
-    if ($("calendar-dialog").open) $("calendar-dialog").close();
-  }
-  function drawCalendar(focusDay = false) {
-    const calendar = state.calendar;
-    if (!calendar) return;
-    const year = state.applied.year, selected = state.chartDraft[calendar.field];
-    const current = today();
-    const annual = { ...state.applied, start: `${year}-01-01`, end: `${year}-12-31` };
-    const rows = isIndividualReport() ? individualSelection(state.data, annual, state.rosterClassId,
-      state.studentId, window.AlunoTecStudents).rows : filterRows(state.data, annual, state.view);
-    const dates = new Set(rows.map(row => row.date));
-    $("calendar-month").textContent = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(dateObject(`${calendar.month}-01`));
-    $("calendar-prev").disabled = calendar.month <= `${year}-01`;
-    $("calendar-next").disabled = calendar.month >= `${year}-12`;
-    $("calendar-today").disabled = current.slice(0, 4) !== year;
-    $("calendar-today").title = current.slice(0, 4) === year ? "Selecionar a data de hoje" : "Hoje está fora do ano letivo selecionado";
-    const weekdays = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"];
-    $("calendar-grid").innerHTML = weekdays.map(day => `<span class="rp-calendar-weekday" title="${day}" aria-hidden="true">${day[0]}</span>`).join("") +
-      calendarMonthDays(calendar.month, year).map(day => {
-        const classes = ["rp-calendar-day", day.outside ? "is-outside" : "", dates.has(day.date) ? "has-call" : "",
-          day.date === current ? "is-today" : "", day.date === selected ? "is-selected" : ""].filter(Boolean).join(" ");
-        return `<button type="button" class="${classes}" data-rp-date="${day.date}" ${day.disabled ? "disabled" : ""}
-          tabindex="${day.date === calendar.focusDate && !day.disabled ? 0 : -1}" aria-label="${br(day.date)}${dates.has(day.date) ? ", com chamada" : ""}"
-          aria-pressed="${day.date === selected}"${day.date === current ? ' aria-current="date"' : ""}>${day.day}</button>`;
-      }).join("");
-    if (focusDay) $("calendar-grid").querySelector(`[data-rp-date="${calendar.focusDate}"]:not(:disabled)`)?.focus();
-  }
+  function closeCalendar() { window.AlunoTecCalendar.close(); }
   function openCalendar(field) {
     if (!hasDateRange() || state.stage !== "report") return;
     const year = state.applied.year;
-    const anchor = state.chartDraft[field] || (today().slice(0, 4) === year ? today() : `${year}-01-01`);
-    state.calendar = { field, month: anchor.slice(0, 7), focusDate: anchor };
-    $("calendar-title").textContent = field === "start" ? "Data inicial" : "Data final";
-    drawCalendar();
-    $("chart-" + field + "-button").setAttribute("aria-expanded", "true");
-    $("calendar-dialog").showModal();
-    $("calendar-grid").querySelector(`[data-rp-date="${anchor}"]`)?.focus();
-  }
-  function selectCalendarDate(date) {
-    if (!state.calendar || (date && (!validDate(date) || date.slice(0, 4) !== state.applied.year))) return;
-    state.chartDraft[state.calendar.field] = date;
-    updateChartDates(); closeCalendar();
-  }
-  function moveCalendarMonth(amount) {
-    const next = dateObject(`${state.calendar.month}-01`);
-    next.setMonth(next.getMonth() + amount);
-    const date = iso(next);
-    if (date.slice(0, 4) !== state.applied.year) return;
-    state.calendar.month = date.slice(0, 7); state.calendar.focusDate = date;
-    drawCalendar();
+    const annual = { ...state.applied, start: `${year}-01-01`, end: `${year}-12-31` };
+    const rows = isIndividualReport() ? individualSelection(state.data, annual, state.rosterClassId,
+      state.studentId, window.AlunoTecStudents).rows : filterRows(state.data, annual, state.view);
+    window.AlunoTecCalendar.open({
+      title: field === "start" ? "Data inicial" : "Data final",
+      trigger: $("chart-" + field + "-button"), value: state.chartDraft[field],
+      min: `${year}-01-01`, max: `${year}-12-31`, marks: new Set(rows.map(row => row.date)),
+      onSelect(value) { state.chartDraft[field] = value; updateChartDates(); }
+    });
   }
   function renderClassPicker() {
     const absences = state.mode === "absences";
@@ -808,11 +778,11 @@
     $("picker-title").textContent = absences ? "Alunos com maior ausência" : viewLabels[state.view];
     $("picker-year").textContent = `Ano letivo ${state.applied.year}`;
     $("picker-description").textContent = absences ? "Escolha a turma. Cada aluno é contado uma vez, mesmo com várias faltas." :
-      state.view === "room" ? "Escolha a turma de origem." :
+      state.view === "system" ? "Escolha a turma de origem registrada no sistema." :
       state.view === "student" ? "Escolha a turma para localizar o aluno." : "Escolha a turma da chamada.";
     root.querySelectorAll("[data-class-type]").forEach(button => {
       const type = button.dataset.classType;
-      button.hidden = state.view === "room" && type === "electives";
+      button.hidden = state.view === "system" && type === "electives";
       button.classList.toggle("is-active", type === state.classType);
       button.setAttribute("aria-pressed", String(type === state.classType));
       button.querySelector("span").textContent = integer(classes.filter(item => item.type === type).length);
@@ -848,7 +818,7 @@
     const actions = ["overview", "room", "system", "student", "weekly", "period", "electives", "comparison", "absences", "monthly", "closing"];
     if (!actions.includes(action)) return;
     closeCalendar();
-    state.view = action === "comparison" ? "system" : action === "absences" ? "student" :
+    state.view = action === "comparison" ? "room" : action === "absences" ? "student" :
       ["room", "system", "student", "weekly", "electives"].includes(action) ? action : "overview";
     state.mode = ["comparison", "absences", "period", "monthly", "closing"].includes(action) ? action : "default";
     state.applied = reportRange(state.data, selectedYear(), action);
@@ -856,7 +826,7 @@
     state.stage = state.pickerOpen ? "classes" : "report";
     state.studentId = ""; state.rosterClassId = "";
     const classes = reportClasses(state.data, state.applied.year, state.view);
-    state.classType = state.view !== "room" && !classes.some(item => item.type === "base") &&
+    state.classType = state.view !== "system" && !classes.some(item => item.type === "base") &&
       classes.some(item => item.type === "electives") ? "electives" : "base";
     $("status").textContent = "";
     [$("analysis-details"), $("methodology")].forEach(details => { details.open = false; });
@@ -919,7 +889,7 @@
     $("rate").textContent = percent(summary.rate);
     $("rate-note").textContent = changeNote(summary.rate, before.rate, "Comparação", " p.p.");
     $("students").textContent = integer(summary.students);
-    $("classes").textContent = integer(new Set(rows.map(row => state.view === "room" ? row.originId : row.systemId)).size);
+    $("classes").textContent = integer(new Set(rows.map(row => state.view === "system" ? row.originId : row.systemId)).size);
     $("absences").textContent = integer(summary.absent);
     $("absences-note").textContent = previous.length ? changeNote(summary.absent, before.absent, "Faltas") : "Sem chamadas no período anterior";
     $("electives").textContent = integer(scopedActiveElectives().length);
@@ -980,7 +950,7 @@
     $("result-title").textContent = table.title;
     $("table-caption").textContent = table.title;
     const calls = totals(rows).calls;
-    $("result-description").textContent = `${br(state.applied.start)} a ${br(state.applied.end)} · ${integer(calls)} ${calls === 1 ? "chamada" : "chamadas"}`;
+    $("result-description").textContent = `${br(state.applied.start)} a ${br(state.applied.end)} · ${integer(calls)} ${calls === 1 ? "chamada" : "chamadas"}${state.mode === "comparison" ? " · " + viewLabels[state.view] : ""}`;
     $("result-count").textContent = `${integer(table.rows.length)} ${state.view === "student" && state.mode !== "absences" ? "registro(s)" : "resultado(s)"}`;
     $("table-head").innerHTML = `<tr>${table.headers.map(heading => `<th scope="col">${escapeHTML(heading)}</th>`).join("")}</tr>`;
     $("table-body").replaceChildren(...table.rows.map((values, rowIndex) => {
@@ -1014,8 +984,8 @@
     $("student-field").hidden = !individual;
     $("student-summary").hidden = !individual;
     if (individual) {
-      const total = totals(rows), dates = new Set(rows.filter(row => row.status === "ausente").map(row => row.date));
-      $("student-summary").innerHTML = `<div>Frequência<strong>${percent(total.rate)}</strong></div><div>Presenças<strong>${integer(total.present)}</strong></div><div>Faltas<strong>${integer(total.absent)}</strong></div><div>Dias com falta<strong>${integer(dates.size)}</strong></div><div>Justificadas<strong>${integer(total.justified)}</strong></div>`;
+      const total = totals(rows), schoolDays = completedSchoolDays(rows);
+      $("student-summary").innerHTML = `<div>Frequência<strong>${percent(total.rate)}</strong></div><div>Presenças<strong>${integer(total.present)}</strong></div><div>Faltas<strong>${integer(total.absent)}</strong></div><div title="Datas distintas com chamada do aluno no período selecionado, até hoje. Base e eletiva no mesmo dia contam uma vez.">Dias letivos realizados<strong>${integer(schoolDays)}</strong></div><div>Justificadas<strong>${integer(total.justified)}</strong></div>`;
     }
     $("export-description").textContent = [table.title, selectedClassId() ? chosenClass()?.name : "",
       `${br(state.applied.start)} a ${br(state.applied.end)}`].filter(Boolean).join(" · ");
@@ -1050,22 +1020,29 @@
     if (isClassReport()) {
       $("selected-class-name").textContent = chosenClass()?.name || "Todas as turmas";
       $("selected-class-meta").textContent = selectedClassId() ?
-        (state.mode === "absences" ? "Faltas registradas na turma" : state.view === "room" ? "Turma de origem" : isIndividualReport() ? "Turma para buscar o aluno" : "Turma da chamada") :
+        (state.mode === "absences" ? "Faltas registradas na turma" : state.view === "system" ? "Turma de origem no sistema" : isIndividualReport() ? "Turma para buscar o aluno" : "Turma da chamada") :
         (isIndividualReport() ? "Seleção de alunos" : "Consulta consolidada");
     }
     state.rows = currentRows();
     $("metrics").hidden = selectedReport !== "overview" || !state.rows.length;
     const classChart = isClassChart();
     const individual = isIndividualReport();
+    const comparison = state.mode === "comparison";
     const query = $("chart-query");
     query.classList.toggle("is-individual", individual);
+    query.classList.toggle("is-comparison", comparison);
+    $("comparison-controls").hidden = !comparison;
+    $("comparison-field").hidden = !comparison;
+    $("range-apply").textContent = comparison ? "Aplicar filtros" : "Aplicar período";
     $("individual-controls").hidden = !individual;
     if (individual) {
       if ($("student-field").parentElement !== query) query.prepend($("student-field"));
       if (query.parentElement !== $("individual-controls")) $("individual-controls").append(query);
     } else {
       if ($("student-field").parentElement !== $("individual-controls")) $("individual-controls").append($("student-field"));
-      if (query.parentElement !== $("evolution")) $("evolution").insertBefore(query, $("evolution-legend"));
+      if (comparison) {
+        if (query.parentElement !== $("comparison-controls")) $("comparison-controls").append(query);
+      } else if (query.parentElement !== $("evolution")) $("evolution").insertBefore(query, $("evolution-legend"));
     }
     $("date-range-hint").textContent = individual ?
       "O período vale para o histórico, os indicadores e as exportações do aluno." :
@@ -1086,8 +1063,9 @@
     const classItem = state.data.classes.find(item => item.id === f.classId && item.year === f.year);
     const recordClass = state.data.rows.find(row => row.year === f.year && (row.systemId === f.classId || row.originId === f.classId));
     const classLabel = classItem?.name || (recordClass?.systemId === f.classId ? recordClass?.systemName : recordClass?.originName) || "Todas as turmas";
-    const scope = isIndividualReport() ? `Turma usada na seleção: ${chosenClass()?.name || "Todas as turmas"} | Histórico: todas as turmas do aluno` : `Turma: ${classLabel}`;
-    return { reportTitle: letterheadTitle(state.view, state.mode), school: state.institution?.schoolName || "AlunoTec · Central de Relatórios", filters: `Ano letivo ${f.year} | ${br(f.start)} a ${br(f.end)} | Turno: ${f.shift || "Todos"} | ${scope}`, summary: `${summary.calls} chamada(s) | ${summary.students} aluno(s) | Presenças: ${summary.present} | Faltas: ${summary.absent} | Justificadas: ${summary.justified} | Frequência: ${percent(summary.rate)}`, generated: `Gerado em ${new Date().toLocaleString("pt-BR")}` };
+    const scope = isIndividualReport() ? `Turma usada na seleção: ${chosenClass()?.name || "Todas as turmas"} | Histórico: todas as turmas do aluno` : state.mode === "comparison" ? `Realidade: ${viewLabels[state.view]} | Turmas: todas` : `Turma: ${classLabel}`;
+    const schoolDays = isIndividualReport() ? ` | Dias letivos realizados: ${integer(completedSchoolDays(state.rows))}` : "";
+    return { reportTitle: letterheadTitle(state.view, state.mode), school: state.institution?.schoolName || "AlunoTec · Central de Relatórios", filters: `Ano letivo ${f.year} | ${br(f.start)} a ${br(f.end)} | Turno: ${f.shift || "Todos"} | ${scope}`, summary: `${summary.calls} chamada(s) | ${summary.students} aluno(s) | Presenças: ${summary.present} | Faltas: ${summary.absent} | Justificadas: ${summary.justified} | Frequência: ${percent(summary.rate)}${schoolDays}`, generated: `Gerado em ${new Date().toLocaleString("pt-BR")}` };
   }
   function download(bytes, type, extension) {
     const link = document.createElement("a"), url = URL.createObjectURL(new Blob([bytes], { type }));
@@ -1113,7 +1091,7 @@
     const report = $("view").cloneNode(true);
     // O conteúdo impresso acompanha a consulta aplicada. Controles de navegação
     // e exportação ficam somente na tela; gráficos e dados continuam no documento.
-    report.querySelectorAll(".rp-results-heading, #rp-period-query, #rp-weekly-query, #rp-monthly-query, #rp-individual-controls, #rp-chart-query, #rp-methodology, #rp-empty").forEach(element => element.remove());
+    report.querySelectorAll(".rp-results-heading, #rp-period-query, #rp-weekly-query, #rp-monthly-query, #rp-individual-controls, #rp-comparison-controls, #rp-chart-query, #rp-methodology, #rp-empty").forEach(element => element.remove());
     report.querySelectorAll("details").forEach(element => {
       if (element.hidden || !element.open) element.remove();
       else element.querySelector("summary")?.remove();
@@ -1186,7 +1164,7 @@
   $("student").addEventListener("change", () => { state.studentId = $("student").value; render(); });
   root.querySelectorAll("[data-report]").forEach(button => button.addEventListener("click", () => chooseReport(button.dataset.report)));
   root.querySelectorAll("[data-class-type]").forEach(button => button.addEventListener("click", () => {
-    if (!state.pickerOpen || (state.view === "room" && button.dataset.classType !== "base")) return;
+    if (!state.pickerOpen || (state.view === "system" && button.dataset.classType !== "base")) return;
     state.classType = button.dataset.classType;
     renderClassPicker();
   }));
@@ -1197,44 +1175,6 @@
   $("all-classes").addEventListener("click", () => selectReportClass(""));
   $("change-class").addEventListener("click", openClassPicker);
   root.querySelectorAll("[data-chart-date]").forEach(button => button.addEventListener("click", () => openCalendar(button.dataset.chartDate)));
-  $("calendar-close").addEventListener("click", closeCalendar);
-  $("calendar-dialog").addEventListener("close", () => {
-    // Um close anterior pode chegar depois que outro campo já abriu o calendário.
-    if ($("calendar-dialog").open) return;
-    for (const field of ["start", "end"]) $("chart-" + field + "-button").setAttribute("aria-expanded", "false");
-    state.calendar = null;
-  });
-  $("calendar-dialog").addEventListener("click", event => {
-    if (event.target !== $("calendar-dialog")) return;
-    const box = $("calendar-dialog").getBoundingClientRect();
-    if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) closeCalendar();
-  });
-  $("calendar-prev").addEventListener("click", () => moveCalendarMonth(-1));
-  $("calendar-next").addEventListener("click", () => moveCalendarMonth(1));
-  $("calendar-today").addEventListener("click", () => selectCalendarDate(today()));
-  $("calendar-clear").addEventListener("click", () => selectCalendarDate(""));
-  $("calendar-grid").addEventListener("click", event => {
-    const button = event.target.closest("[data-rp-date]");
-    if (button && !button.disabled) selectCalendarDate(button.dataset.rpDate);
-  });
-  $("calendar-grid").addEventListener("keydown", event => {
-    const button = event.target.closest("[data-rp-date]");
-    if (!button || !state.calendar) return;
-    const date = button.dataset.rpDate, offset = (dateObject(date).getDay() + 6) % 7;
-    const steps = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7, Home: -offset, End: 6 - offset };
-    let next;
-    if (event.key in steps) next = addDays(date, steps[event.key]);
-    else if (["PageUp", "PageDown"].includes(event.key)) {
-      const month = dateObject(`${date.slice(0, 7)}-01`);
-      month.setMonth(month.getMonth() + (event.key === "PageUp" ? -1 : 1));
-      const lastDay = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
-      month.setDate(Math.min(Number(date.slice(-2)), lastDay)); next = iso(month);
-    } else return;
-    event.preventDefault();
-    if (next.slice(0, 4) !== state.applied.year) return;
-    state.calendar.month = next.slice(0, 7); state.calendar.focusDate = next;
-    drawCalendar(true);
-  });
   $("chart-query").addEventListener("submit", event => {
     event.preventDefault();
     if (!hasDateRange()) return;
@@ -1242,6 +1182,7 @@
     const error = dateRangeError(start, end, state.applied.year);
     updateChartDates(error);
     if (error) return;
+    if (state.mode === "comparison") state.view = $("comparison-reality").value === "system" ? "system" : "room";
     state.applied = { ...state.applied, period: "custom", start, end };
     $("status").textContent = "";
     syncDateControls(); render();
@@ -1269,12 +1210,14 @@
   [$("start"), $("end")].forEach(input => input.addEventListener("input", () => $("end").setCustomValidity("")));
   $("weekly-date").addEventListener("change", () => {
     const input = $("weekly-date");
+    if (!input.value) return;
     if (!input.reportValidity() || !validDate(input.value) || input.value.slice(0, 4) !== state.applied.year) return;
     state.applied = { ...state.applied, ...periodRange("week", input.value, state.applied.year) };
     syncDateControls(); render();
   });
   $("closing-month").addEventListener("change", () => {
     const input = $("closing-month");
+    if (!input.value) return;
     if (!input.reportValidity() || !/^\d{4}-\d{2}$/.test(input.value) || input.value.slice(0, 4) !== state.applied.year) return;
     state.applied = { ...state.applied, ...periodRange("month", `${input.value}-01`, state.applied.year) };
     syncDateControls(); render();
@@ -1300,6 +1243,12 @@
       $("status").textContent = "A turma selecionada não está mais disponível. Escolha outra turma.";
     }
     render();
+  }
+  for (const id of ["start", "end", "weekly-date", "closing-month"]) {
+    window.AlunoTecCalendar.bind({ input: $(id),
+      title: ({ start: "Data inicial", end: "Data final", "weekly-date": "Semana de", "closing-month": "Mês do fechamento" })[id],
+      marks: () => new Set(state.data.rows.filter(row => row.year === state.applied.year).map(row => row.date))
+    });
   }
   document.addEventListener("alunotec:yearchange", refreshFromStorage);
   window.addEventListener("storage", event => {

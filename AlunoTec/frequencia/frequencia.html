@@ -26,9 +26,11 @@
     <script src="../shared/banner.js" defer></script>
     <script src="../shared/profile.js" defer></script>
     <script src="../shared/utils.js" defer></script>
-    <script src="frequencia.js" defer></script>
+    <script src="../shared/calendar.js" defer></script>
+  <script src="frequencia.js" defer></script>
       <link rel="stylesheet" href="../shared/app-extra.css">
-  </head>
+    <link rel="stylesheet" href="../shared/calendar.css">
+</head>
   <body data-app-page="frequency">
     <!-- =====================================================
          BIBLIOTECA DE ÍCONES
@@ -254,7 +256,7 @@
                 ><span>Data da chamada</span>
                 <button
                   id="datePickerButton"
-                  class="date-picker-button"
+                  class="date-picker-button at-date-button"
                   type="button"
                 >
                   <svg><use href="#i-calendar"></use></svg
@@ -330,36 +332,6 @@
          Calendário, justificativas, anexos e avisos são controlados por
          frequencia.js; preserve os IDs ao editar estes formulários.
     ===================================================== -->
-    <dialog id="calendarDialog" class="dialog calendar-dialog">
-      <div class="dialog-card">
-        <button
-          class="dialog-close"
-          type="button"
-          data-close-dialog="calendarDialog"
-        >
-          ×
-        </button>
-        <h2>Data da chamada</h2>
-        <div class="calendar-controls">
-          <button id="calendarPrev" type="button" aria-label="Mês anterior">
-            ‹</button
-          ><strong id="calendarMonth"></strong
-          ><button id="calendarNext" type="button" aria-label="Próximo mês">
-            ›
-          </button>
-        </div>
-        <div class="calendar-grid" id="calendarGrid"></div>
-        <div class="calendar-legend">
-          <span><i class="legend-square registered"></i>Preenchida</span
-          ><span><i class="legend-square partial"></i>Pendente</span
-          ><span><i class="legend-square today"></i>Hoje</span>
-        </div>
-        <div class="calendar-footer">
-          <button id="calendarToday" type="button">Hoje</button
-          ><button id="calendarClear" type="button">Limpar</button>
-        </div>
-      </div>
-    </dialog>
 
     <!-- =====================================================
          FORMULÁRIO DE JUSTIFICATIVA
