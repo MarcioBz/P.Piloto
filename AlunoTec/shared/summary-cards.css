@@ -1,0 +1,143 @@
+/* ==========================================================
+   CARTÕES DE RESUMO
+   Reutiliza o visual dos cartões de Turmas nas telas indicadas.
+   Os símbolos, os números e os cálculos de cada página são mantidos.
+========================================================== */
+
+body[data-app-page="students"] .summary-grid,
+body[data-app-page="frequency"] .stats-grid,
+body[data-app-page="dashboard"] .summary-section .stats-grid,
+body[data-app-page="enrollment"] .enrollment-summary,
+body[data-app-page="teachers"] .teacher-metrics {
+  gap: 15px;
+}
+
+body[data-app-page="students"] .summary-card,
+body[data-app-page="frequency"] .stat-card,
+body[data-app-page="dashboard"] .summary-section .stat-card,
+body[data-app-page="enrollment"] .enrollment-metric,
+body[data-app-page="teachers"] .teacher-metric {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 14px;
+  min-width: 0;
+  min-height: 103px;
+  height: auto;
+  padding: 20px 19px;
+  overflow: hidden;
+  border: 1px solid #e6ebe5;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(31, 41, 55, 0.035);
+}
+
+/* A faixa fica dentro do cartão, como na referência de Turmas. */
+body[data-app-page="students"] .summary-card::before,
+body[data-app-page="frequency"] .stat-card::before,
+body[data-app-page="dashboard"] .summary-section .stat-card::before,
+body[data-app-page="enrollment"] .enrollment-metric::before,
+body[data-app-page="teachers"] .teacher-metric::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 4px;
+  background: #32712e;
+  content: "";
+}
+
+body[data-app-page="students"] .summary-icon,
+body[data-app-page="frequency"] .stat-icon,
+body[data-app-page="dashboard"] .summary-section .stat-icon,
+body[data-app-page="enrollment"] .enrollment-metric-icon,
+body[data-app-page="teachers"] .teacher-metric-icon {
+  display: grid;
+  flex: 0 0 45px;
+  width: 45px;
+  height: 45px;
+  margin: 0;
+  place-items: center;
+  border-radius: 11px;
+  background: #e9f3e7;
+  color: #32712e;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+body[data-app-page="students"] .summary-icon svg,
+body[data-app-page="frequency"] .stat-icon svg,
+body[data-app-page="dashboard"] .summary-section .stat-icon svg,
+body[data-app-page="enrollment"] .enrollment-metric-icon svg,
+body[data-app-page="teachers"] .teacher-metric-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+body[data-app-page="students"] .summary-card > span:last-child,
+body[data-app-page="frequency"] .stat-card > div,
+body[data-app-page="dashboard"] .summary-section .stat-content,
+body[data-app-page="enrollment"] .enrollment-metric > span:last-child,
+body[data-app-page="teachers"] .teacher-metric > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0;
+}
+
+body[data-app-page="students"] .summary-card small,
+body[data-app-page="frequency"] .stat-card small,
+body[data-app-page="dashboard"] .summary-section .stat-content > span,
+body[data-app-page="enrollment"] .enrollment-metric small,
+body[data-app-page="teachers"] .teacher-metric > div > span {
+  display: block;
+  order: 1;
+  margin: 0;
+  color: #667085;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+body[data-app-page="students"] .summary-card strong,
+body[data-app-page="frequency"] .stat-card strong,
+body[data-app-page="dashboard"] .summary-section .stat-content strong,
+body[data-app-page="enrollment"] .enrollment-metric strong,
+body[data-app-page="teachers"] .teacher-metric strong {
+  display: block;
+  order: 2;
+  margin: 2px 0 0;
+  color: #202b24;
+  font-size: 24px;
+  font-weight: 750;
+  letter-spacing: normal;
+  line-height: 1.2;
+}
+
+body[data-app-page="students"] .summary-card strong b {
+  font-weight: inherit;
+}
+
+/* Preserva as grades responsivas já existentes em cada página. */
+@media (max-width: 600px) {
+  body[data-app-page="students"] .summary-card,
+  body[data-app-page="frequency"] .stat-card,
+  body[data-app-page="dashboard"] .summary-section .stat-card,
+  body[data-app-page="enrollment"] .enrollment-metric,
+  body[data-app-page="teachers"] .teacher-metric {
+    min-height: 88px;
+    padding: 14px 12px;
+    gap: 10px;
+  }
+
+  body[data-app-page="students"] .summary-icon,
+  body[data-app-page="frequency"] .stat-icon,
+  body[data-app-page="dashboard"] .summary-section .stat-icon,
+  body[data-app-page="enrollment"] .enrollment-metric-icon,
+  body[data-app-page="teachers"] .teacher-metric-icon {
+    flex-basis: 38px;
+    width: 38px;
+    height: 38px;
+  }
+}

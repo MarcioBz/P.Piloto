@@ -1,0 +1,223 @@
+/* Fichas em papel branco, com faixas azuis e organização do modelo enviado. */
+@page {
+  size: A4 portrait;
+  margin: 9mm 10mm;
+}
+html,
+body {
+  display: block !important;
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+  width: auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: #fff !important;
+}
+body.enrollment-printing > :not(.enrollment-print) {
+  display: none !important;
+}
+body.enrollment-printing > .enrollment-print {
+  display: block !important;
+  width: 100%;
+  margin: 0;
+  color: #111;
+  font-family: "Times New Roman", serif;
+  font-size: 8pt;
+  line-height: 1.25;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.fp-sheet {
+  page-break-after: always;
+  break-after: page;
+}
+.fp-health {
+  break-before: page;
+  page-break-before: always;
+}
+.fp-enrollment {
+  font-size: 7.5pt;
+  line-height: 1.12;
+}
+.fp-sheet:last-child {
+  page-break-after: auto;
+  break-after: auto;
+}
+.fp-header {
+  margin-bottom: 3mm;
+  text-align: center;
+}
+.fp-institution-marks {
+  width: 100%;
+  margin-bottom: 3mm;
+  color: #1785ac;
+  font-family: Arial, sans-serif;
+  font-size: 6pt;
+  text-align: center;
+}
+.fp-institution-marks strong {
+  font-size: 11pt;
+}
+.fp-header p {
+  margin: 0;
+  color: #37788d;
+  font-size: 10pt;
+}
+.fp-header > strong {
+  color: #0989b4;
+  font-size: 11pt;
+}
+.fp-header h1 {
+  margin: 2mm 0 0;
+  color: #111;
+  font-size: 11pt;
+  font-weight: 500;
+}
+.fp-registration-section {
+  margin: 0 0 1.3mm;
+}
+.fp-fields {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+.fp-fields td {
+  padding: .15mm 1mm;
+  vertical-align: top;
+}
+.fp-fields tr {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.fp-field {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  break-inside: avoid;
+}
+.fp-fields .fp-wide {
+  grid-column: 1 / -1;
+}
+.fp-label {
+  font-weight: 600;
+}
+.fp-value {
+  white-space: pre-wrap;
+}
+.fp-help {
+  margin: .6mm 0;
+  font-size: 6.8pt;
+}
+.fp-option {
+  display: inline;
+  white-space: nowrap;
+  margin-right: 1.3mm;
+}
+.fp-grade-table,
+.fp-health-table {
+  width: 100%;
+  margin-top: 2mm;
+  border-collapse: collapse;
+}
+.fp-grade-table th,
+.fp-grade-table td {
+  width: 50%;
+  padding: 1.8mm;
+  border: .2mm solid #617980;
+  text-align: center;
+  font-size: 7.7pt;
+}
+.fp-grade-table th,
+.fp-grade-table td > strong {
+  background: #d4edf5;
+}
+.fp-grade-table td > strong {
+  display: block;
+  padding: 1mm;
+}
+.fp-grade-table td > div {
+  padding: 2mm 0;
+}
+.fp-health-table {
+  table-layout: fixed;
+}
+.fp-health-table th,
+.fp-health-table td {
+  padding: 1.2mm 1.4mm;
+  border: .15mm solid #dae4e7;
+  vertical-align: top;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.fp-health-table thead th {
+  padding: 2.4mm 1.5mm;
+  background: #c6e9f3;
+  text-align: center;
+  font-size: 8pt;
+}
+.fp-health-table th:first-child {
+  width: 34%;
+}
+.fp-health-table th:nth-child(2) {
+  width: 24%;
+}
+.fp-health-table tbody th {
+  font-weight: 400;
+}
+.fp-health-table tr {
+  break-inside: avoid;
+}
+.fp-health-table .fp-option {
+  margin: 0 1mm .5mm 0;
+}
+.fp-student-reference {
+  margin: 0 0 2mm;
+}
+.fp-observations {
+  margin-top: 3mm;
+  break-inside: avoid;
+}
+.fp-observations p {
+  margin: 1.5mm 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.fp-signatures {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 7mm 0;
+  margin-top: 3mm;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.fp-signatures td {
+  width: 50%;
+  vertical-align: top;
+}
+.fp-signatures p {
+  margin: 0;
+}
+.fp-signature-line {
+  margin-top: 9mm;
+  padding-top: 1mm;
+  border-top: .2mm solid #444;
+  text-align: center;
+  font-size: 7pt;
+}
+.fp-footer {
+  margin-top: 5mm;
+  padding-top: 2mm;
+  border-top: .5mm solid #1590b1;
+  color: #376575;
+  text-align: center;
+  font-size: 6.2pt;
+  break-inside: avoid;
+}
+
+.fp-grade-table {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}

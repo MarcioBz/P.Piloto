@@ -354,9 +354,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function saveData(){
         let before=null;try{before=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null")}catch{}
+        // Atualiza somente a projeção de nome e telefone dos alunos com cadastro único.
+        state.data = window.AlunoTecEnrollmentModel.projectClasses(
+            state.data,
+            window.AlunoTecEnrollment.read()
+        );
         const serialized=JSON.stringify(state.data);
         if(before&&JSON.stringify(before)!==serialized){describeChanges(before,state.data).forEach(recordActivity);localStorage.setItem(PENDING_SYNC_KEY,JSON.stringify({savedAt:new Date().toISOString(),data:state.data}));}
         localStorage.setItem(STORAGE_KEY,serialized);
+        if (before && JSON.stringify(before) !== serialized && localStorage.getItem("alunotec_matriculas_v1")) {
+            const registry = window.AlunoTecEnrollment.read();
+            const sync = JSON.parse(localStorage.getItem("alunotec_matriculas_sync_v1") || "{}");
+            localStorage.setItem("alunotec_matriculas_sync_v1", JSON.stringify({
+                ...sync,
+                pending: true,
+                localRevision: registry.revision
+            }));
+            window.dispatchEvent(new Event("alunotec:classeschange"));
+        }
         updateConnectionStatus();
         if(internetReachable===true&&navigator.onLine)queueMicrotask(syncWithSupabase);
     }
@@ -2643,6 +2658,29 @@ document.addEventListener("DOMContentLoaded", () => {
             null;
     }
 
+    byId("attachEnrollmentStudentButton")?.addEventListener("click", () => {
+        const item = getOpenedClass();
+        if (!item) return;
+        try {
+            window.AlunoTecEnrollmentPicker.open({
+                year: String(item.year || item.date?.slice(0, 4) || CURRENT_YEAR),
+                onSelect: async selected => {
+                    await window.AlunoTecEnrollment.addToClass({
+                        classId: String(item.id),
+                        type: state.openedClassType,
+                        enrollmentId: selected.enrollmentId
+                    });
+                    state.data = window.AlunoTecEnrollment.readClasses();
+                    renderOpenedClass();
+                    updateSummary();
+                    showToast("Aluno adicionado com os dados da matrícula.");
+                }
+            });
+        } catch (error) {
+            showToast(error.message, "warning");
+        }
+    });
+
     addStudentButton?.addEventListener(
         "click",
         () => openStudentModal()
@@ -2686,7 +2724,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     studentForm?.addEventListener(
         "submit",
-        (event) => {
+        async (event) => {
 
             event.preventDefault();
 
@@ -2715,6 +2753,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            // Uma edição feita pela turma atualiza a mesma pessoa e todos os vínculos.
+            const central = window.AlunoTecEnrollment.read();
+            const edited = item.students.find(student => student.id === state.editingStudentId);
+            const personId = edited && window.AlunoTecEnrollmentModel.rosterId(edited);
+            if (edited && central.students.some(student => student.id === personId)) {
+                try {
+                    await window.AlunoTecEnrollment.updateContact(personId, name, whatsapp);
+                    state.data = window.AlunoTecEnrollment.readClasses();
+                    closeStudentModal();
+                    renderOpenedClass();
+                    updateSummary();
+                    showToast("Dados do aluno atualizados na matrícula e nas turmas.");
+                } catch (error) {
+                    showToast(error.message, "warning");
+                }
+                return;
+            }
             if (
                 state.editingStudentId
             ) {
@@ -3649,6 +3704,17 @@ document.addEventListener("DOMContentLoaded", () => {
         const q=new URLSearchParams(location.search),id=q.get("turma"),type=q.get("tipo");
         if(id&&["base","electives"].includes(type))showClassInCurrentTab(type,id);else showClassesView();
     });
+    window.addEventListener("storage", event => {
+        if (!["alunotec_turmas_v2", "alunotec_matriculas_v1"].includes(event.key)) return;
+        state.data = window.AlunoTecEnrollmentModel.projectClasses(
+            window.AlunoTecEnrollment.readClasses(),
+            window.AlunoTecEnrollment.read()
+        );
+        if (state.openedClassId) renderOpenedClass();
+        renderTables();
+        updateSummary();
+    });
+
     loadData();
     const startParams=new URLSearchParams(location.search);
 

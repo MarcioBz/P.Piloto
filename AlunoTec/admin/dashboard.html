@@ -32,7 +32,8 @@
     <script src="../shared/profile.js" defer></script>
     <script src="dashboard.js" defer></script>
       <link rel="stylesheet" href="../shared/app-extra.css">
-  </head>
+      <link rel="stylesheet" href="../shared/summary-cards.css">
+</head>
 
   <body data-app-page="dashboard">
     <!-- =====================================================
@@ -277,7 +278,7 @@
 
             <!-- =====================================================
                  CARDS
-                 Totais e percentuais vinculados aos indicadores acima.
+                 Total de alunos, sem indicadores de presenças, faltas ou porcentagens.
             ===================================================== -->
 
             <div class="stats-grid">
@@ -294,63 +295,6 @@
                   <strong id="totalStudents"> 0 </strong>
                 </div>
 
-                <span class="stat-wave"></span>
-              </article>
-
-              <article class="stat-card stat-present">
-                <span class="stat-icon">
-                  <svg>
-                    <use href="#icon-presence"></use>
-                  </svg>
-                </span>
-
-                <div class="stat-content">
-                  <span> Presentes </span>
-
-                  <div class="stat-value-row">
-                    <strong id="presentStudents"> 0 </strong>
-
-                    <b id="presentPercent"> 0% </b>
-                  </div>
-                </div>
-
-                <span class="stat-wave"></span>
-              </article>
-
-              <article class="stat-card stat-absent">
-                <span class="stat-icon">
-                  <svg>
-                    <use href="#icon-absent"></use>
-                  </svg>
-                </span>
-
-                <div class="stat-content">
-                  <span> Ausentes </span>
-
-                  <div class="stat-value-row">
-                    <strong id="absentStudents"> 0 </strong>
-
-                    <b id="absentPercent"> 0% </b>
-                  </div>
-                </div>
-
-                <span class="stat-wave"></span>
-              </article>
-
-              <article class="stat-card stat-frequency">
-                <span class="stat-icon">
-                  <svg>
-                    <use href="#icon-attendance-rate"></use>
-                  </svg>
-                </span>
-
-                <div class="stat-content">
-                  <span> Frequência geral </span>
-
-                  <strong id="generalFrequency"> 0% </strong>
-                </div>
-
-                <span class="stat-wave"></span>
               </article>
             </div>
           </section>

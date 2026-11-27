@@ -40,3 +40,12 @@ A restauração atualiza a fila `alunotec_turmas_pending_sync_v1` para não reen
 `alunotec_professores_v1` usa `version: 1`, `revision`, `teachers` e `revokedCodes`. `assignments[ano][semestre]` guarda somente IDs do cadastro canônico de eletivas, sem outra lista de turmas ou alunos. Os códigos têm cinco dígitos como texto, permanecem entre semestres e são reservados após exclusão. Cópias antigas sem esta chave preservam os professores já existentes.
 
 O código local não autentica usuários. O adaptador HTTP e o contrato de autorização estão em `shared/teacher-service.js` e `docs/AUTENTICACAO-PROFESSORES.md`; a configuração vem desativada. A área do professor não usa o armazenamento escolar local para obter seus alunos nem as notificações da administração.
+
+
+## Matrícula e polos
+
+`alunotec_matriculas_v1` é o cadastro canônico das pessoas e matrículas. Contém versão, revisão, polos, alunos com dados pessoais e matrículas por aluno/ano com ficha escolar e saúde. Os vínculos continuam nas turmas existentes, por `studentId`, `enrollmentId` e `poloId`; os campos de nome e telefone das listas são projeções de compatibilidade. A saúde não entra nessas listas.
+
+`alunotec_matriculas_transaction_v1` contém o estado anterior de uma gravação em curso e é removida ao concluir. `alunotec_matriculas_sync_v1` guarda apenas metadados da fila remota, sem substituir a matrícula. O backup inclui e valida o cadastro canônico; cópias anteriores sem a nova chave preservam os registros já existentes.
+
+O contrato completo está em `MATRICULA-IMPLEMENTACAO.md` e `MATRICULA-API.md`. Não migrar pessoas por nome nem recalcular chamadas antigas com dados de matrícula atuais.

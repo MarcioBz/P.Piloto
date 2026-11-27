@@ -36,6 +36,11 @@
     <script src="../shared/banner.js" defer></script>
     <script src="../shared/profile.js" defer></script>
     <script src="../shared/utils.js" defer></script>
+    <script src="../shared/enrollment-store.js" defer></script>
+    <script src="../shared/enrollment-service-config.js" defer></script>
+    <script src="../shared/enrollment-service.js" defer></script>
+    <script src="../shared/enrollment-picker.js" defer></script>
+    <link rel="stylesheet" href="../shared/enrollment-picker.css">
     <script src="../shared/calendar.js" defer></script>
   <script src="script.js" defer></script>
       <link rel="stylesheet" href="../shared/app-extra.css">
@@ -834,6 +839,12 @@
                   </svg>
 
                   Exportar
+                </button>
+
+                <!-- Reutiliza o cadastro único dos alunos matriculados nos polos. -->
+                <button type="button" class="primary-button" id="attachEnrollmentStudentButton">
+                  <svg aria-hidden="true"><use href="#icon-plus"></use></svg>
+                  Adicionar aluno
                 </button>
 
                 <button

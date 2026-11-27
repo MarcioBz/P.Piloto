@@ -4,7 +4,7 @@
   const keys = Object.freeze([
     "alunotec_turmas_v2", "alunotec_turmas_activity_v1", "alunotec_alunos_remanejamentos_v1",
     "alunotecSchoolYear", "alunotec.profile.v1", "alunotec_frequencia_v1",
-    "alunotec_frequencia_alertas_v1", "alunotec_frequencia_alertas_ocultos_v1", "alunotec_institution_v1", "alunotec_professores_v1",
+    "alunotec_frequencia_alertas_v1", "alunotec_frequencia_alertas_ocultos_v1", "alunotec_institution_v1", "alunotec_professores_v1", "alunotec_matriculas_v1",
   ]);
   const root = typeof window === "undefined" ? globalThis : window;
   const object = value => value !== null && typeof value === "object" && !Array.isArray(value);
@@ -25,6 +25,10 @@
           const teachers = root.AlunoTecTeachers || (typeof module !== "undefined" && module.exports ? require("../shared/teachers-store.js") : null);
           if (!teachers) throw new Error("O validador do cadastro de professores não foi carregado.");
           teachers.validate(parsed);
+        } else if (key === "alunotec_matriculas_v1") {
+          const enrollment = root.AlunoTecEnrollmentModel || (typeof module !== "undefined" && module.exports ? require("../shared/enrollment-store.js") : null);
+          if (!enrollment) throw new Error("O validador de matrículas não foi carregado.");
+          enrollment.validate(parsed);
         } else if (key === "alunotec_turmas_v2") {
           if (!object(parsed) || !Array.isArray(parsed.base) || !Array.isArray(parsed.electives))
             throw new Error("A cópia não contém uma estrutura válida de turmas.");
@@ -45,6 +49,21 @@
         }
       }
       data[key] = raw;
+    }
+    // Confere as referências das novas matrículas sem rejeitar listas legadas.
+    if (data.alunotec_matriculas_v1 && data.alunotec_turmas_v2) {
+      const registry = JSON.parse(data.alunotec_matriculas_v1);
+      const classes = JSON.parse(data.alunotec_turmas_v2);
+      for (const item of [...classes.base, ...classes.electives]) {
+        for (const member of item.students) {
+          if (!member.enrollmentId) continue;
+          const enrollment = registry.enrollments.find(entry => entry.id === member.enrollmentId);
+          if (!enrollment || enrollment.studentId !== member.studentId ||
+              String(item.year || item.date?.slice(0, 4)) !== enrollment.year) {
+            throw new Error("Há um vínculo de turma sem matrícula correspondente na cópia.");
+          }
+        }
+      }
     }
     if (!Object.keys(data).length) throw new Error("A cópia não contém dados reconhecidos do AlunoTec.");
     const attachments = value.formatVersion === 2 ? value.attachments || [] : [];
@@ -111,24 +130,36 @@
     });
   }
   function replaceData(data, preserveMissingTeachers = false) {
-    keys.forEach(key => { if (!(preserveMissingTeachers && key === "alunotec_professores_v1" && !(key in data))) localStorage.removeItem(key); });
+    keys.forEach(key => { if (!(preserveMissingTeachers && ["alunotec_professores_v1", "alunotec_matriculas_v1"].includes(key) && !(key in data))) localStorage.removeItem(key); });
     keys.forEach(key => { if (key in data) localStorage.setItem(key, data[key]); });
   }
   async function restoreBackup(value) {
     const valid = validateBackup(value), before = await buildBackup();
     const previousSync = localStorage.getItem("alunotec_turmas_pending_sync_v1");
+    const previousEnrollmentSync = localStorage.getItem("alunotec_matriculas_sync_v1");
     const previousSyncState = localStorage.getItem("alunotec_turmas_sync_state_v1");
     await undoData(before);
     try {
       await putAttachments(valid.attachments);
       replaceData(valid.localStorage, true);
+      const enrollmentModel = root.AlunoTecEnrollmentModel;
+      const enrollmentRaw = localStorage.getItem("alunotec_matriculas_v1");
+      if (enrollmentModel && enrollmentRaw) {
+        const registry = enrollmentModel.validate(JSON.parse(enrollmentRaw));
+        const classes = JSON.parse(localStorage.getItem("alunotec_turmas_v2") || '{"base":[],"electives":[]}');
+        localStorage.setItem("alunotec_turmas_v2", JSON.stringify(enrollmentModel.projectClasses(classes, registry)));
+        const previousState = JSON.parse(previousEnrollmentSync || "{}");
+        localStorage.setItem("alunotec_matriculas_sync_v1", JSON.stringify({ ...previousState, pending: true, localRevision: registry.revision }));
+      }
       localStorage.setItem("alunotec_turmas_pending_sync_v1", JSON.stringify({
-        savedAt: new Date().toISOString(), data: JSON.parse(valid.localStorage.alunotec_turmas_v2 || '{"base":[],"electives":[]}'),
+        savedAt: new Date().toISOString(), data: JSON.parse(localStorage.getItem("alunotec_turmas_v2") || '{"base":[],"electives":[]}'),
       }));
       localStorage.removeItem("alunotec_turmas_sync_state_v1");
       localStorage.removeItem("alunotec_turmas_remote_conflict_v1");
     } catch (error) {
       replaceData(before.localStorage);
+      if (previousEnrollmentSync === null) localStorage.removeItem("alunotec_matriculas_sync_v1");
+      else localStorage.setItem("alunotec_matriculas_sync_v1", previousEnrollmentSync);
       if (previousSync === null) localStorage.removeItem("alunotec_turmas_pending_sync_v1");
       else localStorage.setItem("alunotec_turmas_pending_sync_v1", previousSync);
       if (previousSyncState === null) localStorage.removeItem("alunotec_turmas_sync_state_v1");

@@ -42,3 +42,14 @@ Para uso compartilhado será necessário integrar autenticação, tabelas relaci
 - `docs/CONTRATOS_DE_DADOS.md`: campos e chaves compartilhados.
 
 Os cadastros usados nos testes são fictícios e ficaram apenas no navegador de teste. O pacote não carrega alunos ou chamadas de demonstração.
+
+
+## Matrícula e polos
+
+A página Matrícula foi ampliada com polos, cadastro único do aluno, ficha escolar e as quinze perguntas da ficha de saúde. Em Turmas, Adicionar aluno reutiliza uma matrícula por polo, com pesquisa e preenchimento do nome e telefone.
+
+Esta revisão recupera o padrão visual original da Matrícula, com cartões de polos e formulário em pop-up. Professores e suas dependências foram preservados conforme o projeto enviado. A pasta `AlunoTec` é a única versão do sistema neste pacote.
+
+A documentação de uso, dados e impressão está em [docs/MATRICULA-IMPLEMENTACAO.md](docs/MATRICULA-IMPLEMENTACAO.md). Os arquivos e os resultados de validação estão em [docs/MATRICULA-ARQUIVOS.md](docs/MATRICULA-ARQUIVOS.md) e [docs/MATRICULA-TESTES.md](docs/MATRICULA-TESTES.md).
+
+O armazenamento local funciona sem banco remoto. A proposta SQL e o adaptador de sincronização vêm preparados e desativados; a ativação depende do servidor autenticado descrito em [docs/MATRICULA-API.md](docs/MATRICULA-API.md).

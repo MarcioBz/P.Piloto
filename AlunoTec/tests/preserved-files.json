@@ -1,0 +1,100 @@
+{
+  "baseline": "P.Piloto-main(3).zip — AlunoTec enviado pelo usuário em 27/11/2026",
+  "files": {
+    "CALENDARIOS-E-REALIDADES.md": "6a1cb5c7907d4815654790d0a65370e77f010da71096929562447b7442c5cf30",
+    "DADOS-POR-ANO.md": "e647230eaff69ddf4161ac66edf2b6e22770f152ca76c9320d8d2f55c31941f2",
+    "GUIA-EDICAO.md": "7eea887958e7a83aece0ecf4a6528d67ad19da8752615c56a82ea13ac1021c9b",
+    "INICIAR.bat": "9fee2b2451a85ea0ce6d1e0ac48b99189c219015c051f9d2108edb80809cb7d1",
+    "RELATORIOS-TIMBRADOS.md": "e16e8d0bebfbdfdc5c61268e9e47870d42a3d1fdf0c9cfa81830a057fe16f0e2",
+    "TURMAS-POR-SERIE.md": "a1e19a80e2aaa6cc26bebe321a12cbefca0e7837b1a5f5c8daa6f2ebc61c37fc",
+    "admin/dashboard.css": "83865e914b4f41b5e3565b5e9048b0079eca6cfbc9a3c8d8fe80319f53d656ac",
+    "admin/dashboard.js": "8a5bb0e03f27dc52092325b8f7ef223c6bc6dbca2873963348203e8fe8738e5a",
+    "aluno/aluno.css": "8a2d2ac4c3cedad0825103c7eb4497e1eebc4d44ce6008912b92d50d456beea6",
+    "aluno/aluno.js": "adc88c23fd84c5e7be3039ee25124d162ff965d1ec1f617ad68bce0b01d0f853",
+    "assets/icons/icone.png": "ecd79121b9cf7665747f3568e3349000921e5bb632021cd62785c168f051829c",
+    "assets/images/dashboard-sala.png": "483490c60bf40b7cf70d858c3664f02f8e202cdd99219a60d8fbb1256819a050",
+    "assets/images/logo-alunotec.png": "bb4cdb792175dc4ce8fcd4698d60983de49a42c1fecef8b0c8138f4248a595f0",
+    "assets/images/logo-alunotec1.png": "101342be94fe9daca5611762e9f8385a48d87e6140593a983f86950b100be490",
+    "config/config-local.js": "6f8aff7edc6af66eef2b0ba59faf6dc0b06d4ad321a66def21c17dd8f63b2452",
+    "config/config.js": "61297b4deab031a5014a21bbf87fd29df3d055d7f56b8dcdecde5a090f120d58",
+    "config/teachers.css": "f5fda6b19d9b6f66effaa40bad5142ed7f6f216223529c434ab36aca7bdfadbe",
+    "config/teachers.js": "f85b519f1200654e75007677061763ad6ee1c59d57dc6562dbba6c008d1ea4ea",
+    "docs/AJUSTES-VISUAIS.md": "673a67734bffd3d452a9b098952dd7c1b7f0d34a8d76f1a52cb47521a5a6d231",
+    "docs/ARQUITETURA-PROFESSORES.md": "9871969dd64a8e9ed9a849a95f8492ca8a507889c66386188dec645a6a9fa0d9",
+    "docs/ARQUIVOS-ALTERADOS.md": "932be7bab6a6e1a78b642180855c0804e7be1532a66366f14a4d6b7ab3a69d5e",
+    "docs/ARQUIVOS-PROFESSORES.md": "b5f70b32a8d7f032f2d18eb7d3490b79250c4af98ec8fccc7bc95eb5dda37bf0",
+    "docs/AUTENTICACAO-PROFESSORES.md": "ae95673b8cbcb37fcdadb73686f0b3ae77f3727301e93190ebd8eb611bc7a79e",
+    "docs/REVISAO_TECNICA.md": "879f822436c34c7ef7d623827bb9d6c9310c3e53f01eae233b340b27f0f3b5a7",
+    "eletivas/eletivas.css": "36f3de8b9d669760bb69803d8117e80ea0204432c5dc524d665e4ec39afb1092",
+    "eletivas/eletivas.html": "5c11c077d7937ed6478934546ff36fe64535f23ab6b75302c001d853796a783e",
+    "eletivas/eletivas.js": "92bd7599414d48d83134cd8d32822e72b208fa8dfd6e6f6cab93968f9850b65d",
+    "frequencia/frequencia.css": "36979f22212eac8582b90b8046388f4083e1e02dbff422fb88534e6700184ffa",
+    "frequencia/frequencia.js": "075bf15da901199893b8768d84fe2e2def0b4661b5c3968ed968865d2a49b752",
+    "index.html": "5eb6ab0905411a7e943df5573d486d240a14def75f4c37499aab84c76ddb6660",
+    "inst/inst.html": "1cb710e6a55ab2055c3c7e463e75c0102fdc8f451fe88673251beb82e073fbf1",
+    "inst/inst.js": "80f48fd96cd9a045f833e6f4043e129cdb5fdf150505d474a059acfe5944a0fc",
+    "login/login.css": "c0011a3108eb66a68060d015d64ec3f60f69a244fccf3655aa032eae8b103668",
+    "login/login.js": "9a1da4e6dda6a42cfca8cc67a71cf8a8354a63be2856784b4adf28b281f9d447",
+    "login/teacher-login.css": "70a4d184b3cf728fa35e7164ccd7d3c10d8cbdd0a161a56e9e7f97a470e06ab9",
+    "login/teacher-login.js": "284cde4afbd436ff3fc102f89b26eca5cf66d3ae381cd6cbba50b13d88d6adbb",
+    "professores/area.css": "db05a0fbda6544f936074ed329570072ca7525c3ec4cadeeb1204ca9a044935b",
+    "professores/area.html": "d5b3813e2837dd2833977d80a873001a752b4d6b5e34601e4f854a4d34f6a634",
+    "professores/area.js": "76ccc68f8802e3008e0745572fde2bdc80f212b8b756a8ae4c229ee49fcebb29",
+    "relat/relat.css": "c0712a5ab99b5f9d75993f7b60b824bb9888c982d362cdec895dd63e1c232863",
+    "relat/relat.html": "b04a65cf6da6530a6d206322e034a2d88c04bca153ea89d17e438f6857592ca3",
+    "relat/relat.js": "1523710a7f9d0f9ae887f4d6a22da1bb2c85998f3ef724523da8fe654bb05903",
+    "relat/timbre.js": "f14c1d75a871561a78bb44737503398190a381469c628388ab7b7306034b9559",
+    "servidor-local.py": "bf27705300c871592483be2e40a3956a99281e847baff036cd162d926adf0cbd",
+    "shared/access.js": "1c2da8801c9eb6645f84cfa9304f9f5e6cf44b0204796617470b0b6e8a211db6",
+    "shared/app-extra.css": "ebd21f84eeea16089deaaba182ba12919ef193cf79a57b93f0197be9b8f39baf",
+    "shared/app-shell.js": "4ef736e5f548508bedb9a5adfe37c3d5b5200d3e141221a8b8bd923eb8b34274",
+    "shared/banner.css": "337338d27e1afdfd595e387a8402ba39ff0eccfb893d4e3f3262d07e76c4c7ee",
+    "shared/banner.js": "6753c0006da14a61780eb71616a200607680d321ceaad343870ee951dff476cb",
+    "shared/calendar.css": "ce4aa9ea7e21ce433b1c71a55ad05f113372f8582b9ded90768054eacda6e12f",
+    "shared/calendar.js": "b4564f416f0565716680a9b5c957820914d520125074fc023cd3c0fd9b602057",
+    "shared/class-groups.css": "926ead2d5498b2be645806b208605c225bcff13967bcb5aee508adae39af9838",
+    "shared/management.css": "6e7c6810de061578830c2d6a9a12fa36c13accd8c76ea44c58701f2e64be69d4",
+    "shared/profile.css": "e7e4b6c5184f230e9875fe78019646557dcb6f5229f2641eb7fe6667334c61f0",
+    "shared/profile.js": "6919b6c3c3725af667beaf03d5f75f653ccb2b2c32e86dfe577e5377e461a1fa",
+    "shared/responsive-shell.css": "5e36e3bd95f5873edd6e7fd633b67a1891f75d14d6e5fffe6c2743c087fbe80c",
+    "shared/select.css": "2d86232b063426cc8aba4cd17aa0ef9257958b1f9816e43d5ad89c13e2ef6ff0",
+    "shared/select.js": "2c5de83f9d1b32d1d88ecbbf19f7d6e989f6df655418ec4a50dcc54ca2161c80",
+    "shared/student-links.css": "d22e9c9433f8c418c8b0de10b9146d419ec09f0d105d155c748d6732be8d1766",
+    "shared/teacher-service-config.js": "8bbae825417d8411a0e77a0af5fdd6a0c15e624bd47808f748f2355af1a21f88",
+    "shared/teacher-service.js": "18715de15bd7a1cb674a0f402b35423649a23bfd1e086af3f890e77b951e55c4",
+    "shared/teachers-store.js": "e3c6e1fdc4957ce33d2d51d936fce7cb54d162abbc443ef3338008d3d33a44cc",
+    "shared/utils.js": "9f0311abea0834968e46952d3d9ca79b9faf31c618d59d857e578dac8a4d672a",
+    "turmas/style.css": "37965032130bbe30e97be7201bae5341eee4749c196b02ed377f59cf4557dc68"
+  },
+  "enrollmentCSS": {
+    "bytes": 10204,
+    "sha256": "43b257b9b62901b0662320502e0ff68a71a06fcc9f0d1cf0a23acd23f58422e6"
+  },
+  "csv": {
+    "start": "    /* ==========================================================\n       IMPORTAR ALUNOS CSV",
+    "end": "    /* ==========================================================\n       EXPORTAR CSV",
+    "sha256": "5eaea1c677335adb3245a49b7609c32ea4901e28d40b171fb9faeb79cb11f195"
+  },
+  "visualCardChanges": {
+    "aluno/aluno.html": {
+      "previous_sha256": "588b55157622b3c5146620570fe2ab08b1f412942cfcc223918f349d08f48891",
+      "sha256": "f7c3dfe41ef1c546d310620c839069dfa2daf0f99fddfc51d213ee1e5b5a9891",
+      "reason": "Padronização dos cartões solicitada pelo usuário em 27/11/2026."
+    },
+    "frequencia/frequencia.html": {
+      "previous_sha256": "00ca51233ad31f90017edab62601229b0f6083cef00ae42dcff7939e126bbb6a",
+      "sha256": "6e0d924c9b10249f6846a275a2e963efafd9388b0e46422d6183defbe6b0ff9f",
+      "reason": "Padronização dos cartões solicitada pelo usuário em 27/11/2026."
+    },
+    "admin/dashboard.html": {
+      "previous_sha256": "2e66f04efd01478735c3ff206c35741d089600c8b43c2e81e1fe6a243a522734",
+      "sha256": "1ce2cf7e0dc3d5bdc1f87901eef27939620ad4c8dec363d02ee29df672b67325",
+      "reason": "Padronização dos cartões solicitada pelo usuário em 27/11/2026."
+    },
+    "config/config.html": {
+      "previous_sha256": "7c6930d51e14a587d0d605eee328acbaaabadf07e5de29bdd8d885bfb3868025",
+      "sha256": "384b7d8f90104a303de0401c140639d1c856c6f2f92b1096e643dadc75292837",
+      "reason": "Padronização dos cartões solicitada pelo usuário em 27/11/2026."
+    }
+  }
+}
